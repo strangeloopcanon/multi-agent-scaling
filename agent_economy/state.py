@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from agent_economy.schemas import (
     DerivedState,
@@ -33,6 +34,10 @@ class SettlementPolicy:
     penalty_fraction: float = 0.10
     confidence_penalty_floor: float = 0.5
     confidence_penalty_max_multiplier: float = 1.0
+    # Reputation mode (default) keeps current market behavior.
+    # direct_penalty removes reputation from bid scoring and uses a
+    # direct fail-penalty model based on bounty + reported confidence.
+    penalty_mode: Literal["reputation", "direct_penalty"] = "reputation"
 
     # Trigger plan revision after a task fails this many times (0 = disabled).
     replan_fail_threshold: int = 3

@@ -283,6 +283,32 @@ agent-economy init --scenario scenarios/snakelite.yaml --run-dir runs/bench
 agent-economy run --run-dir runs/bench
 ```
 
+### Research Workflow (Phase I/II)
+Run the calibration + market research pipeline with script entrypoints:
+
+```bash
+# Phase I: calibration elicitation + optional solo baselines
+python scripts/run_phase1.py \
+  --swe-manifest benchmarks/swebench/pilot_manifest_v1.json \
+  --swe-limit 20 \
+  --strategies direct,anchored,cot
+
+# Phase II: matrix generation (48 runs by default)
+python scripts/run_phase2.py --benchmarks swebench,synthesis --repeats 3
+
+# Execute Phase II matrix live (requires provider credentials)
+python scripts/run_phase2.py --benchmarks swebench,synthesis --repeats 3 --execute
+
+# Join cross-phase metrics
+python scripts/compare_phases.py \
+  --phase1-metrics runs/research/phase1/<timestamp>/metrics_summary.json \
+  --phase2-summaries runs/research/phase2/<timestamp>/market_run_summaries.json \
+  --output-dir runs/research/comparison
+```
+
+Artifacts are written under `runs/research/phase1/`, `runs/research/phase2/`, and
+`runs/research/comparison/`.
+
 ### Export RL Transitions
 Export each attempt as a transition tuple (`action`, `award`, `outcome`, `reward`) for offline training/evaluation:
 ```bash

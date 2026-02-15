@@ -28,6 +28,8 @@ def score_bid_breakdown(
     reputation: float,
     bid: Bid,
     expected_cost: float = 0.0,
+    penalty_mode: str = "reputation",
+    penalty_fraction: float = 0.10,
 ) -> dict[str, float]:
     bounty_f = float(bounty)
     reputation_f = float(reputation)
@@ -35,36 +37,56 @@ def score_bid_breakdown(
     expected_cost_f = float(expected_cost)
     p_success_f = float(bid.self_assessed_p_success)
 
-    # Penalize low-confidence bids beyond their lower expected value: failing burns market time.
-    # Scale penalty with reputation: high-rep workers (1.25) face full penalty,
-    # low-rep workers (0.5) face reduced penalty to give them a recovery path.
-    # Formula: penalty_scale = (reputation - 0.5) / 0.75 clamped to [0, 1]
-    penalty_scale = max(0.0, min(1.0, (reputation_f - 0.5) / 0.75))
-    failure_penalty = penalty_scale * 0.5 * bounty_f
-    score = (
-        reputation_f * p_success_f * bounty_f
-        - ask_f
-        - expected_cost_f
-        - (1.0 - p_success_f) * failure_penalty
-    )
+    if penalty_mode == "direct_penalty":
+        # direct_penalty mode: remove reputation from expected value and use
+        # expected fail loss from the explicit settlement penalty.
+        direct_penalty = max(0.0, float(penalty_fraction) * bounty_f * (0.5 + p_success_f))
+        score = (
+            p_success_f * bounty_f - ask_f - expected_cost_f - (1.0 - p_success_f) * direct_penalty
+        )
+        failure_penalty = direct_penalty
+    else:
+        # Reputation mode (default): existing scoring behavior.
+        penalty_scale = max(0.0, min(1.0, (reputation_f - 0.5) / 0.75))
+        failure_penalty = penalty_scale * 0.5 * bounty_f
+        score = (
+            reputation_f * p_success_f * bounty_f
+            - ask_f
+            - expected_cost_f
+            - (1.0 - p_success_f) * failure_penalty
+        )
+
     return {
         "bounty": bounty_f,
         "reputation": reputation_f,
         "p_success": p_success_f,
         "ask": ask_f,
         "expected_cost": expected_cost_f,
+        "mode_direct_penalty": 1.0 if penalty_mode == "direct_penalty" else 0.0,
         "failure_penalty": float(failure_penalty),
+        "expected_fail_penalty": float(failure_penalty),
+        "penalty_fraction": float(penalty_fraction),
         "score": float(score),
     }
 
 
-def score_bid(*, bounty: int, reputation: float, bid: Bid, expected_cost: float = 0.0) -> float:
+def score_bid(
+    *,
+    bounty: int,
+    reputation: float,
+    bid: Bid,
+    expected_cost: float = 0.0,
+    penalty_mode: str = "reputation",
+    penalty_fraction: float = 0.10,
+) -> float:
     return float(
         score_bid_breakdown(
             bounty=bounty,
             reputation=reputation,
             bid=bid,
             expected_cost=expected_cost,
+            penalty_mode=penalty_mode,
+            penalty_fraction=penalty_fraction,
         )["score"]
     )
 
@@ -74,6 +96,8 @@ def choose_assignments(
     ready_tasks: list[TaskRuntime],
     available_workers: list[WorkerRuntime],
     bids_by_task: dict[str, list[BidSubmission]],
+    penalty_mode: str = "reputation",
+    penalty_fraction: float = 0.10,
 ) -> list[Assignment]:
     tasks_by_id = {t.task_id: t for t in ready_tasks}
     workers_by_id = {w.worker_id: w for w in available_workers}
@@ -102,6 +126,8 @@ def choose_assignments(
                 reputation=worker.reputation,
                 bid=bid,
                 expected_cost=sub.expected_cost,
+                penalty_mode=penalty_mode,
+                penalty_fraction=penalty_fraction,
             )
             score = float(breakdown["score"])
             if score <= 0:
