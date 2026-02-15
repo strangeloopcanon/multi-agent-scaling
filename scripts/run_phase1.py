@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import shutil
 from datetime import UTC, datetime
@@ -113,8 +114,15 @@ def _maybe_run_solo(
                     raise SystemExit(f"solo run dir exists: {run_dir}")
                 shutil.rmtree(run_dir)
 
-            # Imported lazily so dry-run mode does not require scripts module resolution.
-            from scripts.run_phase2 import RunSpec, _run_one_spec
+            # Imported lazily from file path so this works in script execution mode.
+            spec_path = Path(__file__).resolve().parent / "run_phase2.py"
+            spec_obj = importlib.util.spec_from_file_location("_phase2_runner", spec_path)
+            if spec_obj is None or spec_obj.loader is None:
+                raise RuntimeError(f"unable to load phase2 runner from {spec_path}")
+            phase2_module = importlib.util.module_from_spec(spec_obj)
+            spec_obj.loader.exec_module(phase2_module)
+            RunSpec = getattr(phase2_module, "RunSpec")
+            run_one_spec = getattr(phase2_module, "_run_one_spec")
 
             spec = RunSpec(
                 benchmark=benchmark,
@@ -124,7 +132,7 @@ def _maybe_run_solo(
                 scenario_path=str(scenario_path),
                 model_ref=model_ref,
             )
-            _run_one_spec(
+            run_one_spec(
                 spec=spec,
                 run_dir=run_dir,
                 workers_path=workers_path,
