@@ -179,11 +179,28 @@ def _confidence_penalty_amount(
     return max(0, round(float(base_penalty) * max_multiplier * slope))
 
 
+def _direct_penalty_amount(
+    *,
+    bounty: int,
+    p_success: float,
+    policy: SettlementPolicy,
+) -> float:
+    p = max(0.0, min(1.0, float(p_success)))
+    return max(0.0, float(policy.penalty_fraction) * float(bounty) * (0.5 + p))
+
+
 def _score_snapshot_payload(*, breakdown: dict[str, float] | None) -> dict[str, object] | None:
     if not breakdown:
         return None
+    is_direct = bool(float(breakdown.get("mode_direct_penalty", 0.0)) > 0.0)
+    formula = (
+        "p_success*bounty - ask - expected_cost - (1-p_success)*expected_fail_penalty"
+        if is_direct
+        else "rep*p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty"
+    )
     return {
-        "formula": "rep*p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty",
+        "formula": formula,
+        "penalty_mode": "direct_penalty" if is_direct else "reputation",
         "components": {
             "bounty": float(breakdown.get("bounty", 0.0)),
             "reputation": float(breakdown.get("reputation", 0.0)),
@@ -191,6 +208,8 @@ def _score_snapshot_payload(*, breakdown: dict[str, float] | None) -> dict[str, 
             "ask": float(breakdown.get("ask", 0.0)),
             "expected_cost": float(breakdown.get("expected_cost", 0.0)),
             "failure_penalty": float(breakdown.get("failure_penalty", 0.0)),
+            "expected_fail_penalty": float(breakdown.get("expected_fail_penalty", 0.0)),
+            "penalty_fraction": float(breakdown.get("penalty_fraction", 0.0)),
             "score": float(breakdown.get("score", 0.0)),
         },
     }
@@ -645,13 +664,24 @@ class ClearinghouseEngine:
                 )
         elif outcome.status == VerifyStatus.FAIL:
             bounty = bounty_before
-            base_penalty = _penalty_amount(bounty=bounty, policy=self._settlement)
-            confidence_penalty = _confidence_penalty_amount(
-                base_penalty=base_penalty,
-                p_success=float(bid.self_assessed_p_success),
-                policy=self._settlement,
-            )
-            penalty = int(base_penalty + confidence_penalty)
+            if self._settlement.penalty_mode == "direct_penalty":
+                penalty = float(
+                    _direct_penalty_amount(
+                        bounty=bounty,
+                        p_success=float(bid.self_assessed_p_success),
+                        policy=self._settlement,
+                    )
+                )
+                base_penalty = penalty
+                confidence_penalty = 0.0
+            else:
+                base_penalty = _penalty_amount(bounty=bounty, policy=self._settlement)
+                confidence_penalty = _confidence_penalty_amount(
+                    base_penalty=base_penalty,
+                    p_success=float(bid.self_assessed_p_success),
+                    policy=self._settlement,
+                )
+                penalty = int(base_penalty + confidence_penalty)
             self._ledger.append(
                 EventType.PENALTY_APPLIED,
                 run_id=run_id,
@@ -667,6 +697,7 @@ class ClearinghouseEngine:
                     "confidence_penalty_floor": float(
                         getattr(self._settlement, "confidence_penalty_floor", 0.5)
                     ),
+                    "penalty_mode": str(self._settlement.penalty_mode),
                 },
             )
 
@@ -942,6 +973,8 @@ class ClearinghouseEngine:
                     ready_tasks=ready_tasks,
                     available_workers=available_workers,
                     bids_by_task=bids_by_task,
+                    penalty_mode=str(self._settlement.penalty_mode),
+                    penalty_fraction=float(self._settlement.penalty_fraction),
                 )
                 self._ledger.append(
                     EventType.MARKET_CLEARED,
@@ -981,6 +1014,8 @@ class ClearinghouseEngine:
                                 reputation=rep,
                                 bid=sub.bid,
                                 expected_cost=sub.expected_cost,
+                                penalty_mode=str(self._settlement.penalty_mode),
+                                penalty_fraction=float(self._settlement.penalty_fraction),
                             )
                             scores.append(float(score_info["score"]))
                         best_score = max(scores) if scores else None

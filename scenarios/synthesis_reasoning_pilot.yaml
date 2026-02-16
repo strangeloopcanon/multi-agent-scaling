@@ -1,0 +1,162 @@
+scenario_id: synthesis_reasoning_pilot
+title: "Synthesis/Reasoning pilot benchmark"
+template_dir: templates/synthesis_reasoning_pilot
+
+tasks:
+  - id: DR1
+    title: "Synthesize competing requirements"
+    description: |
+      You are given conflicting product requirements from engineering, design, and legal.
+      Produce a concise synthesis memo that:
+      - identifies hard constraints vs negotiable preferences
+      - proposes a staged implementation plan
+      - lists explicit open questions
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR2
+    title: "Failure-mode analysis"
+    description: |
+      Write a failure-mode analysis for a production API migration.
+      Include likely failure classes, detection signals, and rollback triggers.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR3
+    title: "Evidence-weighted recommendation"
+    description: |
+      Compare three implementation options and produce a recommendation with confidence.
+      The answer must separate observed evidence from inferred assumptions.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR4
+    title: "Root-cause hypothesis ranking"
+    description: |
+      Given an incident summary, propose top root-cause hypotheses and rank by plausibility.
+      Include what evidence would falsify each hypothesis.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR5
+    title: "Stakeholder communication draft"
+    description: |
+      Draft a technical update for executives and a separate one for engineering.
+      Both must remain factually aligned while varying level of abstraction.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR6
+    title: "Ambiguity resolution plan"
+    description: |
+      Turn an ambiguous bug report into an actionable execution plan with measurable checks.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR7
+    title: "Design tradeoff critique"
+    description: |
+      Critique an architecture decision using latency, reliability, and maintenance tradeoffs.
+      Conclude with a recommended default and exceptions policy.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR8
+    title: "Risk register generation"
+    description: |
+      Generate a risk register for launching a new ML feature in production.
+      Include severity, likelihood, owner role, and mitigation strategy.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR9
+    title: "Counterargument synthesis"
+    description: |
+      Write a primary recommendation and the strongest counterargument.
+      State what new evidence would change the recommendation.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR10
+    title: "Plan under uncertainty"
+    description: |
+      Propose a phased rollout strategy when key dependency timelines are unknown.
+      Include contingency branches for optimistic and pessimistic timelines.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR11
+    title: "Postmortem synthesis"
+    description: |
+      Summarize a complex postmortem into causes, corrective actions, and prevention controls.
+      Explicitly map each action to a failure mechanism.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./
+
+  - id: DR12
+    title: "Decision memo with assumptions"
+    description: |
+      Write a decision memo that clearly states assumptions, confidence levels, and monitoring.
+      Include one reversible decision and one irreversible decision.
+    deps: []
+    bounty: 45
+    verify_mode: judges
+    submission_kind: text
+    acceptance: []
+    allowed_paths:
+      - ./

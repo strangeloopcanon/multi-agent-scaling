@@ -39,15 +39,26 @@ def bid_prompt(
     payment_rule: PaymentRule,
     max_bids: int,
     discussion_history: list[DiscussionMessage],
+    penalty_mode: str = "reputation",
+    penalty_fraction: float = 0.10,
 ) -> str:
     lines: list[str] = []
     lines.append(
         "Submit bids (asks) for ready tasks. Bid only when you can deliver a passing result."
     )
-    lines.append(
-        "Clearing rule: score = rep*p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty, "
-        "where failure_penalty = 0.5*bounty*clamp((rep-0.5)/0.75, 0, 1). Bids with score <= 0 will not win."
-    )
+    if str(penalty_mode) == "direct_penalty":
+        lines.append("Settlement mode: direct_penalty")
+        lines.append(
+            "Clearing rule: score = p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty, "
+            f"where failure_penalty = {float(penalty_fraction):.3f}*bounty*(0.5 + p_success). "
+            "Reputation does not enter score in this mode. Bids with score <= 0 will not win."
+        )
+    else:
+        lines.append("Settlement mode: reputation")
+        lines.append(
+            "Clearing rule: score = rep*p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty, "
+            "where failure_penalty = 0.5*bounty*clamp((rep-0.5)/0.75, 0, 1). Bids with score <= 0 will not win."
+        )
     lines.append(
         "expected_cost is an estimate of your token cost based on model pricing and past runs, "
         "so keep your work lean and bid accordingly."

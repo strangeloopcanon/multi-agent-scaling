@@ -1,0 +1,6 @@
+Reference Notes
+===============
+
+- Good synthesis answers distinguish facts, assumptions, and tradeoffs.
+- Strong reasoning includes uncertainty handling and failure modes.
+- Evaluation prioritizes faithfulness to supplied context and explicit justification.

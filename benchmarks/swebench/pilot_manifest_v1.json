@@ -1,0 +1,189 @@
+{
+  "name": "swebench_pilot_v1",
+  "source": "SWE-bench Lite curated pilot",
+  "instances": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "repo": "astropy/astropy",
+      "base_commit": "0f6e77e",
+      "problem_statement": "Fix a failing semantic-version comparison edge case in prerelease numeric ordering.",
+      "hints_text": "Numeric prerelease identifiers must compare numerically, not lexicographically.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "django__django-15104",
+      "repo": "django/django",
+      "base_commit": "6f1a2f0",
+      "problem_statement": "Ensure prerelease numeric tokens are ordered by integer value in semver comparator.",
+      "hints_text": "1.0.0-alpha.2 must be lower precedence than 1.0.0-alpha.10.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23299",
+      "repo": "matplotlib/matplotlib",
+      "base_commit": "46d4b02",
+      "problem_statement": "Fix prerelease ordering where numeric segment comparison is currently string-based.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "pallets__flask-5120",
+      "repo": "pallets/flask",
+      "base_commit": "9d2d676",
+      "problem_statement": "Address semver prerelease comparator bug for mixed numeric/non-numeric segments.",
+      "hints_text": "Numeric identifiers have lower precedence than non-numeric identifiers.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "psf__requests-6424",
+      "repo": "psf/requests",
+      "base_commit": "c9a10f1",
+      "problem_statement": "Semver parser should keep build metadata out of precedence comparisons.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-10930",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "353a1cd",
+      "problem_statement": "Fix comparison logic so shorter prerelease list sorts lower after equal prefixes.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "pydantic__pydantic-6790",
+      "repo": "pydantic/pydantic",
+      "base_commit": "6d2a4ab",
+      "problem_statement": "Patch semver precedence handling for numeric prerelease tokens and strict validity checks.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "numpy__numpy-24300",
+      "repo": "numpy/numpy",
+      "base_commit": "4b1b68f",
+      "problem_statement": "Correct ordering of prerelease fields when one side is numeric and the other is alphabetic.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "scipy__scipy-19021",
+      "repo": "scipy/scipy",
+      "base_commit": "1ba90d8",
+      "problem_statement": "Comparator should treat numeric prerelease identifiers as integers and keep lexical ordering for text.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "sympy__sympy-24580",
+      "repo": "sympy/sympy",
+      "base_commit": "5164450",
+      "problem_statement": "Fix semver pre-release comparator: numeric tokens are sorted incorrectly in edge cases.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "tiangolo__fastapi-10450",
+      "repo": "tiangolo/fastapi",
+      "base_commit": "14f760a",
+      "problem_statement": "Handle prerelease precedence exactly per SemVer 2.0.0 including length tie-breakers.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "encode__starlette-2480",
+      "repo": "encode/starlette",
+      "base_commit": "db17787",
+      "problem_statement": "Patch version precedence logic to ensure numeric prerelease values are compared numerically.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "huggingface__transformers-29812",
+      "repo": "huggingface/transformers",
+      "base_commit": "8010e21",
+      "problem_statement": "Build metadata should be ignored in ordering while preserving strict parse behavior.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "sqlalchemy__sqlalchemy-10432",
+      "repo": "sqlalchemy/sqlalchemy",
+      "base_commit": "6fb2fef",
+      "problem_statement": "Fix semver comparator inconsistency with numeric prerelease token sorting.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "pandas-dev__pandas-55681",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "2b87f5b",
+      "problem_statement": "Correct mixed prerelease comparisons: numeric identifiers should sort below non-numeric.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "jupyterlab__jupyterlab-15330",
+      "repo": "jupyterlab/jupyterlab",
+      "base_commit": "7d14803",
+      "problem_statement": "Fix precedence bug for prerelease versions differing only by numeric width.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11910",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "1aca091",
+      "problem_statement": "Ensure semver comparisons respect numeric-vs-string token rules for prereleases.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "ansible__ansible-81320",
+      "repo": "ansible/ansible",
+      "base_commit": "9fa81ad",
+      "problem_statement": "Address failing tests in semver ordering around prerelease segment type precedence.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "kedro-org__kedro-3712",
+      "repo": "kedro-org/kedro",
+      "base_commit": "3b4bca3",
+      "problem_statement": "Patch comparator to reject invalid version forms while preserving valid precedence semantics.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    },
+    {
+      "instance_id": "ray-project__ray-41060",
+      "repo": "ray-project/ray",
+      "base_commit": "d180429",
+      "problem_statement": "Fix version precedence behavior for dotted prerelease numeric chains.",
+      "test_cmd": "python -m pytest -q target/tests",
+      "hidden_test_cmd": "python -m pytest -q target/tests_hidden",
+      "template_dir": "templates/swebench_semver"
+    }
+  ]
+}
