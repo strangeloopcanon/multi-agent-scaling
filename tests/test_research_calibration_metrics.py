@@ -47,6 +47,7 @@ def test_summarize_calibration_by_model_and_strategy() -> None:
             "strategy": "direct",
             "p_success": 0.9,
             "outcome": 1,
+            "estimated_tokens_total": 500,
             "input_tokens": 100,
             "output_tokens": 20,
         },
@@ -55,6 +56,7 @@ def test_summarize_calibration_by_model_and_strategy() -> None:
             "strategy": "anchored",
             "p_success": 0.4,
             "outcome": 0,
+            "estimated_tokens_total": 700,
             "input_tokens": 120,
             "output_tokens": 25,
         },
@@ -63,6 +65,7 @@ def test_summarize_calibration_by_model_and_strategy() -> None:
             "strategy": "direct",
             "p_success": 0.7,
             "outcome": 1,
+            "estimated_tokens_total": 400,
             "input_tokens": 110,
             "output_tokens": 30,
         },
@@ -70,6 +73,9 @@ def test_summarize_calibration_by_model_and_strategy() -> None:
 
     summary = summarize_calibration(rows)
     assert summary["overall"]["count"] == 3
+    assert summary["overall"]["estimated_tokens_count"] == 3
+    assert summary["overall"]["mean_estimated_tokens_total"] == pytest.approx((500 + 700 + 400) / 3)
+    assert summary["overall"]["p50_estimated_tokens_total"] == pytest.approx(500)
     assert "openai:gpt-5-mini" in summary["by_model"]
     assert "openai:gpt-5.2" in summary["by_model"]
     assert "openai:gpt-5-mini::direct" in summary["by_model_strategy"]

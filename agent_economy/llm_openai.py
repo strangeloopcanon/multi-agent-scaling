@@ -45,6 +45,19 @@ def _resolve_max_retries(*, requested: int, env_retries_raw: str | None) -> int:
     return max_retries
 
 
+def _resolve_timeout_seconds(*, env_timeout_raw: str | None, default: float = 300.0) -> float:
+    raw = str(env_timeout_raw or "").strip()
+    if not raw:
+        return float(default)
+    try:
+        timeout_s = float(raw)
+    except Exception as e:
+        raise ValueError("AE_OPENAI_TIMEOUT_S/INST_OPENAI_TIMEOUT_S must be a number") from e
+    if timeout_s <= 0:
+        raise ValueError("AE_OPENAI_TIMEOUT_S/INST_OPENAI_TIMEOUT_S must be > 0")
+    return timeout_s
+
+
 def _status_code_from_error(err: Exception) -> int | None:
     raw = getattr(err, "status_code", None)
     if raw is None:
@@ -95,8 +108,10 @@ class OpenAIJSONClient:
         api_key: str,
         base_url: str | None,
     ) -> None:
-        # Explicitly disable timeouts: long-running model calls are allowed.
-        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=None)
+        timeout_s = _resolve_timeout_seconds(
+            env_timeout_raw=(os.getenv("AE_OPENAI_TIMEOUT_S") or os.getenv("INST_OPENAI_TIMEOUT_S"))
+        )
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout_s)
         self._no_temperature: set[str] = set()
         self._no_reasoning: set[str] = set()
         self._no_text_verbosity: set[str] = set()
@@ -169,18 +184,139 @@ class OpenAIJSONClient:
         text_verbosity: str | None = None,
         max_retries: int = 3,
     ) -> tuple[BaseModel, Usage, str]:
-        text, usage = self.call_text(
-            model=model,
-            system=system,
-            user=user,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-            reasoning_effort=reasoning_effort,
-            text_verbosity=text_verbosity,
-            max_retries=max_retries,
+        max_retries = _resolve_max_retries(
+            requested=max_retries,
+            env_retries_raw=(
+                os.getenv("AE_OPENAI_MAX_RETRIES") or os.getenv("INST_OPENAI_MAX_RETRIES")
+            ),
         )
-        parsed = extract_json_object(text)
-        return schema.model_validate(parsed), usage, text
+
+        last_err: Exception | None = None
+        total_calls = 0
+        total_input_tokens = 0
+        total_output_tokens = 0
+
+        for attempt in range(max_retries):
+            try:
+                parsed_obj, usage, text = self._call_json_once(
+                    model=model,
+                    system=system,
+                    user=user,
+                    schema=schema,
+                    temperature=temperature,
+                    max_output_tokens=max_output_tokens,
+                    reasoning_effort=reasoning_effort,
+                    text_verbosity=text_verbosity,
+                )
+                total_calls += usage.calls
+                total_input_tokens += usage.input_tokens
+                total_output_tokens += usage.output_tokens
+
+                if isinstance(parsed_obj, BaseModel):
+                    parsed_model = parsed_obj
+                else:
+                    parsed_model = schema.model_validate(parsed_obj)
+                return (
+                    parsed_model,
+                    Usage(
+                        calls=total_calls,
+                        input_tokens=total_input_tokens,
+                        output_tokens=total_output_tokens,
+                    ),
+                    text,
+                )
+            except BadRequestError as e:
+                msg = str(e)
+                if "Unsupported parameter" in msg and "temperature" in msg:
+                    self._no_temperature.add(model)
+                    continue
+                if "Unsupported parameter" in msg and (
+                    "reasoning" in msg or "reasoning.effort" in msg
+                ):
+                    self._no_reasoning.add(model)
+                    continue
+                if (
+                    "Unsupported parameter" in msg and ("text" in msg or "text.verbosity" in msg)
+                ) or ("text.verbosity" in msg):
+                    self._no_text_verbosity.add(model)
+                    continue
+                # Fallback: older models/endpoints where parse mode may be unavailable.
+                text, usage = self.call_text(
+                    model=model,
+                    system=system,
+                    user=user,
+                    temperature=temperature,
+                    max_output_tokens=max_output_tokens,
+                    reasoning_effort=reasoning_effort,
+                    text_verbosity=text_verbosity,
+                    max_retries=max_retries,
+                )
+                parsed = extract_json_object(text)
+                return schema.model_validate(parsed), usage, text
+            except Exception as e:
+                if isinstance(e, ValueError) and "no JSON object found in response" in str(e):
+                    last_err = e
+                    if attempt == max_retries - 1:
+                        # Final fallback for occasional format misses.
+                        text, usage = self.call_text(
+                            model=model,
+                            system=system,
+                            user=user,
+                            temperature=temperature,
+                            max_output_tokens=max_output_tokens,
+                            reasoning_effort=reasoning_effort,
+                            text_verbosity=text_verbosity,
+                            max_retries=1,
+                        )
+                        parsed = extract_json_object(text)
+                        return schema.model_validate(parsed), usage, text
+                    time.sleep(0.5 * (2**attempt) + random.random() * 0.2)
+                    continue
+                if not _is_transient_error(e):
+                    raise
+                last_err = e
+                if attempt == max_retries - 1:
+                    break
+                time.sleep(0.5 * (2**attempt) + random.random() * 0.2)
+
+        raise RuntimeError(
+            f"OpenAI transient JSON request failed after {max_retries} attempts: {last_err}"
+        ) from last_err
+
+    def _call_json_once(
+        self,
+        *,
+        model: str,
+        system: str,
+        user: str,
+        schema: type[BaseModel],
+        temperature: float,
+        max_output_tokens: int,
+        reasoning_effort: str | None,
+        text_verbosity: str | None,
+    ) -> tuple[Any, Usage, str]:
+        params: dict[str, Any] = {
+            "model": model,
+            "input": [
+                {"role": "system", "content": [{"type": "input_text", "text": system}]},
+                {"role": "user", "content": [{"type": "input_text", "text": user}]},
+            ],
+            "max_output_tokens": max_output_tokens,
+        }
+        if model not in self._no_temperature:
+            params["temperature"] = temperature
+        if reasoning_effort and model not in self._no_reasoning:
+            params["reasoning"] = {"effort": reasoning_effort}
+        if text_verbosity and model not in self._no_text_verbosity:
+            params["text"] = {"verbosity": text_verbosity}
+
+        resp = self._client.responses.parse(text_format=schema, **params)
+        usage = _usage_from_response(resp)
+        text = str(getattr(resp, "output_text", "") or "")
+        parsed = getattr(resp, "output_parsed", None)
+        if parsed is None:
+            parsed = extract_json_object(text)
+        return parsed, usage, text
 
     def _call_text_once(
         self,

@@ -18,6 +18,21 @@ def _as_int(value: Any, *, default: int = 0) -> int:
         return int(default)
 
 
+def _percentile(values: list[int], p: float) -> float:
+    if not values:
+        return 0.0
+    if p <= 0:
+        return float(min(values))
+    if p >= 100:
+        return float(max(values))
+    ordered = sorted(values)
+    rank = (len(ordered) - 1) * (p / 100.0)
+    lo = int(rank)
+    hi = min(lo + 1, len(ordered) - 1)
+    frac = rank - lo
+    return float(ordered[lo] * (1.0 - frac) + ordered[hi] * frac)
+
+
 def _valid_rows(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for row in records:
@@ -110,6 +125,11 @@ def summarize_calibration(records: list[dict[str, Any]], *, num_bins: int = 10) 
                 "ece": 0.0,
                 "mean_input_tokens": 0.0,
                 "mean_output_tokens": 0.0,
+                "estimated_tokens_count": 0,
+                "mean_estimated_tokens_total": 0.0,
+                "p50_estimated_tokens_total": 0.0,
+                "p90_estimated_tokens_total": 0.0,
+                "p95_estimated_tokens_total": 0.0,
             },
             "by_model": {},
             "by_model_strategy": {},
@@ -118,6 +138,12 @@ def summarize_calibration(records: list[dict[str, Any]], *, num_bins: int = 10) 
     def summarize_subset(subset: list[dict[str, Any]]) -> dict[str, Any]:
         count = len(subset)
         acc = sum(int(r["outcome"]) for r in subset) / count
+        estimated_tokens = [
+            _as_int(r.get("estimated_tokens_total"), default=0)
+            for r in subset
+            if r.get("estimated_tokens_total") is not None
+        ]
+        estimated_count = len(estimated_tokens)
         return {
             "count": count,
             "accuracy": acc,
@@ -127,6 +153,13 @@ def summarize_calibration(records: list[dict[str, Any]], *, num_bins: int = 10) 
             / count,
             "mean_output_tokens": sum(_as_int(r.get("output_tokens"), default=0) for r in subset)
             / count,
+            "estimated_tokens_count": estimated_count,
+            "mean_estimated_tokens_total": (
+                sum(estimated_tokens) / estimated_count if estimated_count > 0 else 0.0
+            ),
+            "p50_estimated_tokens_total": _percentile(estimated_tokens, 50),
+            "p90_estimated_tokens_total": _percentile(estimated_tokens, 90),
+            "p95_estimated_tokens_total": _percentile(estimated_tokens, 95),
         }
 
     by_model_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)

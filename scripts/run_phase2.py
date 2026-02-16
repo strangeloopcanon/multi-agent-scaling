@@ -35,16 +35,16 @@ from agent_economy.worker_mux import MultiplexBidder, MultiplexExecutor
 
 
 DEFAULT_MODELS = [
-    "openai:gpt-5-mini",
-    "openai:gpt-5.2",
-    "openai:gpt-5.2-pro",
-    "openai:gpt-4o",
-    "anthropic:claude-sonnet-4-5",
-    "google:gemini-2.5-pro",
+    "openai:gpt-5-mini-2025-08-07",
+    "openai:gpt-5.2-2025-12-11",
+    "openai:gpt-5.2-pro-2025-12-11",
+    "anthropic:claude-sonnet-4-5-20250929",
+    "anthropic:claude-opus-4-5-20251101",
+    "google:models/gemini-3-pro-preview",
 ]
 
 DEFAULT_SCENARIOS = {
-    "swebench": Path("scenarios/swebench_semver_bug.yaml"),
+    "swebench": Path("scenarios/swebench_pilot_v1.yaml"),
     "synthesis": Path("scenarios/synthesis_reasoning_pilot.yaml"),
 }
 
@@ -193,6 +193,8 @@ def _run_one_spec(
         llm=llm,
         payment_rule=replay_ledger(events=list(ledger.iter_events())).payment_rule,
         max_bids=2,
+        penalty_mode=settlement.penalty_mode,
+        penalty_fraction=settlement.penalty_fraction,
     )
     model_executor = OpenAIExecutor(
         llm=llm,

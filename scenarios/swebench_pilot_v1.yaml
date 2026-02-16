@@ -1,0 +1,505 @@
+scenario_id: swebench_pilot_v1
+title: SWE-bench pilot subset (20 tasks)
+template_dir: templates/swebench_semver
+tasks:
+- id: T1_astropy_astropy_12907
+  title: 'SWE-bench fix: astropy__astropy-12907'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: astropy/astropy
+
+    Base commit: 0f6e77e
+
+
+    Problem statement:
+
+    Fix a failing semantic-version comparison edge case in prerelease numeric ordering.
+
+
+    Hints:
+
+    Numeric prerelease identifiers must compare numerically, not lexicographically.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T2_django_django_15104
+  title: 'SWE-bench fix: django__django-15104'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: django/django
+
+    Base commit: 6f1a2f0
+
+
+    Problem statement:
+
+    Ensure prerelease numeric tokens are ordered by integer value in semver comparator.
+
+
+    Hints:
+
+    1.0.0-alpha.2 must be lower precedence than 1.0.0-alpha.10.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T3_matplotlib_matplotlib_23299
+  title: 'SWE-bench fix: matplotlib__matplotlib-23299'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: matplotlib/matplotlib
+
+    Base commit: 46d4b02
+
+
+    Problem statement:
+
+    Fix prerelease ordering where numeric segment comparison is currently string-based.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T4_pallets_flask_5120
+  title: 'SWE-bench fix: pallets__flask-5120'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: pallets/flask
+
+    Base commit: 9d2d676
+
+
+    Problem statement:
+
+    Address semver prerelease comparator bug for mixed numeric/non-numeric segments.
+
+
+    Hints:
+
+    Numeric identifiers have lower precedence than non-numeric identifiers.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T5_psf_requests_6424
+  title: 'SWE-bench fix: psf__requests-6424'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: psf/requests
+
+    Base commit: c9a10f1
+
+
+    Problem statement:
+
+    Semver parser should keep build metadata out of precedence comparisons.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T6_pytest_dev_pytest_10930
+  title: 'SWE-bench fix: pytest-dev__pytest-10930'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: pytest-dev/pytest
+
+    Base commit: 353a1cd
+
+
+    Problem statement:
+
+    Fix comparison logic so shorter prerelease list sorts lower after equal prefixes.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T7_pydantic_pydantic_6790
+  title: 'SWE-bench fix: pydantic__pydantic-6790'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: pydantic/pydantic
+
+    Base commit: 6d2a4ab
+
+
+    Problem statement:
+
+    Patch semver precedence handling for numeric prerelease tokens and strict validity
+    checks.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T8_numpy_numpy_24300
+  title: 'SWE-bench fix: numpy__numpy-24300'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: numpy/numpy
+
+    Base commit: 4b1b68f
+
+
+    Problem statement:
+
+    Correct ordering of prerelease fields when one side is numeric and the other is
+    alphabetic.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T9_scipy_scipy_19021
+  title: 'SWE-bench fix: scipy__scipy-19021'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: scipy/scipy
+
+    Base commit: 1ba90d8
+
+
+    Problem statement:
+
+    Comparator should treat numeric prerelease identifiers as integers and keep lexical
+    ordering for text.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T10_sympy_sympy_24580
+  title: 'SWE-bench fix: sympy__sympy-24580'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: sympy/sympy
+
+    Base commit: 5164450
+
+
+    Problem statement:
+
+    Fix semver pre-release comparator: numeric tokens are sorted incorrectly in edge
+    cases.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T11_tiangolo_fastapi_10450
+  title: 'SWE-bench fix: tiangolo__fastapi-10450'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: tiangolo/fastapi
+
+    Base commit: 14f760a
+
+
+    Problem statement:
+
+    Handle prerelease precedence exactly per SemVer 2.0.0 including length tie-breakers.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T12_encode_starlette_2480
+  title: 'SWE-bench fix: encode__starlette-2480'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: encode/starlette
+
+    Base commit: db17787
+
+
+    Problem statement:
+
+    Patch version precedence logic to ensure numeric prerelease values are compared
+    numerically.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T13_huggingface_transformers_29812
+  title: 'SWE-bench fix: huggingface__transformers-29812'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: huggingface/transformers
+
+    Base commit: 8010e21
+
+
+    Problem statement:
+
+    Build metadata should be ignored in ordering while preserving strict parse behavior.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T14_sqlalchemy_sqlalchemy_10432
+  title: 'SWE-bench fix: sqlalchemy__sqlalchemy-10432'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: sqlalchemy/sqlalchemy
+
+    Base commit: 6fb2fef
+
+
+    Problem statement:
+
+    Fix semver comparator inconsistency with numeric prerelease token sorting.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T15_pandas_dev_pandas_55681
+  title: 'SWE-bench fix: pandas-dev__pandas-55681'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: pandas-dev/pandas
+
+    Base commit: 2b87f5b
+
+
+    Problem statement:
+
+    Correct mixed prerelease comparisons: numeric identifiers should sort below non-numeric.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T16_jupyterlab_jupyterlab_15330
+  title: 'SWE-bench fix: jupyterlab__jupyterlab-15330'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: jupyterlab/jupyterlab
+
+    Base commit: 7d14803
+
+
+    Problem statement:
+
+    Fix precedence bug for prerelease versions differing only by numeric width.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T17_sphinx_doc_sphinx_11910
+  title: 'SWE-bench fix: sphinx-doc__sphinx-11910'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: sphinx-doc/sphinx
+
+    Base commit: 1aca091
+
+
+    Problem statement:
+
+    Ensure semver comparisons respect numeric-vs-string token rules for prereleases.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T18_ansible_ansible_81320
+  title: 'SWE-bench fix: ansible__ansible-81320'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: ansible/ansible
+
+    Base commit: 9fa81ad
+
+
+    Problem statement:
+
+    Address failing tests in semver ordering around prerelease segment type precedence.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T19_kedro_org_kedro_3712
+  title: 'SWE-bench fix: kedro-org__kedro-3712'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: kedro-org/kedro
+
+    Base commit: 3b4bca3
+
+
+    Problem statement:
+
+    Patch comparator to reject invalid version forms while preserving valid precedence
+    semantics.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []
+- id: T20_ray_project_ray_41060
+  title: 'SWE-bench fix: ray-project__ray-41060'
+  description: 'You are fixing a SWE-bench issue.
+
+
+    Repository: ray-project/ray
+
+    Base commit: d180429
+
+
+    Problem statement:
+
+    Fix version precedence behavior for dotted prerelease numeric chains.'
+  deps: []
+  bounty: 90
+  max_attempts: 3
+  verify_mode: commands
+  acceptance:
+  - python -m pytest -q target/tests
+  hidden_acceptance:
+  - python -m pytest -q target/tests_hidden
+  allowed_paths:
+  - ./
+  files_hint: []

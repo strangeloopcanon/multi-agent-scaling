@@ -15,6 +15,7 @@ class PromptStrategy(str, Enum):
 
 class CalibrationResponse(BaseModel):
     p_success: float = Field(ge=0.0, le=1.0)
+    estimated_tokens_total: int = Field(ge=0)
     rationale: str | None = None
 
 
@@ -24,6 +25,7 @@ class CalibrationRecord(BaseModel):
     model_ref: str
     strategy: PromptStrategy
     p_success: float = Field(ge=0.0, le=1.0)
+    estimated_tokens_total: int | None = Field(default=None, ge=0)
     outcome: int | None = Field(default=None, ge=0, le=1)
     input_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)
@@ -40,7 +42,8 @@ def build_calibration_prompt(
 ) -> str:
     lines = [
         "Estimate the probability that you could complete this task correctly in one attempt.",
-        "Return JSON only with fields: p_success (0..1), rationale.",
+        "Return JSON only with fields: p_success (0..1), estimated_tokens_total "
+        "(total model tokens for one full solve attempt), rationale (optional).",
         "",
         f"Task ID: {task_id}",
         f"Title: {task_title}",
@@ -78,7 +81,7 @@ def elicit_calibration(
     task_description: str,
     acceptance_commands: list[str],
     strategy: PromptStrategy,
-    max_output_tokens: int = 500,
+    max_output_tokens: int = 1200,
 ) -> CalibrationRecord:
     system = "You are a calibration evaluator. Output strict JSON only."
     user = build_calibration_prompt(
@@ -102,6 +105,7 @@ def elicit_calibration(
         model_ref=model_ref,
         strategy=strategy,
         p_success=float(response.p_success),
+        estimated_tokens_total=int(response.estimated_tokens_total),
         input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
         output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
         rationale=response.rationale,

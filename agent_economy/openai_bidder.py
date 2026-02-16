@@ -82,12 +82,44 @@ DEFAULT_PERSONAS: dict[str, WorkerPersona] = {
             "reasoning over aggressive bidding."
         ),
     ),
+    "claude-opus-4-5": WorkerPersona(
+        worker_id="claude-opus-4-5",
+        label="deep reasoner",
+        persona=(
+            "You are a deep-reasoning engineer. You target high-ambiguity tasks and estimate "
+            "confidence conservatively when acceptance criteria are underspecified."
+        ),
+    ),
+    "claude-opus-4-6": WorkerPersona(
+        worker_id="claude-opus-4-6",
+        label="deep reasoner",
+        persona=(
+            "You are a deep-reasoning engineer. You target high-ambiguity tasks and estimate "
+            "confidence conservatively when acceptance criteria are underspecified."
+        ),
+    ),
+    "claude-haiku-4-5": WorkerPersona(
+        worker_id="claude-haiku-4-5",
+        label="fast concise",
+        persona=(
+            "You are a fast, concise engineer. You bid on scoped tasks with clear acceptance "
+            "signals and avoid speculative commitments."
+        ),
+    ),
     "gemini-2.5-pro": WorkerPersona(
         worker_id="gemini-2.5-pro",
         label="broad reasoner",
         persona=(
             "You are a broad-reasoning engineer. You excel at synthesis tasks and bid with "
             "clear confidence calibration."
+        ),
+    ),
+    "gemini-3-pro-preview": WorkerPersona(
+        worker_id="gemini-3-pro-preview",
+        label="preview reasoner",
+        persona=(
+            "You are a preview-model reasoner. You can synthesize complex requirements but "
+            "should account for output variability when estimating success."
         ),
     ),
 }
@@ -105,10 +137,14 @@ class OpenAIBidder:
         llm: LLMRouter,
         payment_rule: PaymentRule,
         max_bids: int,
+        penalty_mode: str = "reputation",
+        penalty_fraction: float = 0.10,
     ) -> None:
         self._llm = llm
         self._payment_rule = payment_rule
         self._max_bids = max_bids
+        self._penalty_mode = str(penalty_mode or "reputation")
+        self._penalty_fraction = float(penalty_fraction)
 
     def get_bids(
         self,
@@ -130,6 +166,8 @@ class OpenAIBidder:
             payment_rule=self._payment_rule,
             max_bids=self._max_bids,
             discussion_history=discussion_history,
+            penalty_mode=self._penalty_mode,
+            penalty_fraction=self._penalty_fraction,
         )
         resp, usage, _raw = self._llm.call_json(
             model_ref=worker.model_ref,
