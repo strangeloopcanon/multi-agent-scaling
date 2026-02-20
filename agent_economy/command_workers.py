@@ -39,7 +39,12 @@ from agent_economy.submission import (
     persist_submission,
     submission_media_type,
 )
-from agent_economy.verify import CommandResult, all_passed, run_commands
+from agent_economy.verify import (
+    classify_command_status,
+    CommandResult,
+    compact_verification_summary,
+    run_commands,
+)
 from agent_economy.worker_specs import CommandWorkerSpec
 from agent_economy.worker_refs import resolve_worker_refs
 
@@ -433,6 +438,7 @@ class CommandExecutor:
         public: list[CommandResult] = []
         hidden: list[CommandResult] = []
         status = VerifyStatus.PASS
+        verification_summary: str | None = None
 
         if task.verify_mode == VerifyMode.MANUAL:
             if task.acceptance:
@@ -449,12 +455,7 @@ class CommandExecutor:
                     cwd=work_dir,
                     scrub_secrets=self._settings.scrub_secrets_in_verification,
                 )
-                if not all_passed(public):
-                    status = (
-                        VerifyStatus.TIMEOUT
-                        if any(r.timed_out for r in public)
-                        else VerifyStatus.FAIL
-                    )
+                status = classify_command_status(commands=list(task.acceptance), results=public)
 
             if status == VerifyStatus.PASS and task.hidden_acceptance:
                 hidden = run_commands(
@@ -462,12 +463,13 @@ class CommandExecutor:
                     cwd=work_dir,
                     scrub_secrets=self._settings.scrub_secrets_in_verification,
                 )
-                if not all_passed(hidden):
-                    status = (
-                        VerifyStatus.TIMEOUT
-                        if any(r.timed_out for r in hidden)
-                        else VerifyStatus.FAIL
-                    )
+                status = classify_command_status(
+                    commands=list(task.hidden_acceptance),
+                    results=hidden,
+                )
+
+            if status in {VerifyStatus.FAIL, VerifyStatus.TIMEOUT, VerifyStatus.INFRA}:
+                verification_summary = compact_verification_summary(public=public, hidden=hidden)
 
         verify_path = sandbox_dir / "verify.json"
         write_command_results_json(verify_path, public=public, hidden=hidden)
@@ -607,6 +609,8 @@ class CommandExecutor:
             sandbox_rel=sandbox_rel,
             patch_kind=patch_kind,
             submission_kind=task.submission_kind,
+            submission_preview=submission_text_for_judges,
+            verification_summary=verification_summary,
         )
 
     def integrate(

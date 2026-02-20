@@ -1,0 +1,314 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+DEFAULT_DATASET_NAME = "princeton-nlp/SWE-bench_Lite"
+DEFAULT_SPLIT = "test"
+
+
+@dataclass(frozen=True)
+class HarnessEvalResult:
+    completed: bool
+    resolved: bool
+    report_path: str | None
+    run_id: str
+    returncode: int
+    notes: str | None = None
+
+
+def _safe_token(value: str) -> str:
+    out = "".join(ch if (ch.isalnum() or ch in "-_.") else "_" for ch in value.strip())
+    return out or "task"
+
+
+def _build_run_id(*, prefix: str, instance_id: str, patch_text: str | None, gold: bool) -> str:
+    tag = "gold" if gold else hashlib.sha256((patch_text or "").encode("utf-8")).hexdigest()[:10]
+    return f"{_safe_token(prefix)}_{_safe_token(instance_id)}_{tag}"
+
+
+def _load_report(*, work_dir: Path, run_id: str) -> tuple[dict, Path] | tuple[None, None]:
+    wd = Path(work_dir)
+    search_roots = [
+        wd / "logs" / "run_evaluation" / run_id,
+        wd / run_id,
+        wd,
+    ]
+    for root in search_roots:
+        if not root.is_dir():
+            continue
+        reports = sorted(root.glob("**/report.json"))
+        for report_path in reports:
+            try:
+                payload = json.loads(report_path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if isinstance(payload, dict):
+                return payload, report_path
+    return None, None
+
+
+def _load_summary(*, work_dir: Path, run_id: str) -> tuple[dict, Path] | tuple[None, None]:
+    wd = Path(work_dir)
+    seen: set[Path] = set()
+    candidates = [wd / f"agent-economy-market.{run_id}.json", *sorted(wd.glob(f"*.{run_id}.json"))]
+    for summary_path in candidates:
+        if summary_path in seen:
+            continue
+        seen.add(summary_path)
+        if not summary_path.is_file():
+            continue
+        try:
+            payload = json.loads(summary_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(payload, dict):
+            return payload, summary_path
+    return None, None
+
+
+def _summary_ids(*, summary: dict, key: str) -> set[str]:
+    raw = summary.get(key)
+    if not isinstance(raw, list):
+        return set()
+    out: set[str] = set()
+    for item in raw:
+        value = str(item).strip()
+        if value:
+            out.add(value)
+    return out
+
+
+def _resolved_from_report(*, report: dict, instance_id: str) -> bool:
+    row = report.get(instance_id)
+    if isinstance(row, dict):
+        return bool(row.get("resolved"))
+    return False
+
+
+def evaluate_with_harness(
+    *,
+    instance_id: str,
+    dataset_name: str,
+    split: str,
+    timeout_sec: int,
+    work_dir: Path,
+    run_id_prefix: str,
+    patch_text: str | None = None,
+    gold: bool = False,
+) -> HarnessEvalResult:
+    run_id = _build_run_id(
+        prefix=run_id_prefix, instance_id=instance_id, patch_text=patch_text, gold=gold
+    )
+
+    predictions_path = "gold"
+    predictions_file: Path | None = None
+    if not gold:
+        if patch_text is None:
+            return HarnessEvalResult(
+                completed=False,
+                resolved=False,
+                report_path=None,
+                run_id=run_id,
+                returncode=2,
+                notes="missing_patch_text",
+            )
+        predictions_file = Path(work_dir) / f"predictions_{_safe_token(instance_id)}.jsonl"
+        prediction = {
+            "instance_id": instance_id,
+            "model_name_or_path": "agent-economy-market",
+            "model_patch": patch_text,
+        }
+        predictions_file.write_text(
+            json.dumps(prediction, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        predictions_path = str(predictions_file)
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "swebench.harness.run_evaluation",
+        "-d",
+        dataset_name,
+        "-s",
+        split,
+        "-i",
+        instance_id,
+        "-p",
+        predictions_path,
+        "--max_workers",
+        "1",
+        "-t",
+        str(int(timeout_sec)),
+        "--force_rebuild",
+        "false",
+        "--cache_level",
+        "env",
+        "--clean",
+        "false",
+        "-id",
+        run_id,
+        "-n",
+        "swebench",
+        "--instance_image_tag",
+        "latest",
+        "--env_image_tag",
+        "latest",
+        "--rewrite_reports",
+        "false",
+        "--report_dir",
+        ".",
+        "--modal",
+        "false",
+    ]
+
+    proc = subprocess.run(
+        cmd,
+        cwd=work_dir,
+        text=True,
+        capture_output=True,
+    )
+
+    result_path = Path(work_dir) / f"harness_{_safe_token(run_id)}.json"
+    result_path.write_text(
+        json.dumps(
+            {
+                "cmd": cmd,
+                "returncode": int(proc.returncode),
+                "stdout": proc.stdout,
+                "stderr": proc.stderr,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report, report_path = _load_report(work_dir=work_dir, run_id=run_id)
+    if proc.returncode != 0:
+        return HarnessEvalResult(
+            completed=False,
+            resolved=False,
+            report_path=None if report_path is None else str(report_path),
+            run_id=run_id,
+            returncode=int(proc.returncode),
+            notes="harness_failed",
+        )
+
+    if report is None:
+        summary, summary_path = _load_summary(work_dir=work_dir, run_id=run_id)
+        if summary is not None:
+            resolved_ids = _summary_ids(summary=summary, key="resolved_ids")
+            unresolved_ids = _summary_ids(summary=summary, key="unresolved_ids")
+            error_ids = _summary_ids(summary=summary, key="error_ids")
+            incomplete_ids = _summary_ids(summary=summary, key="incomplete_ids")
+
+            if instance_id in resolved_ids:
+                return HarnessEvalResult(
+                    completed=True,
+                    resolved=True,
+                    report_path=str(summary_path),
+                    run_id=run_id,
+                    returncode=0,
+                    notes=None,
+                )
+            if instance_id in unresolved_ids:
+                return HarnessEvalResult(
+                    completed=True,
+                    resolved=False,
+                    report_path=str(summary_path),
+                    run_id=run_id,
+                    returncode=1,
+                    notes=None,
+                )
+            if instance_id in error_ids or instance_id in incomplete_ids:
+                return HarnessEvalResult(
+                    completed=False,
+                    resolved=False,
+                    report_path=str(summary_path),
+                    run_id=run_id,
+                    returncode=2,
+                    notes="evaluation_error",
+                )
+
+        return HarnessEvalResult(
+            completed=False,
+            resolved=False,
+            report_path=None if report_path is None else str(report_path),
+            run_id=run_id,
+            returncode=2,
+            notes="missing_report",
+        )
+
+    resolved = _resolved_from_report(report=report, instance_id=instance_id)
+    return HarnessEvalResult(
+        completed=True,
+        resolved=resolved,
+        report_path=str(report_path) if report_path else None,
+        run_id=run_id,
+        returncode=0,
+        notes=None,
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Evaluate a SWE-bench instance patch via official harness"
+    )
+    parser.add_argument("--instance-id", required=True)
+    parser.add_argument("--patch-file", type=Path, default=None)
+    parser.add_argument("--gold", action="store_true")
+    parser.add_argument("--dataset-name", default=DEFAULT_DATASET_NAME)
+    parser.add_argument("--split", default=DEFAULT_SPLIT)
+    parser.add_argument("--timeout-sec", type=int, default=1800)
+    parser.add_argument("--run-id-prefix", default="ae_phase2")
+    args = parser.parse_args()
+
+    if not args.gold and args.patch_file is None:
+        raise SystemExit("--patch-file is required unless --gold is set")
+
+    patch_text = None
+    if args.patch_file is not None:
+        patch_text = Path(args.patch_file).read_text(encoding="utf-8")
+
+    result = evaluate_with_harness(
+        instance_id=str(args.instance_id),
+        dataset_name=str(args.dataset_name),
+        split=str(args.split),
+        timeout_sec=int(args.timeout_sec),
+        work_dir=Path.cwd(),
+        run_id_prefix=str(args.run_id_prefix),
+        patch_text=patch_text,
+        gold=bool(args.gold),
+    )
+
+    print(
+        json.dumps(
+            {
+                "instance_id": str(args.instance_id),
+                "completed": bool(result.completed),
+                "resolved": bool(result.resolved),
+                "report_path": result.report_path,
+                "run_id": result.run_id,
+                "returncode": int(result.returncode),
+                "notes": result.notes,
+            },
+            ensure_ascii=False,
+        )
+    )
+
+    if not result.completed:
+        raise SystemExit(2)
+    if not result.resolved:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

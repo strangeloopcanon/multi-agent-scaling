@@ -217,7 +217,7 @@ class TestE2EFullMarketRun:
         ledger = HashChainedLedger(tmp_path / "ledger.jsonl")
         engine = ClearinghouseEngine(
             ledger=ledger,
-            settings=EngineSettings(max_concurrency=1),
+            settings=EngineSettings(max_concurrency=1, exclude_failed_workers=False),
         )
 
         engine.create_run(

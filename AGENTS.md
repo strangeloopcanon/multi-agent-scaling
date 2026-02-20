@@ -149,6 +149,10 @@ Keep thresholds/knobs in repo root; defaults: baseline mode, coverage 0.80, LLM 
 - Makefile/justfile with Interface Contract targets.  
 - Python: `pyproject.toml`, `requirements*.txt`, `.gitignore`, pre-commit + commitlint.  
 
+## Experiment notes
+
+Running observations and consolidated findings from research runs live under `docs/research/report/` (with older scratch notes archived under `docs/research/archive/`). When you run experiments, complete benchmark evaluations, or observe anything notable about market behaviour (allocation quirks, scoring anomalies, surprising results), add a dated note in the report set (or append to archived notes if you're preserving raw chronology). Keep entries concise: what happened, the data, and why it matters.
+
 ## Additional notes
 - Large model downloads happen on first run; document cache locations/quotas.  
 - Default backend should include MLX via mlx-genkit and PyTorch; guard behind flags.  

@@ -32,12 +32,12 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
 
     total_input_tokens = 0
     total_output_tokens = 0
-    total_penalty = 0.0
-    fail_penalty = 0.0
+
+    penalties_by_reason: dict[str, float] = defaultdict(float)
+    penalties_by_worker: dict[str, float] = defaultdict(float)
 
     wins_by_worker: dict[str, int] = defaultdict(int)
     completions_by_worker: dict[str, int] = defaultdict(int)
-    penalties_by_worker: dict[str, float] = defaultdict(float)
     usage_by_worker: dict[str, dict[str, int]] = defaultdict(
         lambda: {"calls": 0, "input_tokens": 0, "output_tokens": 0}
     )
@@ -72,10 +72,8 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
         if event.type == EventType.PENALTY_APPLIED:
             worker_id = str(payload.get("worker_id") or "")
             amount = _as_float(payload.get("amount"), default=0.0)
-            reason = str(payload.get("reason") or "")
-            total_penalty += amount
-            if reason == "verification_fail":
-                fail_penalty += amount
+            reason = str(payload.get("reason") or "unknown")
+            penalties_by_reason[reason] += amount
             if worker_id:
                 penalties_by_worker[worker_id] += amount
 
@@ -83,6 +81,12 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
     tasks_done = sum(1 for task in state.tasks.values() if task.status == "DONE")
     pass_rate = (tasks_done / tasks_total) if tasks_total > 0 else 0.0
     total_tokens = total_input_tokens + total_output_tokens
+
+    total_penalty = sum(penalties_by_reason.values())
+    usage_cost_total = penalties_by_reason.get("usage_cost", 0.0) + penalties_by_reason.get(
+        "bid_usage_cost", 0.0
+    )
+    verification_fail_penalty_total = penalties_by_reason.get("verification_fail", 0.0)
 
     per_worker: list[dict[str, Any]] = []
     total_wins = sum(wins_by_worker.values())
@@ -104,7 +108,7 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
             }
         )
 
-    result = {
+    result: dict[str, Any] = {
         "run_dir": str(run_dir),
         "run_id": state.run_id,
         "rounds": int(state.round_id),
@@ -118,9 +122,14 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
         },
         "penalties": {
             "total": total_penalty,
-            "verification_fail": fail_penalty,
+            "verification_fail": verification_fail_penalty_total,
+            "usage_cost": penalties_by_reason.get("usage_cost", 0.0),
+            "bid_usage_cost": penalties_by_reason.get("bid_usage_cost", 0.0),
+            "by_reason": dict(sorted(penalties_by_reason.items())),
         },
-        "cost_per_pass": (total_penalty / tasks_done) if tasks_done > 0 else 0.0,
+        "usage_cost_total": usage_cost_total,
+        "verification_fail_penalty_total": verification_fail_penalty_total,
+        "cost_per_pass": (usage_cost_total / tasks_done) if tasks_done > 0 else 0.0,
         "tokens_per_pass": (total_tokens / tasks_done) if tasks_done > 0 else 0.0,
         "workers": per_worker,
     }
@@ -132,6 +141,11 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
             result["config"] = {
                 "scenario_path": cfg.get("scenario_path"),
                 "payment_rule": cfg.get("payment_rule"),
+                "mode": cfg.get("mode"),
+                "settlement_mode": cfg.get("settlement_mode"),
+                "benchmark": cfg.get("benchmark"),
+                "repeat": cfg.get("repeat"),
+                "model_ref": cfg.get("model_ref"),
             }
         except Exception:
             pass

@@ -15,7 +15,7 @@ from openai import (
     OpenAI,
     RateLimitError,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from agent_economy.json_extract import extract_json_object
 
@@ -254,7 +254,10 @@ class OpenAIJSONClient:
                 parsed = extract_json_object(text)
                 return schema.model_validate(parsed), usage, text
             except Exception as e:
-                if isinstance(e, ValueError) and "no JSON object found in response" in str(e):
+                is_parse_error = isinstance(e, ValidationError) or (
+                    isinstance(e, ValueError) and "no JSON object found in response" in str(e)
+                )
+                if is_parse_error:
                     last_err = e
                     if attempt == max_retries - 1:
                         # Final fallback for occasional format misses.

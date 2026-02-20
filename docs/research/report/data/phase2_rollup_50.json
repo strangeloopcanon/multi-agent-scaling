@@ -1,0 +1,130 @@
+{
+  "task_count": 50,
+  "market": {
+    "passes": 29,
+    "rate": 0.58,
+    "status_counts": {
+      "FAIL": 18,
+      "PASS": 29,
+      "INFRA": 3
+    }
+  },
+  "external_by_model": {
+    "openai:gpt-5.2-2025-12-11": {
+      "tasks": 50,
+      "passes": 37,
+      "rate": 0.74
+    },
+    "openai:gpt-5.2-pro-2025-12-11": {
+      "tasks": 50,
+      "passes": 35,
+      "rate": 0.7
+    },
+    "openai:gpt-5-mini-2025-08-07": {
+      "tasks": 50,
+      "passes": 30,
+      "rate": 0.6
+    },
+    "anthropic:claude-sonnet-4-5-20250929": {
+      "tasks": 50,
+      "passes": 31,
+      "rate": 0.62
+    },
+    "anthropic:claude-opus-4-5-20251101": {
+      "tasks": 50,
+      "passes": 33,
+      "rate": 0.66
+    },
+    "google:models/gemini-3-pro-preview": {
+      "tasks": 50,
+      "passes": 33,
+      "rate": 0.66
+    }
+  },
+  "external_oracle": {
+    "passes": 42,
+    "rate": 0.84
+  },
+  "allocation_diagnostics": {
+    "bid_totals": {
+      "total_bid_items": 460,
+      "total_fallback_bid_items": 18,
+      "fallback_rate": 0.0391304347826087,
+      "total_bid_errors": 18,
+      "error_counts": {
+        "bidder_timeout_after_s=90": 11,
+        "ValueError: no JSON object found in response": 7
+      },
+      "mean_bidders_per_round": 5.609756097560975,
+      "mean_bidders_round1": 6.0
+    },
+    "by_model": {
+      "anthropic:claude-opus-4-5-20251101": {
+        "wins": 4,
+        "passes": 2,
+        "win_conversion": 0.5,
+        "bid_items": 82,
+        "fallback_bid_items": 0,
+        "fallback_rate": 0.0,
+        "bid_errors": 0
+      },
+      "anthropic:claude-sonnet-4-5-20250929": {
+        "wins": 1,
+        "passes": 0,
+        "win_conversion": 0.0,
+        "bid_items": 81,
+        "fallback_bid_items": 0,
+        "fallback_rate": 0.0,
+        "bid_errors": 0
+      },
+      "google:models/gemini-3-pro-preview": {
+        "wins": 42,
+        "passes": 21,
+        "win_conversion": 0.5,
+        "bid_items": 65,
+        "fallback_bid_items": 8,
+        "fallback_rate": 0.12307692307692308,
+        "bid_errors": 8
+      },
+      "openai:gpt-5-mini-2025-08-07": {
+        "wins": 20,
+        "passes": 2,
+        "win_conversion": 0.1,
+        "bid_items": 72,
+        "fallback_bid_items": 8,
+        "fallback_rate": 0.1111111111111111,
+        "bid_errors": 8
+      },
+      "openai:gpt-5.2-2025-12-11": {
+        "wins": 9,
+        "passes": 3,
+        "win_conversion": 0.3333333333333333,
+        "bid_items": 78,
+        "fallback_bid_items": 0,
+        "fallback_rate": 0.0,
+        "bid_errors": 0
+      },
+      "openai:gpt-5.2-pro-2025-12-11": {
+        "wins": 6,
+        "passes": 1,
+        "win_conversion": 0.16666666666666666,
+        "bid_items": 82,
+        "fallback_bid_items": 2,
+        "fallback_rate": 0.024390243902439025,
+        "bid_errors": 2
+      }
+    }
+  },
+  "notes": {
+    "run_components": [
+      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/gateB10_exclfix_t900_20260218T190909Z",
+      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/next20_market_20260219T074528Z",
+      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/next20_contiguous_market_20260219T183750Z"
+    ],
+    "this_run_replacement": {
+      "replaced_instance_id": "sphinx-doc__sphinx-8595",
+      "replacement_instance_id": "django__django-12708",
+      "reason": "deterministic strict preflight failure on gold patch"
+    }
+  }
+}

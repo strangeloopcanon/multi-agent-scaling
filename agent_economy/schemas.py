@@ -97,6 +97,7 @@ class CommandSpec(BaseModel):
     name: str | None = None
     env: dict[str, str] = Field(default_factory=dict)
     expect_exit_codes: list[int] = Field(default_factory=lambda: [0])
+    infra_exit_codes: list[int] = Field(default_factory=list)
 
     @field_validator("cmd")
     @classmethod
@@ -104,6 +105,35 @@ class CommandSpec(BaseModel):
         if not v.strip():
             raise ValueError("cmd must be a non-empty string")
         return v
+
+    @field_validator("expect_exit_codes", "infra_exit_codes", mode="before")
+    @classmethod
+    def _coerce_exit_codes(cls, v: Any) -> Any:
+        if v is None:
+            return []
+        if isinstance(v, (int, float, str)):
+            v = [v]
+        if not isinstance(v, list):
+            return v
+        out: list[int] = []
+        seen: set[int] = set()
+        for raw in v:
+            try:
+                code = int(raw)
+            except Exception:
+                continue
+            if code in seen:
+                continue
+            seen.add(code)
+            out.append(code)
+        return out
+
+    @model_validator(mode="after")
+    def _validate_exit_code_sets(self) -> "CommandSpec":
+        overlap = set(self.expect_exit_codes) & set(self.infra_exit_codes)
+        if overlap:
+            raise ValueError("expect_exit_codes and infra_exit_codes must be disjoint")
+        return self
 
 
 class ContextSpec(BaseModel):

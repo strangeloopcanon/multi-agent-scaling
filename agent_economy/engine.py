@@ -67,7 +67,9 @@ class ExecutionOutcome:
     sandbox_rel: str | None = None
     patch_kind: str | None = None
     submission_kind: SubmissionKind | None = None
+    submission_preview: str | None = None
     llm_usage: dict[str, int] | None = None
+    verification_summary: str | None = None
 
     def with_status(self, status: VerifyStatus, notes: str | None = None) -> ExecutionOutcome:
         """Return a copy with a different status (and optionally notes)."""
@@ -80,7 +82,9 @@ class ExecutionOutcome:
             sandbox_rel=self.sandbox_rel,
             patch_kind=self.patch_kind,
             submission_kind=self.submission_kind,
+            submission_preview=self.submission_preview,
             llm_usage=self.llm_usage,
+            verification_summary=self.verification_summary,
         )
 
     @property
@@ -146,6 +150,8 @@ def _ready_task_ids(*, task_specs: dict[str, TaskSpec], tasks: dict[str, TaskRun
         spec = task_specs.get(tid)
         if spec is None:
             continue
+        if int(rt.fail_count) >= int(spec.max_attempts):
+            continue
         if all(dep in done for dep in spec.deps):
             ready.append(tid)
     return sorted(ready)
@@ -193,11 +199,14 @@ def _score_snapshot_payload(*, breakdown: dict[str, float] | None) -> dict[str, 
     if not breakdown:
         return None
     is_direct = bool(float(breakdown.get("mode_direct_penalty", 0.0)) > 0.0)
+    has_retry_penalty = float(breakdown.get("retry_score_penalty", 0.0)) > 0.0
     formula = (
         "p_success*bounty - ask - expected_cost - (1-p_success)*expected_fail_penalty"
         if is_direct
         else "rep*p_success*bounty - ask - expected_cost - (1-p_success)*failure_penalty"
     )
+    if has_retry_penalty:
+        formula = f"{formula} - retry_score_penalty"
     return {
         "formula": formula,
         "penalty_mode": "direct_penalty" if is_direct else "reputation",
@@ -210,13 +219,119 @@ def _score_snapshot_payload(*, breakdown: dict[str, float] | None) -> dict[str, 
             "failure_penalty": float(breakdown.get("failure_penalty", 0.0)),
             "expected_fail_penalty": float(breakdown.get("expected_fail_penalty", 0.0)),
             "penalty_fraction": float(breakdown.get("penalty_fraction", 0.0)),
+            "score_before_retry_penalty": float(breakdown.get("score_before_retry_penalty", 0.0)),
+            "retry_score_penalty": float(breakdown.get("retry_score_penalty", 0.0)),
             "score": float(breakdown.get("score", 0.0)),
         },
     }
 
 
+def _clamp_probability(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
+
+
+def _default_forced_bid(*, task_id: str, bounty: int) -> Bid:
+    return Bid(
+        task_id=str(task_id),
+        ask=max(1, int(round(float(bounty) * 0.40))),
+        self_assessed_p_success=0.50,
+        eta_minutes=90,
+        notes="engine_fallback_forced_bid",
+    )
+
+
+def _retry_penalty_by_pair(
+    *,
+    events: Sequence,
+    policy: SettlementPolicy,
+) -> dict[tuple[str, str], float]:
+    fraction = max(0.0, float(getattr(policy, "retry_score_penalty_fraction", 0.0) or 0.0))
+    if fraction <= 0.0:
+        return {}
+
+    penalties: dict[tuple[str, str], float] = {}
+    for event in events:
+        if getattr(event, "type", None) != EventType.TASK_COMPLETED:
+            continue
+        payload = getattr(event, "payload", {}) or {}
+        if str(payload.get("verify_status") or "") != VerifyStatus.FAIL.value:
+            continue
+
+        task_id = str(payload.get("task_id") or "").strip()
+        worker_id = str(payload.get("worker_id") or "").strip()
+        if not task_id or not worker_id:
+            continue
+
+        bid_payload = payload.get("bid") if isinstance(payload.get("bid"), dict) else {}
+        p_success = _clamp_probability(
+            float((bid_payload or {}).get("self_assessed_p_success", 0.0) or 0.0)
+        )
+        bounty = max(0.0, float(payload.get("bounty_current") or 0.0))
+        if bounty <= 0.0:
+            continue
+
+        key = (task_id, worker_id)
+        penalties[key] = float(penalties.get(key, 0.0) + (fraction * bounty * p_success))
+
+    return penalties
+
+
+def _failed_task_worker_pairs(*, events: Sequence) -> set[tuple[str, str]]:
+    excluded_statuses = {
+        VerifyStatus.FAIL.value,
+        VerifyStatus.INFRA.value,
+        VerifyStatus.TIMEOUT.value,
+        VerifyStatus.FLAKE_SUSPECTED.value,
+    }
+    pairs: set[tuple[str, str]] = set()
+    for event in events:
+        if getattr(event, "type", None) != EventType.TASK_COMPLETED:
+            continue
+        payload = getattr(event, "payload", {}) or {}
+        if str(payload.get("verify_status") or "").strip() not in excluded_statuses:
+            continue
+        task_id = str(payload.get("task_id") or "").strip()
+        worker_id = str(payload.get("worker_id") or "").strip()
+        if task_id and worker_id:
+            pairs.add((task_id, worker_id))
+    return pairs
+
+
+def _worker_market_context_lines(
+    *,
+    worker: WorkerRuntime,
+    ready_views: Sequence[ReadyTask],
+    round_id: int,
+    cost_estimator: CostEstimator | None,
+) -> list[str]:
+    lines: list[str] = []
+    for ready in ready_views:
+        task_id = str(ready.spec.id)
+        expected_cost_hint = 0.0
+        if cost_estimator is not None:
+            try:
+                expected_cost_hint = float(
+                    cost_estimator.expected_cost(
+                        worker=worker,
+                        task=ready.spec,
+                        bid=_default_forced_bid(
+                            task_id=task_id, bounty=int(ready.runtime.bounty_current)
+                        ),
+                        round_id=int(round_id),
+                    )
+                )
+            except Exception:
+                expected_cost_hint = 0.0
+        lines.append(f"- {task_id}: expected_cost_hint≈{expected_cost_hint:.2f}")
+    return lines
+
+
 def _infra_outcome(notes: str) -> ExecutionOutcome:
     return ExecutionOutcome(status=VerifyStatus.INFRA, notes=notes)
+
+
+def _timeout_outcome(notes: str) -> ExecutionOutcome:
+    return ExecutionOutcome(status=VerifyStatus.FAIL, notes=notes)
 
 
 def _load_task_specs_from_events(*, events: Iterable) -> dict[str, TaskSpec]:
@@ -263,6 +378,22 @@ class EngineSettings:
     max_bids_per_worker: int = 2
     bid_timeout_seconds: float | None = 30.0
     execution_timeout_seconds: float | None = 300.0
+    # Apply passing patches into the shared run workspace.
+    # Disable for isolated single-task runs that do not require downstream state.
+    integrate_on_pass: bool = True
+    # If enabled, successful text/json submissions are posted to the public
+    # discussion board so downstream subtasks can reuse the output.
+    publish_successful_submission_to_discussion: bool = False
+    # When True, wait for all in-flight bidder calls (or timeout) before
+    # clearing the market for the current ready task set.
+    require_bid_barrier: bool = False
+    # When True, synthesize conservative fallback bids for ready tasks when
+    # a worker returns no valid bids.
+    force_bid_for_ready_tasks: bool = False
+    # When True, workers that previously FAILED a task are excluded from
+    # rebidding on that same task. Guarantees a different model on retry.
+    # Keep default off for core engine compatibility; research runners opt in.
+    exclude_failed_workers: bool = False
 
     # Cost can be added later; keep API stable now.
     cost_weight: float = 0.0
@@ -504,7 +635,7 @@ class ClearinghouseEngine:
             int(bounty_before) if state.payment_rule == PaymentRule.BOUNTY else int(bid.ask)
         )
 
-        if outcome.status == VerifyStatus.PASS:
+        if outcome.status == VerifyStatus.PASS and self._settings.integrate_on_pass:
             integrate_fn = getattr(executor, "integrate", None)
             if callable(integrate_fn):
                 try:
@@ -637,8 +768,54 @@ class ClearinghouseEngine:
                     None if award_expected_cost is None else float(award_expected_cost)
                 ),
                 "award_score_snapshot": _score_snapshot_payload(breakdown=award_score_breakdown),
+                "verification_summary": outcome.verification_summary,
             },
         )
+
+        if (
+            outcome.status == VerifyStatus.PASS
+            and self._settings.publish_successful_submission_to_discussion
+            and outcome.submission_kind in {SubmissionKind.TEXT, SubmissionKind.JSON}
+        ):
+            submission_text = str(outcome.submission_preview or "").strip()
+            if len(submission_text) > 2000:
+                submission_text = submission_text[:1985] + "...[truncated]"
+            if submission_text:
+                self._ledger.append(
+                    EventType.DISCUSSION_POST,
+                    run_id=run_id,
+                    round_id=round_id,
+                    payload={
+                        "sender": worker_id,
+                        "message": (
+                            f"[Task {task_id} completed] {outcome.submission_kind.value} output:\n"
+                            f"{submission_text}"
+                        ),
+                    },
+                )
+
+        feedback = str(outcome.verification_summary or "").strip()
+        if len(feedback) > 2000:
+            feedback = feedback[:1985] + "...[truncated]"
+        if (not feedback) and outcome.status in {
+            VerifyStatus.FAIL,
+            VerifyStatus.TIMEOUT,
+            VerifyStatus.INFRA,
+        }:
+            feedback = str(outcome.notes or "").strip()
+        if feedback and outcome.status != VerifyStatus.PASS:
+            self._ledger.append(
+                EventType.DISCUSSION_POST,
+                run_id=run_id,
+                round_id=round_id,
+                payload={
+                    "sender": "system",
+                    "message": (
+                        f"[Prior attempt context for {task_id}] "
+                        f"Issues observed during verification:\n{feedback}"
+                    ),
+                },
+            )
 
         if outcome.status == VerifyStatus.PASS:
             bounty = bounty_before
@@ -760,11 +937,20 @@ class ClearinghouseEngine:
 
             state = replay_ledger(events=events, settlement=self._settlement)
             task_specs = _load_task_specs_from_events(events=events)
+            excluded_pairs: set[tuple[str, str]] = (
+                _failed_task_worker_pairs(events=events)
+                if self._settings.exclude_failed_workers
+                else set()
+            )
 
             round_id = state.round_id
             run_id = state.run_id
 
             did_any = False
+            # In bid-barrier mode we intentionally keep the round open while
+            # collecting bids from all workers. In legacy mode, preserve the
+            # previous behavior where any activity advances the round.
+            did_round_advance = not self._settings.require_bid_barrier
 
             # Finalize any completed executions.
             for task_id, inflight in list(self._inflight_exec.items()):
@@ -779,7 +965,7 @@ class ClearinghouseEngine:
                     inflight.future.cancel()
                     timeout_seconds = self._settings.execution_timeout_seconds
                     timeout_s = 0.0 if timeout_seconds is None else float(timeout_seconds)
-                    outcome = _infra_outcome(f"executor_timeout_after_s={timeout_s:g}")
+                    outcome = _timeout_outcome(f"executor_timeout_after_s={timeout_s:g}")
                 else:
                     try:
                         outcome = inflight.future.result()
@@ -801,6 +987,7 @@ class ClearinghouseEngine:
                     outcome=outcome,
                 )
                 did_any = True
+                did_round_advance = True
 
             # Finalize any completed bid fetches.
             for worker_id, inflight in list(self._inflight_bids.items()):
@@ -836,6 +1023,26 @@ class ClearinghouseEngine:
                         except Exception:
                             continue
                 bids = list(bids)[: self._settings.max_bids_per_worker]
+                if self._settings.force_bid_for_ready_tasks:
+                    ready_now = _ready_task_ids(task_specs=task_specs, tasks=state.tasks)
+                    seen_task_ids = {b.task_id for b in bids}
+                    for task_id in ready_now:
+                        if len(bids) >= self._settings.max_bids_per_worker:
+                            break
+                        if task_id in seen_task_ids:
+                            continue
+                        if (task_id, worker_id) in excluded_pairs:
+                            continue
+                        task_rt = state.tasks.get(task_id)
+                        if task_rt is None:
+                            continue
+                        bids.append(
+                            _default_forced_bid(
+                                task_id=task_id,
+                                bounty=int(task_rt.bounty_current),
+                            )
+                        )
+                        seen_task_ids.add(task_id)
 
                 self._ledger.append(
                     EventType.BID_SUBMITTED,
@@ -901,15 +1108,51 @@ class ClearinghouseEngine:
                 for tid in ready_ids
                 if tid in task_specs and tid in state.tasks
             ]
+            worker_ready_views: dict[str, list[ReadyTask]] = {
+                w.worker_id: [
+                    rv
+                    for rv in ready_views
+                    if (str(rv.spec.id), str(w.worker_id)) not in excluded_pairs
+                ]
+                for w in available_workers
+            }
+            retry_penalty_pairs = _retry_penalty_by_pair(events=events, policy=self._settlement)
+
+            set_prompt_context = getattr(bidder, "set_worker_prompt_context", None)
+            if callable(set_prompt_context):
+                for worker in available_workers:
+                    try:
+                        context_lines = _worker_market_context_lines(
+                            worker=worker,
+                            ready_views=worker_ready_views.get(worker.worker_id, []),
+                            round_id=int(round_id),
+                            cost_estimator=cost_estimator,
+                        )
+                        set_prompt_context(worker=worker, context_lines=context_lines)
+                    except Exception:
+                        continue
 
             # Start bid fetches for idle workers that don't have cached bids yet.
-            if ready_views:
+            #
+            # In bid-barrier mode, once any worker has produced bids for the current
+            # ready set, freeze new fetches until the round clears. This prevents a
+            # perpetual "one cached + one in-flight" cycle that can starve market
+            # clearing when workers have different response latencies.
+            has_any_cached_for_ready = any(
+                w.worker_id in self._bid_cache for w in available_workers
+            )
+            can_start_fetches = True
+            if self._settings.require_bid_barrier and has_any_cached_for_ready:
+                can_start_fetches = False
+
+            if ready_views and can_start_fetches:
 
                 def _fetch_bids(worker: WorkerRuntime) -> tuple[BidResult, str | None]:
+                    scoped_ready = worker_ready_views.get(worker.worker_id, [])
                     try:
                         resp = bidder.get_bids(
                             worker=worker,
-                            ready_tasks=ready_views,
+                            ready_tasks=scoped_ready,
                             round_id=round_id,
                             discussion_history=state.discussion_history,
                         )
@@ -922,6 +1165,9 @@ class ClearinghouseEngine:
                         continue
                     if w.worker_id in self._inflight_bids:
                         continue
+                    if not worker_ready_views.get(w.worker_id):
+                        self._bid_cache.pop(w.worker_id, None)
+                        continue
 
                     fut = self._bid_pool.submit(_fetch_bids, w)
                     self._inflight_bids[w.worker_id] = _InflightBid(
@@ -931,7 +1177,14 @@ class ClearinghouseEngine:
 
             slots = max(0, int(self._settings.max_concurrency) - len(self._inflight_exec))
             has_any_cached = any(w.worker_id in self._bid_cache for w in available_workers)
-            if slots > 0 and ready_ids and available_workers and has_any_cached:
+            has_pending_inflight_bids = any(
+                w.worker_id in self._inflight_bids for w in available_workers
+            )
+            can_clear_market = has_any_cached
+            if self._settings.require_bid_barrier and has_pending_inflight_bids:
+                can_clear_market = False
+
+            if slots > 0 and ready_ids and available_workers and can_clear_market:
                 bids_by_task: dict[str, list[BidSubmission]] = {tid: [] for tid in ready_ids}
                 any_bid_for_task: dict[str, bool] = {tid: False for tid in ready_ids}
 
@@ -945,6 +1198,8 @@ class ClearinghouseEngine:
                             continue
                         seen.add(bid.task_id)
                         if bid.task_id not in bids_by_task:
+                            continue
+                        if (bid.task_id, w.worker_id) in excluded_pairs:
                             continue
                         expected_cost = 0.0
                         if cost_estimator is not None and bid.task_id in task_specs:
@@ -975,6 +1230,8 @@ class ClearinghouseEngine:
                     bids_by_task=bids_by_task,
                     penalty_mode=str(self._settlement.penalty_mode),
                     penalty_fraction=float(self._settlement.penalty_fraction),
+                    retry_penalty_by_pair=retry_penalty_pairs,
+                    excluded_pairs=excluded_pairs,
                 )
                 self._ledger.append(
                     EventType.MARKET_CLEARED,
@@ -997,6 +1254,7 @@ class ClearinghouseEngine:
                     },
                 )
                 did_any = True
+                did_round_advance = True
 
                 assigned_task_ids = {a.task_id for a in assignments}
                 for tid in ready_ids:
@@ -1017,7 +1275,10 @@ class ClearinghouseEngine:
                                 penalty_mode=str(self._settlement.penalty_mode),
                                 penalty_fraction=float(self._settlement.penalty_fraction),
                             )
-                            scores.append(float(score_info["score"]))
+                            retry_penalty = float(
+                                retry_penalty_pairs.get((tid, sub.worker_id), 0.0)
+                            )
+                            scores.append(float(score_info["score"]) - retry_penalty)
                         best_score = max(scores) if scores else None
                     if (not had_any) or (best_score is None) or (best_score <= 0):
                         new_bounty = _bump_bounty(task=task)
@@ -1032,6 +1293,7 @@ class ClearinghouseEngine:
                                     "reason": "no_winning_bids",
                                 },
                             )
+                            did_round_advance = True
 
                 def _run_execute(
                     cur_worker: WorkerRuntime,
@@ -1092,15 +1354,21 @@ class ClearinghouseEngine:
                     )
 
             if did_any:
-                self._ledger.append(
-                    EventType.ROUND_ADVANCED,
-                    run_id=run_id,
-                    round_id=round_id + 1,
-                    payload={"round_id": round_id + 1},
-                )
-                self._ledger.verify_chain()
-                # Keep bidding responsive to bounty adjustments / new ready tasks.
-                self._bid_cache.clear()
+                if did_round_advance:
+                    self._ledger.append(
+                        EventType.ROUND_ADVANCED,
+                        run_id=run_id,
+                        round_id=round_id + 1,
+                        payload={"round_id": round_id + 1},
+                    )
+                    self._ledger.verify_chain()
+                    # Keep bidding responsive to bounty adjustments / new ready tasks.
+                    # Bids captured for the previous round should never leak into the next
+                    # round's market clearing.
+                    for inflight in self._inflight_bids.values():
+                        inflight.future.cancel()
+                    self._inflight_bids.clear()
+                    self._bid_cache.clear()
                 return
 
             inflight: list[Future[object]] = []

@@ -38,6 +38,11 @@ class SettlementPolicy:
     # direct_penalty removes reputation from bid scoring and uses a
     # direct fail-penalty model based on bounty + reported confidence.
     penalty_mode: Literal["reputation", "direct_penalty"] = "reputation"
+    # Optional task-local retry handicap used during market clearing:
+    # each prior FAIL by the same worker on the same task contributes
+    # retry_score_penalty_fraction * bounty_at_fail * reported_p_success.
+    # 0.0 keeps existing behavior.
+    retry_score_penalty_fraction: float = 0.0
 
     # Trigger plan revision after a task fails this many times (0 = disabled).
     replan_fail_threshold: int = 3

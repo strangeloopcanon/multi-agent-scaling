@@ -107,6 +107,7 @@ def load_scenario(path: Path) -> ScenarioSpec:
             description=str(raw.get("description") or ""),
             deps=[str(d) for d in (raw.get("deps") or [])],
             bounty=int(raw.get("bounty") or 1),
+            max_attempts=int(raw.get("max_attempts") or 3),
             verify_mode=verify_mode,
             submission_kind=str(raw.get("submission_kind") or "patch"),
             acceptance=_parse_commands(raw.get("acceptance")),

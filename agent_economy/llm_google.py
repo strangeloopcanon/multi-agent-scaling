@@ -100,6 +100,26 @@ def _thinking_config_for_model(model: str) -> types.ThinkingConfig | None:
     return None
 
 
+def _text_config_for_model(
+    *,
+    model: str,
+    system: str,
+    temperature: float,
+    max_output_tokens: int,
+) -> types.GenerateContentConfig:
+    # Gemini 3 models can drift into malformed tool-calling even when we are
+    # asking for plain text patches. Disable automatic function calling and
+    # force text output for deterministic patch generation.
+    return types.GenerateContentConfig(
+        system_instruction=system,
+        temperature=float(temperature),
+        max_output_tokens=int(max_output_tokens),
+        response_mime_type="text/plain",
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        thinking_config=_thinking_config_for_model(model),
+    )
+
+
 class GoogleJSONClient:
     def __init__(self, *, api_key: str) -> None:
         self._client = genai.Client(api_key=api_key)
@@ -270,10 +290,11 @@ class GoogleJSONClient:
         temperature: float,
         max_output_tokens: int,
     ) -> tuple[str, Usage]:
-        cfg = types.GenerateContentConfig(
-            system_instruction=system,
-            temperature=float(temperature),
-            max_output_tokens=int(max_output_tokens),
+        cfg = _text_config_for_model(
+            model=model,
+            system=system,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
         )
         resp = self._client.models.generate_content(
             model=model,

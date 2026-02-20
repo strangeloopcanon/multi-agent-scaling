@@ -11,6 +11,13 @@ from agent_economy.schemas import (
 from agent_economy.submission import submission_workspace_relpath
 
 
+def _is_swebench_patch_task(*, task: ReadyTask) -> bool:
+    for cmd in task.spec.acceptance:
+        if "agent_economy.research.swebench_eval" in cmd.cmd or "swebench" in cmd.cmd.lower():
+            return True
+    return False
+
+
 def system_prompt(*, worker: WorkerRuntime, persona: str | None = None) -> str:
     persona_text = persona or "You are an autonomous software agent."
     return "\n".join(
@@ -41,11 +48,18 @@ def bid_prompt(
     discussion_history: list[DiscussionMessage],
     penalty_mode: str = "reputation",
     penalty_fraction: float = 0.10,
+    force_bid_for_ready_tasks: bool = False,
+    retry_score_penalty_fraction: float = 0.0,
+    worker_market_context_lines: list[str] | None = None,
 ) -> str:
     lines: list[str] = []
-    lines.append(
-        "Submit bids (asks) for ready tasks. Bid only when you can deliver a passing result."
-    )
+    if force_bid_for_ready_tasks:
+        lines.append("Submit bids (asks) for ready tasks. Do not return an empty bids array.")
+        lines.append("If uncertain, submit conservative bids with lower p_success and higher ask.")
+    else:
+        lines.append(
+            "Submit bids (asks) for ready tasks. Bid only when you can deliver a passing result."
+        )
     if str(penalty_mode) == "direct_penalty":
         lines.append("Settlement mode: direct_penalty")
         lines.append(
@@ -75,11 +89,26 @@ def bid_prompt(
     lines.append(
         "- Overconfident failures are penalized more: higher reported p_success increases fail penalties."
     )
+    lines.append("- Workers who previously failed a task cannot bid on it again.")
+    if float(retry_score_penalty_fraction) > 0:
+        lines.append("- Retry adjustment: adjusted_score = base_score - retry_score_penalty.")
+        lines.append(
+            "- retry_score_penalty accumulates per task+worker on prior FAIL outcomes as "
+            f"{float(retry_score_penalty_fraction):.3f} * bounty_at_fail * reported_p_success."
+        )
     lines.append(
         "- For judges verification, part of payout is held back until the whole run completes."
     )
     lines.append(f"Constraints: at most {max_bids} bids this round.")
     lines.append("")
+
+    if worker_market_context_lines:
+        lines.append("Private Market Context (only for your bidding):")
+        for item in worker_market_context_lines:
+            line = str(item).strip()
+            if line:
+                lines.append(line)
+        lines.append("")
 
     if discussion_history:
         lines.append("Public Discussion Board:")
@@ -129,6 +158,7 @@ def patch_prompt(
     discussion_history: list[DiscussionMessage],
 ) -> str:
     spec = task.spec
+    swebench_mode = _is_swebench_patch_task(task=task)
     lines: list[str] = []
     lines.append("You are assigned a task. Produce a patch that passes verification.")
     lines.append(
@@ -137,15 +167,26 @@ def patch_prompt(
     )
     lines.append("")
     lines.append("Patch output format:")
-    lines.append("- Prefer one or more full-file blocks (most robust):")
-    lines.append("  BEGIN_FILE <relative_path>")
-    lines.append("  <full file contents>")
-    lines.append("  END_FILE")
-    lines.append("- Alternatively, you may output a unified diff that starts with 'diff --git',")
-    lines.append("  but only if you are confident it will apply cleanly via `git apply`.")
-    lines.append(
-        "  If you use a diff, include full file headers for every file (no patch fragments)."
-    )
+    if swebench_mode:
+        lines.append("- Preferred: a unified diff starting with 'diff --git'.")
+        lines.append("  Include complete diff headers and hunks for every changed file.")
+        lines.append("- Alternative (if you are unsure about exact context lines):")
+        lines.append("  Use full-file blocks instead:")
+        lines.append("  BEGIN_FILE <relative_path>")
+        lines.append("  <full file contents>")
+        lines.append("  END_FILE")
+    else:
+        lines.append("- Prefer one or more full-file blocks (most robust):")
+        lines.append("  BEGIN_FILE <relative_path>")
+        lines.append("  <full file contents>")
+        lines.append("  END_FILE")
+        lines.append(
+            "- Alternatively, you may output a unified diff that starts with 'diff --git',"
+        )
+        lines.append("  but only if you are confident it will apply cleanly via `git apply`.")
+        lines.append(
+            "  If you use a diff, include full file headers for every file (no patch fragments)."
+        )
     lines.append("Do not wrap the patch in JSON. Do not use markdown fences.")
     lines.append("")
     lines.append(f"Task: {spec.id} — {spec.title}")
@@ -181,7 +222,10 @@ def patch_prompt(
     for path in sorted(files.keys()):
         lines.append(f"\n--- FILE: {path} ---\n{files[path]}")
     lines.append("")
-    lines.append("Output the patch now (BEGIN_FILE blocks preferred) and nothing else.")
+    if swebench_mode:
+        lines.append("Output your patch now and nothing else.")
+    else:
+        lines.append("Output the patch now (BEGIN_FILE blocks preferred) and nothing else.")
     return "\n".join(lines)
 
 

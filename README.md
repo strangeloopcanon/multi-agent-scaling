@@ -167,6 +167,9 @@ Pipeline was clean: 100% parse success, 0 provider errors, 0 missing fields.
 
 **Takeaway:** treat self-assessed confidence as weak signal in auction design; lean on empirical performance history instead.
 
+### Phase II: Market vs Solo Evaluation
+For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
+
 <details>
 <summary>Running BidBench</summary>
 
@@ -176,13 +179,34 @@ python scripts/run_phase1.py \
   --swe-manifest benchmarks/swebench/pilot_manifest_v1.json \
   --swe-limit 20 --strategies direct,anchored,cot
 
-# Phase II: market matrix (coming)
-python scripts/run_phase2.py --benchmarks swebench,synthesis --repeats 3 --execute
+# Phase II prep: real SWE instances (93-task manifest, with strict preflight)
+python scripts/prepare_phase2_swe.py \
+  --task-manifest benchmarks/swebench/phase2_93_manifest_v1.json \
+  --preflight --strict-preflight \
+  --output-root runs/research/phase2/_prepared/<ts>
+
+# Phase II run: market-only, direct-penalty, first 30 tasks
+python scripts/run_phase2.py \
+  --task-manifest runs/research/phase2/_prepared/<ts>/prepared_manifest.json \
+  --task-offset 0 --task-limit 30 \
+  --dag-mode off \
+  --market-only --settlement-mode direct_penalty \
+  --isolate-state --execute --check-every 25 \
+  --output-root runs/research/phase2/<ts>_batch1
+
+# Phase II run: remaining 63 tasks (resume-safe)
+python scripts/run_phase2.py \
+  --task-manifest runs/research/phase2/_prepared/<ts>/prepared_manifest.json \
+  --task-offset 30 --task-limit 63 \
+  --dag-mode off \
+  --market-only --settlement-mode direct_penalty \
+  --isolate-state --execute --resume --check-every 25 \
+  --output-root runs/research/phase2/<ts>_batch2
 
 # Cross-phase comparison
 python scripts/compare_phases.py \
   --phase1-metrics runs/research/phase1/<ts>/metrics_summary.json \
-  --phase2-summaries runs/research/phase2/<ts>/market_run_summaries.json \
+  --phase2-summaries runs/research/phase2/<ts>_batch2/market_run_summaries.json \
   --output-dir runs/research/comparison
 ```
 

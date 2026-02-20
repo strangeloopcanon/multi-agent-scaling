@@ -76,3 +76,7 @@ def test_summarize_market_run_smoke(tmp_path: Path) -> None:
     assert summary["tasks_done"] == 1
     assert summary["pass_rate"] == 1.0
     assert summary["cost_per_pass"] >= 0.0
+    assert "usage_cost_total" in summary
+    assert "verification_fail_penalty_total" in summary
+    assert "penalties" in summary
+    assert "by_reason" in summary["penalties"]

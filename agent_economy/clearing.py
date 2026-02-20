@@ -98,9 +98,13 @@ def choose_assignments(
     bids_by_task: dict[str, list[BidSubmission]],
     penalty_mode: str = "reputation",
     penalty_fraction: float = 0.10,
+    retry_penalty_by_pair: dict[tuple[str, str], float] | None = None,
+    excluded_pairs: set[tuple[str, str]] | None = None,
 ) -> list[Assignment]:
     tasks_by_id = {t.task_id: t for t in ready_tasks}
     workers_by_id = {w.worker_id: w for w in available_workers}
+    pair_penalties = retry_penalty_by_pair or {}
+    _excluded = excluded_pairs or set()
 
     def _r6(v: float) -> float:
         return round(float(v), 6)
@@ -119,6 +123,8 @@ def choose_assignments(
             worker = workers_by_id.get(sub.worker_id)
             if worker is None:
                 continue
+            if (task_id, sub.worker_id) in _excluded:
+                continue
 
             bid = sub.bid
             breakdown = score_bid_breakdown(
@@ -129,7 +135,12 @@ def choose_assignments(
                 penalty_mode=penalty_mode,
                 penalty_fraction=penalty_fraction,
             )
-            score = float(breakdown["score"])
+            base_score = float(breakdown["score"])
+            retry_penalty = max(0.0, float(pair_penalties.get((task_id, worker.worker_id), 0.0)))
+            score = base_score - retry_penalty
+            breakdown["score_before_retry_penalty"] = float(base_score)
+            breakdown["retry_score_penalty"] = float(retry_penalty)
+            breakdown["score"] = float(score)
             if score <= 0:
                 continue
 
