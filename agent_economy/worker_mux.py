@@ -44,6 +44,22 @@ class MultiplexBidder:
             return resp
         return BidResult(bids=list(resp), model_ref=worker.model_ref)
 
+    def set_worker_prompt_context(
+        self,
+        *,
+        worker: WorkerRuntime,
+        context_lines: Sequence[str],
+    ) -> None:
+        if worker.worker_type == WorkerType.EXTERNAL_WORKER:
+            bidder = self._external_bidder
+        else:
+            bidder = self._model_bidder
+        if bidder is None:
+            return
+        setter = getattr(bidder, "set_worker_prompt_context", None)
+        if callable(setter):
+            setter(worker_id=worker.worker_id, context_lines=list(context_lines))
+
 
 class MultiplexExecutor:
     def __init__(self, *, model_executor: Any | None, external_executor: Any | None) -> None:

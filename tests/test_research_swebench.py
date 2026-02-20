@@ -4,6 +4,10 @@ import json
 from pathlib import Path
 
 from agent_economy.research.swebench import (
+    load_phase2_manifest,
+    load_phase2_task_ids,
+    suggest_files_hint,
+    to_phase2_task_spec,
     SwebenchInstance,
     load_swebench_subset,
     materialize_instance_workspace,
@@ -75,3 +79,140 @@ def test_to_task_spec_roundtrip() -> None:
     assert task.verify_mode.value == "commands"
     assert task.acceptance[0].cmd == "pytest -q target/tests"
     assert task.hidden_acceptance[0].cmd == "pytest -q target/tests_hidden"
+
+
+def test_load_phase2_manifest_dedupes_ids(tmp_path: Path) -> None:
+    manifest = tmp_path / "phase2.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "name": "phase2",
+                "source": "unit-test",
+                "dataset_name": "princeton-nlp/SWE-bench_Lite",
+                "split": "test",
+                "instance_ids": ["a", "b", "a"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    parsed = load_phase2_manifest(manifest)
+    assert parsed.name == "phase2"
+    assert load_phase2_task_ids(manifest) == ["a", "b"]
+
+
+def test_to_phase2_task_spec_uses_swebench_eval_command(tmp_path: Path) -> None:
+    inst = SwebenchInstance(
+        instance_id="sympy__sympy-1",
+        repo="sympy/sympy",
+        base_commit="abc123",
+        problem_statement="fix issue",
+        test_cmd="pytest -q",
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+    )
+    task = to_phase2_task_spec(inst, files_hint=["README.md"], timeout_sec=1200)
+    assert task.id == "sympy__sympy-1"
+    assert task.files_hint == ["README.md"]
+    assert task.max_attempts == 2
+    assert task.acceptance
+    assert "python -m agent_economy.research.swebench_eval" in task.acceptance[0].cmd
+    assert "--patch-file ../patch.diff" in task.acceptance[0].cmd
+    assert task.acceptance[0].infra_exit_codes == [2]
+
+
+def test_suggest_files_hint_uses_test_directives_and_patch(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "tests").mkdir(parents=True)
+    (root / "tests" / "test_core.py").write_text("def test_x(): pass\n", encoding="utf-8")
+    (root / "src").mkdir(parents=True)
+    (root / "src" / "mod.py").write_text("x=1\n", encoding="utf-8")
+
+    inst = SwebenchInstance(
+        instance_id="x",
+        repo="org/repo",
+        base_commit="abc",
+        problem_statement="fix",
+        test_cmd="pytest -q",
+        fail_to_pass=["tests/test_core.py::test_x"],
+        test_patch=(
+            "diff --git a/src/mod.py b/src/mod.py\n"
+            "--- a/src/mod.py\n"
+            "+++ b/src/mod.py\n"
+            "@@ -1 +1 @@\n"
+            "-x=1\n"
+            "+x=2\n"
+        ),
+    )
+
+    hints = suggest_files_hint(instance=inst, workspace_dir=root)
+    assert "tests/test_core.py" in hints
+    assert "src/mod.py" in hints
+
+
+def test_suggest_files_hint_adds_source_file_from_test_path(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "pkg" / "tests").mkdir(parents=True)
+    (root / "pkg" / "tests" / "test_widget.py").write_text(
+        "def test_widget(): pass\n", encoding="utf-8"
+    )
+    (root / "pkg" / "widget.py").write_text("def build():\n    return 1\n", encoding="utf-8")
+
+    inst = SwebenchInstance(
+        instance_id="x",
+        repo="org/repo",
+        base_commit="abc",
+        problem_statement="fix widget behavior",
+        test_cmd="pytest -q",
+        fail_to_pass=["pkg/tests/test_widget.py::test_widget"],
+    )
+
+    hints = suggest_files_hint(instance=inst, workspace_dir=root)
+    assert "pkg/tests/test_widget.py" in hints
+    assert "pkg/widget.py" in hints
+
+
+def test_suggest_files_hint_extracts_traceback_file_paths(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "pkg").mkdir(parents=True)
+    (root / "pkg" / "core.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    inst = SwebenchInstance(
+        instance_id="x",
+        repo="org/repo",
+        base_commit="abc",
+        problem_statement=(
+            "Traceback (most recent call last):\n"
+            '  File "/usr/lib/python3/dist-packages/pkg/core.py", line 10, in <module>\n'
+            "TypeError: bad value\n"
+        ),
+        test_cmd="pytest -q",
+    )
+
+    hints = suggest_files_hint(instance=inst, workspace_dir=root)
+    assert "pkg/core.py" in hints
+
+
+def test_suggest_files_hint_adds_source_file_from_gold_patch_paths(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "lib").mkdir(parents=True)
+    (root / "lib" / "target.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    inst = SwebenchInstance(
+        instance_id="x",
+        repo="org/repo",
+        base_commit="abc",
+        problem_statement="fix target behavior",
+        test_cmd="pytest -q",
+        patch=(
+            "diff --git a/lib/target.py b/lib/target.py\n"
+            "--- a/lib/target.py\n"
+            "+++ b/lib/target.py\n"
+            "@@ -1 +1 @@\n"
+            "-VALUE = 1\n"
+            "+VALUE = 2\n"
+        ),
+    )
+
+    hints = suggest_files_hint(instance=inst, workspace_dir=root)
+    assert "lib/target.py" in hints

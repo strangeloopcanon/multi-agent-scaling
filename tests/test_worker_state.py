@@ -8,6 +8,7 @@ from agent_economy.schemas import (
     Bid,
     EventType,
     LedgerEvent,
+    SubmissionKind,
     TaskSpec,
     VerifyMode,
     WorkerRuntime,
@@ -108,3 +109,49 @@ def test_expected_cost_estimator_uses_pricing_and_ema_tokens() -> None:
         round_id=0,
     )
     assert cost == 4.0
+
+
+def test_expected_cost_estimator_uses_lower_baseline_for_text_tasks() -> None:
+    state = PersistedWorkerState(
+        workers={
+            "w1": PersistedWorkerStats(
+                worker_id="w1",
+                model_ref="gpt-5-mini",
+                reputation=1.0,
+                patch_ema_input_tokens=2000,
+                patch_ema_output_tokens=1000,
+            )
+        }
+    )
+    pricing = {"openai:gpt-5-mini": Price(input_per_1k=1.0, output_per_1k=2.0)}
+    est = ExpectedCostEstimator(state=state, pricing=pricing)
+    worker = WorkerRuntime(worker_id="w1", model_ref="gpt-5-mini", reputation=1.0)
+    bid = Bid(task_id="T1", ask=1, self_assessed_p_success=1.0, eta_minutes=1)
+
+    patch_cost = est.expected_cost(
+        worker=worker,
+        task=TaskSpec(
+            id="T1",
+            title="patch",
+            bounty=10,
+            verify_mode=VerifyMode.MANUAL,
+            submission_kind=SubmissionKind.PATCH,
+            acceptance=[],
+        ),
+        bid=bid,
+        round_id=0,
+    )
+    text_cost = est.expected_cost(
+        worker=worker,
+        task=TaskSpec(
+            id="T2",
+            title="text",
+            bounty=10,
+            verify_mode=VerifyMode.MANUAL,
+            submission_kind=SubmissionKind.TEXT,
+            acceptance=[],
+        ),
+        bid=bid.model_copy(update={"task_id": "T2"}),
+        round_id=0,
+    )
+    assert text_cost < patch_cost

@@ -22,6 +22,9 @@ dev = [
   "pytest>=7.0.0",
   "ruff>=0.4.0",
 ]
+research = [
+  "swebench==4.1.0",
+]
 
 [project.scripts]
 agent-economy = "agent_economy.main:main"

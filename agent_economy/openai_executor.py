@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -39,7 +40,12 @@ from agent_economy.submission import (
     persist_submission,
     submission_media_type,
 )
-from agent_economy.verify import CommandResult, all_passed, run_commands
+from agent_economy.verify import (
+    classify_command_status,
+    CommandResult,
+    compact_verification_summary,
+    run_commands,
+)
 from agent_economy.worker_refs import resolve_worker_refs
 from agent_economy.worker_specs import CommandWorkerSpec
 
@@ -73,6 +79,57 @@ def _read_hint_files(*, root: Path, rel_paths: list[str]) -> dict[str, str]:
         else:
             files[rel_path] = "<missing>"
     return files
+
+
+def _strip_markdown_fences(text: str) -> str:
+    raw = str(text or "").strip()
+    if not raw:
+        return raw
+    raw = re.sub(r"^\s*```[^\n]*\n", "", raw)
+    raw = re.sub(r"\n```+\s*$", "", raw)
+    return raw.strip()
+
+
+def _looks_like_unified_diff(text: str) -> bool:
+    raw = str(text or "")
+    return "--- " in raw and "+++ " in raw and "@@" in raw
+
+
+def _synthesize_git_headers_from_unified_diff(text: str) -> str:
+    lines = str(text or "").splitlines(keepends=True)
+    if any(line.startswith("diff --git ") for line in lines):
+        return str(text or "")
+
+    out: list[str] = []
+    idx = 0
+    while idx < len(lines):
+        line = lines[idx]
+        if line.startswith("--- ") and idx + 1 < len(lines) and lines[idx + 1].startswith("+++ "):
+            old_path = lines[idx][4:].strip().split("\t", 1)[0]
+            new_path = lines[idx + 1][4:].strip().split("\t", 1)[0]
+            out.append(f"diff --git {old_path} {new_path}\n")
+            out.append(lines[idx])
+            out.append(lines[idx + 1])
+            idx += 2
+            continue
+        out.append(line)
+        idx += 1
+    return "".join(out)
+
+
+def _extract_patch_text(raw_output: str) -> str | None:
+    raw = str(raw_output or "")
+    if "diff --git " in raw:
+        return extract_git_diff(raw)
+
+    cleaned = _strip_markdown_fences(raw)
+    if "diff --git " in cleaned:
+        return extract_git_diff(cleaned)
+
+    if _looks_like_unified_diff(cleaned):
+        return _synthesize_git_headers_from_unified_diff(cleaned)
+
+    return None
 
 
 @dataclass(frozen=True)
@@ -211,8 +268,9 @@ class OpenAIExecutor:
         submission_text_for_judges: str | None = None
         if task.submission_kind == SubmissionKind.PATCH:
             try:
-                if "diff --git " in raw:
-                    patch_text = extract_git_diff(raw)
+                patch_text = _extract_patch_text(raw)
+                cleaned = _strip_markdown_fences(raw)
+                if patch_text is not None:
                     diff_changes = parse_patch_changes(patch_text)
                     touched = sorted(
                         {
@@ -235,8 +293,8 @@ class OpenAIExecutor:
                         )
                     )
                     applied_kind = "diff"
-                elif "BEGIN_FILE " in raw:
-                    files = extract_file_blocks(raw)
+                elif "BEGIN_FILE " in cleaned:
+                    files = extract_file_blocks(cleaned)
                     touched = sorted(files.keys())
                     enforce_allowed_paths(paths=touched, allowed=task.allowed_paths)
                     apply_file_blocks(files=files, cwd=work_dir)
@@ -362,6 +420,7 @@ class OpenAIExecutor:
         public: list[CommandResult] = []
         hidden: list[CommandResult] = []
         status = VerifyStatus.PASS
+        verification_summary: str | None = None
 
         if task.verify_mode == VerifyMode.MANUAL:
             if task.acceptance:
@@ -378,12 +437,7 @@ class OpenAIExecutor:
                     cwd=work_dir,
                     scrub_secrets=self._settings.scrub_secrets_in_verification,
                 )
-                if not all_passed(public):
-                    status = (
-                        VerifyStatus.TIMEOUT
-                        if any(r.timed_out for r in public)
-                        else VerifyStatus.FAIL
-                    )
+                status = classify_command_status(commands=list(task.acceptance), results=public)
 
             if status == VerifyStatus.PASS and task.hidden_acceptance:
                 hidden = run_commands(
@@ -391,12 +445,13 @@ class OpenAIExecutor:
                     cwd=work_dir,
                     scrub_secrets=self._settings.scrub_secrets_in_verification,
                 )
-                if not all_passed(hidden):
-                    status = (
-                        VerifyStatus.TIMEOUT
-                        if any(r.timed_out for r in hidden)
-                        else VerifyStatus.FAIL
-                    )
+                status = classify_command_status(
+                    commands=list(task.hidden_acceptance),
+                    results=hidden,
+                )
+
+            if status in {VerifyStatus.FAIL, VerifyStatus.TIMEOUT, VerifyStatus.INFRA}:
+                verification_summary = compact_verification_summary(public=public, hidden=hidden)
 
         verify_path = sandbox_dir / "verify.json"
         write_command_results_json(verify_path, public=public, hidden=hidden)
@@ -533,7 +588,9 @@ class OpenAIExecutor:
             sandbox_rel=sandbox_rel,
             patch_kind=applied_kind,
             submission_kind=task.submission_kind,
+            submission_preview=submission_text_for_judges,
             llm_usage=llm_usage,
+            verification_summary=verification_summary,
         )
 
     def integrate(

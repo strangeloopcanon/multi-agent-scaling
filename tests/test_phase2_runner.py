@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from types import SimpleNamespace
 
-from scripts.run_phase2 import build_run_matrix
+from agent_economy.planner import PlannedTask
+from agent_economy.schemas import CommandSpec, EventType, SubmissionKind, TaskRuntime, TaskSpec
+from scripts.run_phase2 import (
+    _all_tasks_terminal_or_exhausted,
+    _planner_subtasks_to_specs,
+    _write_csv,
+    build_run_matrix,
+    load_prepared_task_specs,
+)
 
 
 def test_phase2_matrix_has_expected_48_runs() -> None:
@@ -35,3 +45,148 @@ def test_phase2_matrix_has_expected_48_runs() -> None:
 
     market_modes = sorted({r.settlement_mode for r in market})
     assert market_modes == ["direct_penalty", "reputation"]
+
+
+def test_load_prepared_task_specs_slices_offset_limit(tmp_path: Path) -> None:
+    manifest = tmp_path / "prepared_manifest.json"
+    rows = [
+        {"instance_id": "a", "scenario_path": str(tmp_path / "a.yaml")},
+        {"instance_id": "b", "scenario_path": str(tmp_path / "b.yaml")},
+        {"instance_id": "c", "scenario_path": str(tmp_path / "c.yaml")},
+    ]
+    manifest.write_text(json.dumps({"rows": rows}), encoding="utf-8")
+
+    specs = load_prepared_task_specs(
+        prepared_manifest=manifest,
+        task_offset=1,
+        task_limit=1,
+    )
+    assert len(specs) == 1
+    assert specs[0].instance_id == "b"
+    assert specs[0].scenario_path == tmp_path / "b.yaml"
+
+
+def test_planner_subtasks_to_specs_maps_planned_final_to_single_patch_task() -> None:
+    base = TaskSpec(
+        id="instance-1",
+        title="final fix",
+        bounty=90,
+        deps=[],
+        submission_kind=SubmissionKind.PATCH,
+        verify_mode="commands",
+        acceptance=[
+            CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id x")
+        ],
+        files_hint=["lib/core.py"],
+    )
+    planned = [
+        PlannedTask(
+            id="T1", title="Diagnose", description="diag", deps=[], files_hint=["lib/core.py"]
+        ),
+        PlannedTask(
+            id="T2",
+            title="Final fix",
+            description="fix",
+            deps=["T1"],
+            files_hint=["lib/core.py"],
+            acceptance=["python -m agent_economy.research.swebench_eval --instance-id x"],
+        ),
+    ]
+    tasks = _planner_subtasks_to_specs(plan_tasks=planned, goal="goal", base_task=base)
+    patch_tasks = [t for t in tasks if t.submission_kind == SubmissionKind.PATCH]
+    assert len(patch_tasks) == 1
+    assert patch_tasks[0].id == "instance-1"
+    text_tasks = [t for t in tasks if t.submission_kind == SubmissionKind.TEXT]
+    assert text_tasks
+    assert text_tasks[0].acceptance[0].cmd == "test -f .agent_economy/submission.txt"
+
+
+def test_planner_subtasks_assigns_majority_bounty_to_final_patch() -> None:
+    base = TaskSpec(
+        id="instance-2",
+        title="final fix",
+        bounty=100,
+        deps=[],
+        submission_kind=SubmissionKind.PATCH,
+        verify_mode="commands",
+        acceptance=[
+            CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id y")
+        ],
+        files_hint=["lib/core.py"],
+    )
+    planned = [
+        PlannedTask(id="T1", title="Diagnose", description="diag", deps=[]),
+        PlannedTask(
+            id="T2",
+            title="Fix",
+            description="fix",
+            deps=["T1"],
+            acceptance=["python -m agent_economy.research.swebench_eval --instance-id y"],
+        ),
+        PlannedTask(id="T3", title="Validate", description="validate", deps=["T2"]),
+    ]
+    tasks = _planner_subtasks_to_specs(plan_tasks=planned, goal="goal", base_task=base)
+    patch = [t for t in tasks if t.submission_kind == SubmissionKind.PATCH][0]
+    text = [t for t in tasks if t.submission_kind == SubmissionKind.TEXT]
+    assert patch.bounty > max(t.bounty for t in text)
+    assert sum(int(t.bounty) for t in tasks) == 100
+
+
+def test_write_csv_allows_rows_with_extra_keys(tmp_path: Path) -> None:
+    out = tmp_path / "rows.csv"
+    _write_csv(
+        out,
+        [
+            {"task_id": "a", "status": "done"},
+            {"task_id": "b", "status": "failed", "error": "planner failed"},
+        ],
+    )
+    text = out.read_text(encoding="utf-8")
+    assert "task_id,status,error" in text
+    assert "b,failed,planner failed" in text
+
+
+def test_all_tasks_terminal_or_exhausted_counts_infra_attempts() -> None:
+    state = SimpleNamespace(
+        tasks={
+            "T1": TaskRuntime(
+                task_id="T1",
+                bounty_current=90,
+                bounty_original=90,
+                status="TODO",
+                fail_count=0,
+            )
+        }
+    )
+    task_specs = {
+        "T1": TaskSpec(
+            id="T1",
+            title="one",
+            bounty=90,
+            max_attempts=2,
+            deps=[],
+            acceptance=[CommandSpec(cmd="true")],
+        )
+    }
+
+    one_infra = [
+        SimpleNamespace(
+            type=EventType.TASK_COMPLETED,
+            payload={"task_id": "T1", "verify_status": "INFRA"},
+        )
+    ]
+    assert not _all_tasks_terminal_or_exhausted(
+        state=state, task_specs=task_specs, events=one_infra
+    )
+
+    two_infra = [
+        SimpleNamespace(
+            type=EventType.TASK_COMPLETED,
+            payload={"task_id": "T1", "verify_status": "INFRA"},
+        ),
+        SimpleNamespace(
+            type=EventType.TASK_COMPLETED,
+            payload={"task_id": "T1", "verify_status": "INFRA"},
+        ),
+    ]
+    assert _all_tasks_terminal_or_exhausted(state=state, task_specs=task_specs, events=two_infra)

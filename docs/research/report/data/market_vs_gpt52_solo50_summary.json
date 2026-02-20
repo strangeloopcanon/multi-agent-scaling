@@ -1,0 +1,150 @@
+{
+  "common_task_count": 50,
+  "market": {
+    "passes": 29,
+    "rate": 0.58,
+    "attempt_distribution": {
+      "1": 18,
+      "2": 32
+    }
+  },
+  "solo_gpt52": {
+    "passes": 24,
+    "rate": 0.48,
+    "attempt_distribution": {
+      "1": 18,
+      "2": 32
+    }
+  },
+  "delta_market_minus_solo": 5,
+  "confusion": {
+    "both_pass": 18,
+    "market_only": 11,
+    "solo_only": 6,
+    "both_fail": 15
+  },
+  "mcnemar_exact_p_two_sided": 0.332305908203125,
+  "by_repo": {
+    "astropy": {
+      "n": 4,
+      "market_pass": 2,
+      "solo_pass": 3,
+      "market_only": 0,
+      "solo_only": 1,
+      "market_rate": 0.5,
+      "solo_rate": 0.75,
+      "delta_market_minus_solo": -1
+    },
+    "django": {
+      "n": 15,
+      "market_pass": 8,
+      "solo_pass": 8,
+      "market_only": 3,
+      "solo_only": 3,
+      "market_rate": 0.5333333333333333,
+      "solo_rate": 0.5333333333333333,
+      "delta_market_minus_solo": 0
+    },
+    "matplotlib": {
+      "n": 7,
+      "market_pass": 2,
+      "solo_pass": 2,
+      "market_only": 1,
+      "solo_only": 1,
+      "market_rate": 0.2857142857142857,
+      "solo_rate": 0.2857142857142857,
+      "delta_market_minus_solo": 0
+    },
+    "psf": {
+      "n": 1,
+      "market_pass": 0,
+      "solo_pass": 0,
+      "market_only": 0,
+      "solo_only": 0,
+      "market_rate": 0.0,
+      "solo_rate": 0.0,
+      "delta_market_minus_solo": 0
+    },
+    "pydata": {
+      "n": 1,
+      "market_pass": 1,
+      "solo_pass": 0,
+      "market_only": 1,
+      "solo_only": 0,
+      "market_rate": 1.0,
+      "solo_rate": 0.0,
+      "delta_market_minus_solo": 1
+    },
+    "pylint-dev": {
+      "n": 1,
+      "market_pass": 1,
+      "solo_pass": 1,
+      "market_only": 0,
+      "solo_only": 0,
+      "market_rate": 1.0,
+      "solo_rate": 1.0,
+      "delta_market_minus_solo": 0
+    },
+    "pytest-dev": {
+      "n": 2,
+      "market_pass": 2,
+      "solo_pass": 1,
+      "market_only": 1,
+      "solo_only": 0,
+      "market_rate": 1.0,
+      "solo_rate": 0.5,
+      "delta_market_minus_solo": 1
+    },
+    "scikit-learn": {
+      "n": 5,
+      "market_pass": 4,
+      "solo_pass": 4,
+      "market_only": 0,
+      "solo_only": 0,
+      "market_rate": 0.8,
+      "solo_rate": 0.8,
+      "delta_market_minus_solo": 0
+    },
+    "sphinx-doc": {
+      "n": 2,
+      "market_pass": 1,
+      "solo_pass": 1,
+      "market_only": 0,
+      "solo_only": 0,
+      "market_rate": 0.5,
+      "solo_rate": 0.5,
+      "delta_market_minus_solo": 0
+    },
+    "sympy": {
+      "n": 12,
+      "market_pass": 8,
+      "solo_pass": 4,
+      "market_only": 5,
+      "solo_only": 1,
+      "market_rate": 0.6666666666666666,
+      "solo_rate": 0.3333333333333333,
+      "delta_market_minus_solo": 4
+    }
+  },
+  "market_only_task_ids": [
+    "django__django-11179",
+    "django__django-11964",
+    "django__django-12308",
+    "matplotlib__matplotlib-23314",
+    "pydata__xarray-4094",
+    "pytest-dev__pytest-7490",
+    "sympy__sympy-12419",
+    "sympy__sympy-12481",
+    "sympy__sympy-15345",
+    "sympy__sympy-16792",
+    "sympy__sympy-18698"
+  ],
+  "solo_only_task_ids": [
+    "astropy__astropy-14365",
+    "django__django-11999",
+    "django__django-12708",
+    "django__django-14534",
+    "matplotlib__matplotlib-24149",
+    "sympy__sympy-21379"
+  ]
+}

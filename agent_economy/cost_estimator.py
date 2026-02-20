@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass
 
 from agent_economy.costing import Price, estimate_cost_units, price_for_model
-from agent_economy.schemas import Bid, TaskSpec, WorkerRuntime
+from agent_economy.schemas import Bid, SubmissionKind, TaskSpec, WorkerRuntime
 from agent_economy.worker_state import PersistedWorkerState
 
 
@@ -37,6 +37,8 @@ class ExpectedCostEstimator:
     pricing: dict[str, Price]
     default_patch_input_tokens: int = 1500
     default_patch_output_tokens: int = 1500
+    default_text_input_tokens: int = 500
+    default_text_output_tokens: int = 400
 
     def expected_cost(
         self,
@@ -53,19 +55,29 @@ class ExpectedCostEstimator:
         price = price_for_model(pricing=self.pricing, model_ref=worker.model_ref)
 
         stats = self.state.workers.get(worker.worker_id)
-        in_tok = (
-            float(stats.patch_ema_input_tokens)
-            if stats is not None and stats.patch_ema_input_tokens > 0
-            else float(self.default_patch_input_tokens)
-        )
-        out_tok = (
-            float(stats.patch_ema_output_tokens)
-            if stats is not None and stats.patch_ema_output_tokens > 0
-            else float(self.default_patch_output_tokens)
-        )
+        is_patch_task = task.submission_kind == SubmissionKind.PATCH
+        if is_patch_task:
+            in_tok = (
+                float(stats.patch_ema_input_tokens)
+                if stats is not None and stats.patch_ema_input_tokens > 0
+                else float(self.default_patch_input_tokens)
+            )
+            out_tok = (
+                float(stats.patch_ema_output_tokens)
+                if stats is not None and stats.patch_ema_output_tokens > 0
+                else float(self.default_patch_output_tokens)
+            )
+        else:
+            in_tok = float(self.default_text_input_tokens)
+            out_tok = float(self.default_text_output_tokens)
 
-        # Apply task complexity multiplier to account for task-specific factors
+        # Apply task complexity multiplier to account for task-specific factors.
+        # For text/json subtasks we damp the multiplier to avoid over-penalizing
+        # long instructions and file lists in planning-heavy runs.
         complexity = _task_complexity_multiplier(task)
+        if not is_patch_task:
+            complexity = 1.0 + 0.35 * max(0.0, complexity - 1.0)
+            complexity = min(complexity, 2.5)
         in_tok *= complexity
         out_tok *= complexity
 

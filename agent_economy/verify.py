@@ -4,10 +4,11 @@ import os
 import subprocess
 import sys
 import time
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_economy.schemas import CommandSpec
+from agent_economy.schemas import CommandSpec, VerifyStatus
 
 
 @dataclass(frozen=True)
@@ -96,3 +97,80 @@ def run_commands(
 
 def all_passed(results: list[CommandResult]) -> bool:
     return all(r.passed for r in results)
+
+
+def classify_command_status(
+    *,
+    commands: list[CommandSpec],
+    results: list[CommandResult],
+) -> VerifyStatus:
+    if not commands:
+        return VerifyStatus.PASS
+    if len(results) != len(commands):
+        return VerifyStatus.FAIL
+    if any(r.timed_out for r in results):
+        return VerifyStatus.TIMEOUT
+
+    for spec, result in zip(commands, results):
+        if int(result.returncode) in set(spec.infra_exit_codes):
+            return VerifyStatus.INFRA
+
+    return VerifyStatus.PASS if all_passed(results) else VerifyStatus.FAIL
+
+
+def compact_verification_summary(
+    *,
+    public: list[CommandResult],
+    hidden: list[CommandResult],
+    max_chars: int = 1500,
+    tail_chars_per_stream: int = 240,
+) -> str | None:
+    def _swebench_eval_stdout_summary(stdout: str) -> str | None:
+        raw = (stdout or "").strip()
+        if not raw:
+            return None
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            return None
+        if not isinstance(payload, dict):
+            return None
+        if "resolved" not in payload and "completed" not in payload:
+            return None
+        parts = [
+            f"instance_id={payload.get('instance_id')}",
+            f"completed={payload.get('completed')}",
+            f"resolved={payload.get('resolved')}",
+            f"returncode={payload.get('returncode')}",
+        ]
+        notes = payload.get("notes")
+        if notes not in (None, ""):
+            parts.append(f"notes={notes}")
+        return " ".join(str(p) for p in parts if p is not None)
+
+    lines: list[str] = []
+    for scope, results in (("public", public), ("hidden", hidden)):
+        for result in results:
+            if result.passed:
+                continue
+            status = "TIMEOUT" if result.timed_out else f"rc={result.returncode}"
+            lines.append(f"[{scope}] {status} :: {result.cmd}")
+            err = (result.stderr or "").strip()
+            out = (result.stdout or "").strip()
+            if err:
+                lines.append(f"stderr: {err[-tail_chars_per_stream:]}")
+            if out:
+                swe = _swebench_eval_stdout_summary(out)
+                if swe:
+                    lines.append(f"swebench_eval: {swe}")
+                else:
+                    lines.append(f"stdout: {out[-tail_chars_per_stream:]}")
+            if not err and not out:
+                lines.append("no_output")
+    if not lines:
+        return None
+    text = "\n".join(lines)
+    if len(text) <= max_chars:
+        return text
+    keep = max(0, int(max_chars) - 15)
+    return text[:keep] + "\n...[truncated]"

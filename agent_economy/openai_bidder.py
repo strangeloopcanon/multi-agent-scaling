@@ -139,12 +139,22 @@ class OpenAIBidder:
         max_bids: int,
         penalty_mode: str = "reputation",
         penalty_fraction: float = 0.10,
+        force_bid_for_ready_tasks: bool = False,
+        retry_score_penalty_fraction: float = 0.0,
     ) -> None:
         self._llm = llm
         self._payment_rule = payment_rule
         self._max_bids = max_bids
         self._penalty_mode = str(penalty_mode or "reputation")
         self._penalty_fraction = float(penalty_fraction)
+        self._force_bid_for_ready_tasks = bool(force_bid_for_ready_tasks)
+        self._retry_score_penalty_fraction = float(retry_score_penalty_fraction)
+        self._worker_market_context: dict[str, list[str]] = {}
+
+    def set_worker_prompt_context(self, *, worker_id: str, context_lines: list[str]) -> None:
+        self._worker_market_context[str(worker_id)] = [
+            str(line) for line in list(context_lines or []) if str(line).strip()
+        ]
 
     def get_bids(
         self,
@@ -160,6 +170,7 @@ class OpenAIBidder:
 
         persona = DEFAULT_PERSONAS.get(worker.worker_id)
         sys = system_prompt(worker=worker, persona=None if persona is None else persona.persona)
+        context_lines = list(self._worker_market_context.pop(worker.worker_id, []))
         user = bid_prompt(
             worker=worker,
             ready_tasks=ready_tasks,
@@ -168,6 +179,9 @@ class OpenAIBidder:
             discussion_history=discussion_history,
             penalty_mode=self._penalty_mode,
             penalty_fraction=self._penalty_fraction,
+            force_bid_for_ready_tasks=self._force_bid_for_ready_tasks,
+            retry_score_penalty_fraction=self._retry_score_penalty_fraction,
+            worker_market_context_lines=context_lines,
         )
         resp, usage, _raw = self._llm.call_json(
             model_ref=worker.model_ref,

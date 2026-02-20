@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import BaseModel
 
 from agent_economy.llm_openai import (
     OpenAIJSONClient,
+    Usage,
     _resolve_max_retries,
 )
 
@@ -87,3 +89,37 @@ def test_call_text_fails_fast_on_deterministic_error(monkeypatch: pytest.MonkeyP
     with pytest.raises(ValueError, match="schema fail"):
         client.call_text(model="x", system="s", user="u", max_retries=3)
     assert fake_responses.calls == 1
+
+
+class _Schema(BaseModel):
+    value: int
+
+
+def test_call_json_retries_on_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AE_OPENAI_MAX_RETRIES", raising=False)
+    monkeypatch.delenv("INST_OPENAI_MAX_RETRIES", raising=False)
+
+    client, _ = _make_client(outcomes=[])
+    attempts = {"count": 0}
+
+    def _fake_call_json_once(**kwargs):
+        _ = kwargs
+        attempts["count"] += 1
+        if attempts["count"] == 1:
+            raise _Schema.model_validate("not-a-json-object")
+        return {"value": 7}, Usage(calls=1, input_tokens=3, output_tokens=2), '{"value": 7}'
+
+    monkeypatch.setattr(client, "_call_json_once", _fake_call_json_once)
+
+    parsed, usage, raw = client.call_json(
+        model="gpt-5-mini",
+        system="s",
+        user="u",
+        schema=_Schema,
+        max_retries=2,
+    )
+    assert parsed.value == 7
+    assert usage.input_tokens == 3
+    assert usage.output_tokens == 2
+    assert raw == '{"value": 7}'
+    assert attempts["count"] == 2
