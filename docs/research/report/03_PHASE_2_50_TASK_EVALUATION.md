@@ -31,14 +31,17 @@ The same-scaffold comparison eliminates the confound of scaffold quality. Does m
 
 *(McNemar exact two-sided p-value: 0.3323; one-sided p-value: ~0.17. Direction is favorable to the market, but N=50 is not large enough for conventional significance thresholds.)*
 
-## 3. Retries Are the Market's Engine
+## 3. Diverse-Model Retry Outperforms Same-Model Retry
 
-| | Count | % of market passes |
+Both configurations use `max_attempts=2` and start from identical first-attempt pass rates (18/50, 36%). The difference is what happens on retry:
+
+| | Market (diverse retry) | Solo GPT-5.2 (same-model retry) |
 | :--- | :--- | :--- |
-| Attempt 1 passes | 18 | 62.1% |
-| Retry rescues (attempt 2) | 11 | 37.9% |
+| Attempt 1 passes | 18 / 50 (36%) | 18 / 50 (36%) |
+| Retry rescues | 11 / 32 (34%) | 6 / 32 (19%) |
+| **Total** | **29 / 50 (58%)** | **24 / 50 (48%)** |
 
-Without retries, the market would sit at 18/50 = 36% -- below solo GPT-5.2. The hard exclusion rule (a failed worker cannot rebid on the same task) forces model diversity on the second attempt, producing 11 rescues.
+The market's hard exclusion rule (a failed worker cannot rebid on the same task) forces a different model on the second attempt. This diverse-model retry converts at nearly double the rate of same-model retry (34% vs 19%), accounting for the entire +5 task delta.
 
 **The Rescue Traffic:**
 Flow is mostly weaker-to-stronger: 8 of 11 rescues had Gemini or Opus cleaning up after mini or gpt-5.2. Two went the other direction. This is the portfolio effect -- failures routed to a different model that happens to be better at that specific task.
@@ -90,7 +93,7 @@ The market recovers about 5 of those 13 lost tasks through diversity (29 vs 24).
 ## 7. Conclusions
 
 1. **Model diversity adds measurable value.** On the same scaffold, the 6-model market solves 5 more tasks than the best solo model (29 vs 24, +10pp) on this 50-task sample.
-2. **Retries are the mechanism.** 38% of market passes come from the second attempt after exclusion-forced model diversity. Without retries the market would underperform solo. The hard exclusion rule is the single most important mechanism.
-3. **First-attempt allocation is still poor.** The market's attempt-1 rate (36%) is below solo GPT-5.2 (48%). The scoring formula gives too much weight to self-assessed confidence, letting GPT-5-mini absorb 24% of assignments while converting at 10%. The strongest model (GPT-5.2) gets only 11% of assignments.
+2. **Diverse-model retry is the mechanism.** Both market and solo share the same first-attempt pass rate (36%) and the same retry budget (`max_attempts=2`). The market's exclusion-forced model diversity rescues 11/32 failures (34%) versus solo's same-model retry at 6/32 (19%). The hard exclusion rule is the single most important mechanism.
+3. **First-attempt allocation has room to improve.** Both configurations share a 36% first-attempt rate, but the market could push much higher — the oracle ceiling on these tasks is 74%. The scoring formula gives too much weight to self-assessed confidence, letting GPT-5-mini absorb 24% of assignments while converting at 10%. The strongest model (GPT-5.2) gets only 11% of assignments.
 4. **The scaffold gap is the ceiling.** External scaffolds add 13 tasks of capability for the same model. The market recovers ~5 of those through diversity. The remaining 8 need scaffold upgrades (test feedback, multi-turn, file-editing tools) to become reachable.
 5. **Diversity has domain-specific value.** The market's advantage concentrates in `sympy` tasks (+4 over solo), where symbolic reasoning failures are model-specific. Framework-pattern tasks (`django`, `matplotlib`) show no diversity benefit.

@@ -24,8 +24,8 @@ We evaluated 50 tasks across four paradigms to isolate the value of the market m
 
 ## Key Drivers of Success
 
-1. **The Retry + Exclusion Mechanism is the Engine**
-   Of the 29 market passes, 11 (38%) came on the second attempt. Without retries, the market would sit at 36%, below the solo model. The hard exclusion rule (a failed worker cannot rebid on the same task) forces model diversity on the second attempt, producing 11 rescues that single models missed.
+1. **Diverse-Model Retry Converts at Double the Rate**
+   Both configurations use `max_attempts=2` and share the same first-attempt pass rate (18/50, 36%). The difference emerges on retry: the market's hard exclusion rule forces a *different* model on the second attempt, rescuing 11 of 32 first-attempt failures (34% rescue rate). Solo GPT-5.2's same-model retry rescues only 6 of 32 (19%). This 2x retry-conversion advantage is the primary mechanism behind the market's +10pp edge.
 
 2. **Model Diversity Adds Measurable Value**
    In a direct head-to-head comparison on these 50 tasks, the market solved 11 tasks that Solo GPT-5.2 failed, while Solo GPT-5.2 solved only 6 tasks that the market missed. This diversity effect concentrates in symbolic reasoning domains (e.g., `sympy`), where failures are model-specific rather than universal.
@@ -38,7 +38,7 @@ While the market outperforms single models, it currently sits below the theoreti
    Our single-shot, raw-diff execution environment imposes a ~26 percentage point penalty compared to interactive external scaffolds (48% vs 74% for GPT-5.2). The market recovers about 5 tasks (~10pp) of this lost capability through diversity, but the rest remains blocked without scaffold upgrades (test feedback, file-editing tools).
 
 2. **Allocation Inefficiency (The Missed Upside)**
-   The market's first-attempt allocation is poor. The scoring formula (`p_success * bounty - ask`) over-weights self-assessed confidence, allowing weaker but overconfident models (like GPT-5-mini, converting at 10%) to steal assignments from stronger models (like GPT-5.2, converting at 33%). Fixing bid calibration is the highest-leverage next step for the market mechanism itself.
+   Both configurations share a 36% first-attempt rate, but the market has room to do much better — the oracle ceiling is 74% on these tasks with this scaffold's models. The scoring formula (`p_success * bounty - ask`) over-weights self-assessed confidence, allowing weaker but overconfident models (like GPT-5-mini, converting at 10%) to steal assignments from stronger models (like GPT-5.2, converting at 33%). Better bid calibration would push the market's first-attempt rate toward the oracle ceiling and reduce dependence on retries.
 
 ## Conclusion
 

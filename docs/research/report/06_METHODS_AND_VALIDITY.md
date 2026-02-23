@@ -62,6 +62,10 @@ Evaluate whether a multi-model market configuration improves SWE-bench task comp
    - `INFRA` outcomes remain non-zero in market rollup (`3/50`), which can bias pass-rate estimates.
 5. Single-configuration estimate:
    - Findings are for one policy/configuration family and should not be generalized to all market mechanisms.
+6. Benchmark contamination and task quality:
+   - SWE-bench Lite draws from the same source repositories as SWE-bench Verified, which OpenAI discontinued in February 2026 citing training-data contamination, test-suite quality issues, and gaming incentives ([OpenAI, Feb 2026](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)).
+   - Two tasks in the 50-task analysis set — `sympy__sympy-18199` and `django__django-11099` — overlap with tasks specifically flagged as problematic in that post. Their impact is bounded (2 of 50 tasks).
+   - The paired-comparison design mitigates this concern: contamination and test-quality issues affect both market and solo conditions symmetrically, so the relative delta between them remains robust. Absolute pass rates from this evaluation should not be directly compared to SWE-bench leaderboard numbers.
 
 ## Reproducibility
 - Canonical summary artifacts used by the report:

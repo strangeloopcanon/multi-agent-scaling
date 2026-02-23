@@ -37,6 +37,8 @@ Despite beating the best individual model (58% vs 48% on identical scaffolds), t
 Gemini dominates the board, receiving 51% of all assignments and delivering 72% of all passes. It converts at a respectable 50%.
 However, GPT-5-mini is a massive drag on the system: it absorbs 24% of assignments but converts at only 10%. Meanwhile, the strongest external model (GPT-5.2) receives only 11% of assignments.
 
+Both market and solo share an identical first-attempt pass rate (18/50, 36%); the market's +10pp advantage comes entirely from diverse-model retry (rescuing 11/32 failures vs solo's 6/32 with same-model retry). Better first-attempt allocation — routing tasks to models with genuine capability rather than high self-confidence — would push the market's attempt-1 rate toward the oracle ceiling and reduce its dependence on the retry mechanism.
+
 This confirms the Phase I hypothesis: the `direct_penalty` scoring formula over-indexes on self-assessed confidence, allowing weaker, aggressive bidders to crowd out stronger, conservative bidders.
 
 ## 3. The Failure of Decomposition
