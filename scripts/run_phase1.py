@@ -44,7 +44,27 @@ def _norm_csv(values: str) -> list[str]:
 
 
 def _strategy_list(values: str) -> list[PromptStrategy]:
-    return [PromptStrategy(v) for v in _norm_csv(values)]
+    aliases: dict[str, PromptStrategy] = {
+        "informed_bid": PromptStrategy.INFORMED_BID,
+        "direct_bid": PromptStrategy.DIRECT_BID,
+        "direct": PromptStrategy.DIRECT,
+        "prob_tokens": PromptStrategy.PROB_TOKENS,
+        "prob+tokens": PromptStrategy.PROB_TOKENS,
+        "anchored": PromptStrategy.ANCHORED,
+        "plan_prob_tokens": PromptStrategy.PLAN_PROB_TOKENS,
+        "plan+prob+tokens": PromptStrategy.PLAN_PROB_TOKENS,
+        "cot": PromptStrategy.COT,
+    }
+
+    out: list[PromptStrategy] = []
+    for raw in _norm_csv(values):
+        key = str(raw).strip().lower()
+        strategy = aliases.get(key)
+        if strategy is None:
+            valid = ", ".join(sorted(aliases.keys()))
+            raise ValueError(f"unsupported strategy '{raw}' (valid: {valid})")
+        out.append(strategy)
+    return out
 
 
 def _load_phase1_tasks(
@@ -362,7 +382,7 @@ def _quality_snapshot(*, rows: list[CalibrationRecord]) -> dict[str, object]:
     missing_estimated = sum(1 for rec in rows if rec.estimated_tokens_total is None)
     invalid_p = sum(1 for rec in rows if not (0.0 <= float(rec.p_success) <= 1.0))
 
-    keys = [(rec.model_ref, rec.task_id, rec.strategy.value) for rec in rows]
+    keys = [(rec.model_ref, rec.task_id, rec.strategy.value, rec.reserve_shown) for rec in rows]
     duplicate_keys = max(0, len(keys) - len(set(keys)))
 
     return {
@@ -404,6 +424,27 @@ def _apply_outcomes_to_rows(
     return rows
 
 
+def _load_resume_records(path: Path) -> dict[tuple[str, str, str, float | None], dict]:
+    """Load existing calibration records keyed by (model, task, strategy, reserve)."""
+    existing: dict[tuple[str, str, str, float | None], dict] = {}
+    if not path.exists():
+        return existing
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            key = (
+                str(row.get("model_ref", "")),
+                str(row.get("task_id", "")),
+                str(row.get("strategy", "")),
+                row.get("reserve_shown"),
+            )
+            existing[key] = row
+    return existing
+
+
 def _run_calibration(
     *,
     execute_calibration: bool,
@@ -411,26 +452,41 @@ def _run_calibration(
     models: list[str],
     tasks: list[dict],
     strategies: list[PromptStrategy],
+    reserves: list[float | None],
+    penalty: float = 1.0,
+    price_per_token: float = 0.00001,
     calibration_concurrency: int,
     check_every: int = 25,
     quality_checks_path: Path | None = None,
+    resume_records: dict[tuple[str, str, str, float | None], dict] | None = None,
 ) -> list[CalibrationRecord]:
-    total = len(models) * len(tasks) * len(strategies)
-    jobs: list[tuple[str, dict, PromptStrategy, int]] = []
+    total = len(models) * len(tasks) * len(strategies) * len(reserves)
+    jobs: list[tuple[str, dict, PromptStrategy, float | None, int]] = []
     idx = 0
     for model_ref in models:
         for task in tasks:
             for strategy in strategies:
-                idx += 1
-                jobs.append((model_ref, task, strategy, idx))
+                for reserve in reserves:
+                    idx += 1
+                    jobs.append((model_ref, task, strategy, reserve, idx))
+
+    _resume = resume_records or {}
+    skipped = 0
 
     if not execute_calibration or llm is None:
         records: list[CalibrationRecord] = []
         done = 0
-        for model_ref, task, strategy, job_idx in jobs:
+        for model_ref, task, strategy, reserve, job_idx in jobs:
+            rkey = (model_ref, str(task["task_id"]), strategy.value, reserve)
+            if rkey in _resume:
+                skipped += 1
+                records.append(CalibrationRecord(**_resume[rkey]))
+                done += 1
+                continue
+            reserve_tag = f" reserve=${reserve:.2f}" if reserve is not None else ""
             print(
                 f"[phase1] calibration {job_idx}/{total} "
-                f"model={model_ref} task={task['task_id']} strategy={strategy.value}",
+                f"model={model_ref} task={task['task_id']} strategy={strategy.value}{reserve_tag}",
                 flush=True,
             )
             records.append(
@@ -441,6 +497,7 @@ def _run_calibration(
                     strategy=strategy,
                     p_success=0.5,
                     estimated_tokens_total=None,
+                    reserve_shown=reserve,
                     rationale="not executed",
                 )
             )
@@ -456,6 +513,8 @@ def _run_calibration(
                         **snapshot,
                     },
                 )
+        if skipped:
+            print(f"[phase1] resumed {skipped}/{total} from prior run, skipping LLM calls", flush=True)
         if quality_checks_path is not None:
             snapshot = _quality_snapshot(rows=records)
             _append_jsonl(
@@ -469,7 +528,9 @@ def _run_calibration(
             )
         return records
 
-    def _run_one(model_ref: str, task: dict, strategy: PromptStrategy) -> CalibrationRecord:
+    def _run_one(
+        model_ref: str, task: dict, strategy: PromptStrategy, reserve: float | None,
+    ) -> CalibrationRecord:
         try:
             return elicit_calibration(
                 llm=llm,
@@ -480,6 +541,9 @@ def _run_calibration(
                 task_description=str(task["description"]),
                 acceptance_commands=[str(c) for c in list(task.get("acceptance") or [])],
                 strategy=strategy,
+                reserve_shown=reserve,
+                penalty=penalty,
+                price_per_token=price_per_token,
             )
         except Exception as e:
             return CalibrationRecord(
@@ -489,23 +553,45 @@ def _run_calibration(
                 strategy=strategy,
                 p_success=0.5,
                 estimated_tokens_total=None,
+                reserve_shown=reserve,
                 rationale=f"ERROR: {type(e).__name__}: {e}",
             )
 
-    records_by_key: dict[tuple[str, str, str], CalibrationRecord] = {}
+    JobKey = tuple[str, str, str, float | None]
+
+    records_by_key: dict[JobKey, CalibrationRecord] = {}
     completed_rows: list[CalibrationRecord] = []
-    done = 0
+
+    # Pre-populate with resumed records so they are never re-called.
+    for model_ref, task, strategy, reserve, _job_idx in jobs:
+        rkey: JobKey = (model_ref, str(task["task_id"]), strategy.value, reserve)
+        if rkey in _resume:
+            rec = CalibrationRecord(**_resume[rkey])
+            records_by_key[rkey] = rec
+            completed_rows.append(rec)
+            skipped += 1
+
+    new_jobs = [
+        (model_ref, task, strategy, reserve, job_idx)
+        for model_ref, task, strategy, reserve, job_idx in jobs
+        if (model_ref, str(task["task_id"]), strategy.value, reserve) not in _resume
+    ]
+    if skipped:
+        print(f"[phase1] resumed {skipped}/{total} from prior run, {len(new_jobs)} new calls", flush=True)
+
+    done = skipped
     max_workers = max(1, int(calibration_concurrency))
     if max_workers == 1:
-        for model_ref, task, strategy, job_idx in jobs:
-            rec = _run_one(model_ref, task, strategy)
+        for model_ref, task, strategy, reserve, job_idx in new_jobs:
+            rec = _run_one(model_ref, task, strategy, reserve)
             done += 1
+            reserve_tag = f" reserve=${reserve:.2f}" if reserve is not None else ""
             print(
                 f"[phase1] calibration {done}/{total} "
-                f"model={model_ref} task={task['task_id']} strategy={strategy.value}",
+                f"model={model_ref} task={task['task_id']} strategy={strategy.value}{reserve_tag}",
                 flush=True,
             )
-            key = (model_ref, str(task["task_id"]), strategy.value)
+            key: JobKey = (model_ref, str(task["task_id"]), strategy.value, reserve)
             records_by_key[key] = rec
             completed_rows.append(rec)
             if check_every > 0 and done % check_every == 0 and quality_checks_path is not None:
@@ -522,24 +608,26 @@ def _run_calibration(
     else:
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             future_to_job = {
-                pool.submit(_run_one, model_ref, task, strategy): (
+                pool.submit(_run_one, model_ref, task, strategy, reserve): (
                     model_ref,
                     task,
                     strategy,
+                    reserve,
                     job_idx,
                 )
-                for model_ref, task, strategy, job_idx in jobs
+                for model_ref, task, strategy, reserve, job_idx in new_jobs
             }
             for fut in as_completed(future_to_job):
-                model_ref, task, strategy, _job_idx = future_to_job[fut]
+                model_ref, task, strategy, reserve, _job_idx = future_to_job[fut]
                 rec = fut.result()
                 done += 1
+                reserve_tag = f" reserve=${reserve:.2f}" if reserve is not None else ""
                 print(
                     f"[phase1] calibration {done}/{total} "
-                    f"model={model_ref} task={task['task_id']} strategy={strategy.value}",
+                    f"model={model_ref} task={task['task_id']} strategy={strategy.value}{reserve_tag}",
                     flush=True,
                 )
-                key = (model_ref, str(task["task_id"]), strategy.value)
+                key = (model_ref, str(task["task_id"]), strategy.value, reserve)
                 records_by_key[key] = rec
                 completed_rows.append(rec)
                 if check_every > 0 and done % check_every == 0 and quality_checks_path is not None:
@@ -555,8 +643,8 @@ def _run_calibration(
                     )
 
     out: list[CalibrationRecord] = []
-    for model_ref, task, strategy, _job_idx in jobs:
-        key = (model_ref, str(task["task_id"]), strategy.value)
+    for model_ref, task, strategy, reserve, _job_idx in jobs:
+        key = (model_ref, str(task["task_id"]), strategy.value, reserve)
         rec = records_by_key.get(key)
         if rec is None:
             rec = CalibrationRecord(
@@ -566,6 +654,7 @@ def _run_calibration(
                 strategy=strategy,
                 p_success=0.5,
                 estimated_tokens_total=None,
+                reserve_shown=reserve,
                 rationale="ERROR: missing calibration result",
             )
         out.append(rec)
@@ -641,6 +730,19 @@ def main() -> None:
     )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument(
+        "--resume-from",
+        type=Path,
+        default=None,
+        help="Path to a prior calibration_results.jsonl; matching (model,task,strategy,reserve) combos are reused.",
+    )
+    parser.add_argument(
+        "--reserves",
+        default=None,
+        help="CSV of reserve levels for informed_bid (e.g. '5.0,10.0'). Omit for non-reserve strategies.",
+    )
+    parser.add_argument("--penalty", type=float, default=1.0)
+    parser.add_argument("--price-per-token", type=float, default=0.00001)
+    parser.add_argument(
         "--output-root",
         type=Path,
         default=Path("runs/research/phase1") / _now_tag(),
@@ -705,15 +807,31 @@ def main() -> None:
             workers=workers,
         )
 
+    reserves: list[float | None]
+    if args.reserves:
+        reserves = [float(v.strip()) for v in str(args.reserves).split(",") if v.strip()]
+    else:
+        reserves = [None]
+
+    resume_records = None
+    if args.resume_from:
+        resume_path = Path(args.resume_from)
+        resume_records = _load_resume_records(resume_path)
+        print(f"[phase1] loaded {len(resume_records)} records from {resume_path}", flush=True)
+
     calibration_records = _run_calibration(
         execute_calibration=bool(args.execute_calibration),
         llm=llm,
         models=models,
         tasks=tasks,
         strategies=strategies,
+        reserves=reserves,
+        penalty=float(args.penalty),
+        price_per_token=float(args.price_per_token),
         calibration_concurrency=int(args.calibration_concurrency),
         check_every=max(0, int(args.check_every)),
         quality_checks_path=quality_checks_path,
+        resume_records=resume_records,
     )
 
     record_rows: list[dict] = []
@@ -772,7 +890,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"tasks={len(tasks)} models={len(models)} strategies={len(strategies)}")
+    print(f"tasks={len(tasks)} models={len(models)} strategies={len(strategies)} reserves={reserves}")
     print(f"calibration_results={Path(args.output_root) / 'calibration_results.jsonl'}")
     print(f"solo_results={Path(args.output_root) / 'solo_results.jsonl'}")
     print(f"quality_checks={quality_checks_path}")

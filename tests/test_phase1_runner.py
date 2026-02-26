@@ -13,8 +13,10 @@ from scripts.run_phase1 import (
     _first_attempt_outcomes,
     _load_phase1_inputs,
     _load_phase1_tasks,
+    _load_resume_records,
     _run_calibration,
     _safe_model_tag,
+    _strategy_list,
     _write_swebench_phase1_scenario,
 )
 
@@ -267,6 +269,7 @@ def test_run_calibration_writes_quality_checks_on_cadence(tmp_path: Path) -> Non
         models=["openai:gpt-5.2-2025-12-11"],
         tasks=tasks,
         strategies=[PromptStrategy.DIRECT],
+        reserves=[None],
         calibration_concurrency=1,
         check_every=2,
         quality_checks_path=quality_path,
@@ -276,3 +279,59 @@ def test_run_calibration_writes_quality_checks_on_cadence(tmp_path: Path) -> Non
     assert [row["type"] for row in lines] == ["checkpoint", "final"]
     assert lines[0]["completed"] == 2
     assert lines[1]["completed"] == 3
+
+
+def test_strategy_list_accepts_canonical_phase2a_names() -> None:
+    strategies = _strategy_list("direct_bid,prob_tokens,plan_prob_tokens")
+    assert strategies == [
+        PromptStrategy.DIRECT_BID,
+        PromptStrategy.PROB_TOKENS,
+        PromptStrategy.PLAN_PROB_TOKENS,
+    ]
+
+
+def test_strategy_list_accepts_human_readable_aliases() -> None:
+    strategies = _strategy_list("prob+tokens,plan+prob+tokens")
+    assert strategies == [PromptStrategy.PROB_TOKENS, PromptStrategy.PLAN_PROB_TOKENS]
+
+
+def test_resume_from_skips_existing_combos(tmp_path: Path) -> None:
+    prior = tmp_path / "prior.jsonl"
+    prior.write_text(
+        json.dumps({
+            "benchmark": "swebench",
+            "task_id": "T1",
+            "model_ref": "m1",
+            "strategy": "direct",
+            "p_success": 0.9,
+            "estimated_tokens_total": 1000,
+            "reserve_shown": None,
+            "rationale": "prior run",
+        })
+        + "\n",
+        encoding="utf-8",
+    )
+    resume = _load_resume_records(prior)
+    assert ("m1", "T1", "direct", None) in resume
+
+    tasks = [
+        {"benchmark": "swebench", "task_id": "T1", "title": "t1", "description": "d1", "acceptance": []},
+        {"benchmark": "swebench", "task_id": "T2", "title": "t2", "description": "d2", "acceptance": []},
+    ]
+    records = _run_calibration(
+        execute_calibration=False,
+        llm=None,
+        models=["m1"],
+        tasks=tasks,
+        strategies=[PromptStrategy.DIRECT],
+        reserves=[None],
+        calibration_concurrency=1,
+        check_every=0,
+        resume_records=resume,
+    )
+    assert len(records) == 2
+    t1_rec = [r for r in records if r.task_id == "T1"][0]
+    t2_rec = [r for r in records if r.task_id == "T2"][0]
+    assert t1_rec.p_success == 0.9
+    assert t1_rec.rationale == "prior run"
+    assert t2_rec.rationale == "not executed"

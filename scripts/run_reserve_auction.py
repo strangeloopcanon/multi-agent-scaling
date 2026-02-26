@@ -20,6 +20,8 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_economy.research.reserve_auction import summarize_auction_results
+from agent_economy.research.reserve_auction import VALID_TREATMENTS
+from agent_economy.research.reserve_auction import TREATMENT_LEGACY_PAY_RESERVE
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -48,6 +50,11 @@ def main() -> None:
     parser.add_argument("--n-draws", type=int, default=100)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
+        "--treatment",
+        choices=sorted(VALID_TREATMENTS),
+        default=TREATMENT_LEGACY_PAY_RESERVE,
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=None,
@@ -70,6 +77,7 @@ def main() -> None:
         max_reserve=float(args.max_reserve),
         n_draws=int(args.n_draws),
         seed=int(args.seed),
+        treatment=str(args.treatment),
     )
 
     output_path = args.output or (Path(args.phase1_dir) / "reserve_auction_results.json")
@@ -81,6 +89,7 @@ def main() -> None:
 
     overall = results.get("overall") or {}
     print(f"records={len(records)}")
+    print(f"treatment={args.treatment}")
     print(f"mean_win_rate={overall.get('mean_win_rate', 0.0):.4f}")
     print(f"mean_expected_profit=${overall.get('mean_expected_profit', 0.0):.4f}")
     realized = overall.get("mean_realized_profit")

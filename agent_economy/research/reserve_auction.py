@@ -27,9 +27,19 @@ The gap is the dollar cost of miscalibration.
 
 from __future__ import annotations
 
+import math
 import random
 from collections import defaultdict
 from typing import Any
+
+TREATMENT_LEGACY_PAY_RESERVE = "legacy_pay_reserve"
+TREATMENT_HIDDEN_FIRST_PRICE = "hidden_first_price"
+TREATMENT_KNOWN_FIRST_PRICE = "known_first_price"
+VALID_TREATMENTS = {
+    TREATMENT_LEGACY_PAY_RESERVE,
+    TREATMENT_HIDDEN_FIRST_PRICE,
+    TREATMENT_KNOWN_FIRST_PRICE,
+}
 
 
 def _as_float(value: Any, *, default: float = 0.0) -> float:
@@ -37,6 +47,42 @@ def _as_float(value: Any, *, default: float = 0.0) -> float:
         return float(value)
     except Exception:
         return float(default)
+
+
+def _is_valid_nonnegative_number(value: Any) -> bool:
+    try:
+        parsed = float(value)
+    except Exception:
+        return False
+    return math.isfinite(parsed) and parsed >= 0.0
+
+
+def _uniform_bayes_ask(*, breakeven: float, max_reserve: float) -> float:
+    if not math.isfinite(breakeven):
+        return float("inf")
+    return 0.5 * (float(breakeven) + float(max_reserve))
+
+
+def _resolve_hidden_ask(
+    *,
+    row: dict[str, Any],
+    breakeven: float,
+    max_reserve: float,
+) -> tuple[float, float | None, str]:
+    strategy = str(row.get("strategy") or "")
+    if strategy == "direct_bid":
+        if _is_valid_nonnegative_number(row.get("ask")):
+            ask = float(row.get("ask"))
+            return ask, ask, "model"
+        fallback_ask = _uniform_bayes_ask(breakeven=breakeven, max_reserve=max_reserve)
+        return fallback_ask, (fallback_ask if math.isfinite(fallback_ask) else None), "fallback"
+
+    if strategy in {"prob_tokens", "plan_prob_tokens"}:
+        ask = _uniform_bayes_ask(breakeven=breakeven, max_reserve=max_reserve)
+        return ask, (ask if math.isfinite(ask) else None), "uniform_bayes"
+
+    ask = _uniform_bayes_ask(breakeven=breakeven, max_reserve=max_reserve)
+    return ask, (ask if math.isfinite(ask) else None), "uniform_bayes"
 
 
 def compute_breakeven_bid(
@@ -65,19 +111,51 @@ def simulate_reserve_auction(
     max_reserve: float,
     n_draws: int = 100,
     seed: int = 42,
-) -> list[dict[str, float]]:
+    treatment: str = TREATMENT_LEGACY_PAY_RESERVE,
+    ask: float | None = None,
+) -> list[dict[str, float | None]]:
     """Run *n_draws* independent reserve-price draws for a single row.
 
-    Returns one dict per draw with keys ``reserve``, ``won``, ``profit``.
+    Returns one dict per draw with keys:
+    ``reserve``, ``won``, ``profit``, ``ask``, ``payment``, ``margin``.
     """
+    mode = str(treatment or TREATMENT_LEGACY_PAY_RESERVE)
+    if mode not in VALID_TREATMENTS:
+        raise ValueError(f"unsupported treatment: {mode}")
+
     rng = random.Random(seed)
     p = max(0.0, min(1.0, float(p_success)))
-    results: list[dict[str, float]] = []
+    ask_value = float(ask) if ask is not None else float("inf")
+    results: list[dict[str, float | None]] = []
     for _ in range(n_draws):
         r = rng.uniform(0.0, float(max_reserve))
-        won = float(breakeven_bid) <= r
-        profit = (r - float(breakeven_bid)) * p if won else 0.0
-        results.append({"reserve": r, "won": 1.0 if won else 0.0, "profit": profit})
+        if mode == TREATMENT_HIDDEN_FIRST_PRICE:
+            won = ask_value <= r
+            payment = ask_value if won else 0.0
+            margin = (ask_value - float(breakeven_bid)) if won else 0.0
+            draw_ask: float | None = ask_value if math.isfinite(ask_value) else None
+        elif mode == TREATMENT_KNOWN_FIRST_PRICE:
+            won = float(breakeven_bid) <= r
+            draw_ask = r if won else None
+            payment = r if won else 0.0
+            margin = (r - float(breakeven_bid)) if won else 0.0
+        else:
+            won = float(breakeven_bid) <= r
+            draw_ask = None
+            payment = r if won else 0.0
+            margin = (r - float(breakeven_bid)) if won else 0.0
+
+        profit = margin * p if won else 0.0
+        results.append(
+            {
+                "reserve": r,
+                "won": 1.0 if won else 0.0,
+                "profit": profit,
+                "ask": draw_ask,
+                "payment": payment,
+                "margin": margin,
+            }
+        )
     return results
 
 
@@ -89,6 +167,7 @@ def _row_auction_metrics(
     max_reserve: float,
     n_draws: int,
     seed: int,
+    treatment: str,
 ) -> dict[str, Any]:
     """Compute auction metrics for a single calibration record."""
     p_reported = max(0.0, min(1.0, _as_float(row.get("p_success"), default=0.0)))
@@ -101,12 +180,28 @@ def _row_auction_metrics(
         penalty=penalty,
     )
 
+    mode = str(treatment or TREATMENT_LEGACY_PAY_RESERVE)
+    if mode not in VALID_TREATMENTS:
+        raise ValueError(f"unsupported treatment: {mode}")
+
+    ask_for_sim: float | None = None
+    ask_used: float | None = None
+    ask_source = "best_response"
+    if mode == TREATMENT_HIDDEN_FIRST_PRICE:
+        ask_for_sim, ask_used, ask_source = _resolve_hidden_ask(
+            row=row,
+            breakeven=breakeven,
+            max_reserve=max_reserve,
+        )
+
     draws = simulate_reserve_auction(
         breakeven_bid=breakeven,
         p_success=p_reported,
         max_reserve=max_reserve,
         n_draws=n_draws,
         seed=seed,
+        treatment=mode,
+        ask=ask_for_sim,
     )
 
     win_rate = sum(d["won"] for d in draws) / len(draws) if draws else 0.0
@@ -117,7 +212,7 @@ def _row_auction_metrics(
     if outcome is not None:
         actual_p = 1.0 if int(outcome) == 1 else 0.0
         realized_profit = (
-            sum((d["reserve"] - breakeven) * actual_p for d in draws if d["won"] > 0.0) / len(draws)
+            sum(float(d["margin"]) * actual_p for d in draws if d["won"] > 0.0) / len(draws)
             if draws
             else 0.0
         )
@@ -131,10 +226,13 @@ def _row_auction_metrics(
         "strategy": str(row.get("strategy") or "unknown"),
         "task_id": str(row.get("task_id") or ""),
         "benchmark": str(row.get("benchmark") or ""),
+        "treatment": mode,
         "p_success": p_reported,
         "estimated_tokens_total": estimated_tokens,
         "token_cost": token_cost,
         "breakeven_bid": breakeven if breakeven != float("inf") else None,
+        "ask_used": ask_used,
+        "ask_source": ask_source,
         "win_rate": win_rate,
         "expected_profit": expected_profit,
         "realized_profit": realized_profit,
@@ -188,6 +286,7 @@ def summarize_auction_results(
     max_reserve: float = 10.0,
     n_draws: int = 100,
     seed: int = 42,
+    treatment: str = TREATMENT_LEGACY_PAY_RESERVE,
 ) -> dict[str, Any]:
     """Run the reserve-price auction simulation over calibration records.
 
@@ -225,6 +324,7 @@ def summarize_auction_results(
             max_reserve=max_reserve,
             n_draws=n_draws,
             seed=seed + idx,
+            treatment=treatment,
         )
         per_row.append(metrics)
 
@@ -243,6 +343,7 @@ def summarize_auction_results(
             "max_reserve": max_reserve,
             "n_draws": n_draws,
             "seed": seed,
+            "treatment": treatment,
         },
         "overall": _summarize_group(per_row),
         "by_model": {k: _summarize_group(v) for k, v in sorted(by_model.items())},

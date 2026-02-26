@@ -7,6 +7,9 @@ import math
 import pytest
 
 from agent_economy.research.reserve_auction import (
+    TREATMENT_HIDDEN_FIRST_PRICE,
+    TREATMENT_KNOWN_FIRST_PRICE,
+    TREATMENT_LEGACY_PAY_RESERVE,
     compute_breakeven_bid,
     simulate_reserve_auction,
     summarize_auction_results,
@@ -102,6 +105,43 @@ class TestSimulateReserveAuction:
                 assert d["profit"] == pytest.approx((d["reserve"] - 3.0) * 0.6)
             else:
                 assert d["profit"] == 0.0
+
+    def test_hidden_first_price_uses_ask_margin(self):
+        draws = simulate_reserve_auction(
+            breakeven_bid=3.0,
+            p_success=0.6,
+            max_reserve=10.0,
+            n_draws=10,
+            seed=7,
+            treatment=TREATMENT_HIDDEN_FIRST_PRICE,
+            ask=5.0,
+        )
+        for d in draws:
+            if d["won"] == 1.0:
+                assert d["profit"] == pytest.approx((5.0 - 3.0) * 0.6)
+            else:
+                assert d["profit"] == 0.0
+
+    def test_known_first_price_matches_legacy_pay_reserve(self):
+        known = simulate_reserve_auction(
+            breakeven_bid=4.0,
+            p_success=0.7,
+            max_reserve=10.0,
+            n_draws=25,
+            seed=11,
+            treatment=TREATMENT_KNOWN_FIRST_PRICE,
+        )
+        legacy = simulate_reserve_auction(
+            breakeven_bid=4.0,
+            p_success=0.7,
+            max_reserve=10.0,
+            n_draws=25,
+            seed=11,
+            treatment=TREATMENT_LEGACY_PAY_RESERVE,
+        )
+        assert [d["reserve"] for d in known] == [d["reserve"] for d in legacy]
+        assert [d["won"] for d in known] == [d["won"] for d in legacy]
+        assert [d["profit"] for d in known] == [d["profit"] for d in legacy]
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +256,7 @@ class TestSummarizeAuctionResults:
             max_reserve=20.0,
             n_draws=50,
             seed=7,
+            treatment=TREATMENT_HIDDEN_FIRST_PRICE,
         )
         params = result["parameters"]
         assert params["price_per_token"] == 0.00002
@@ -223,6 +264,7 @@ class TestSummarizeAuctionResults:
         assert params["max_reserve"] == 20.0
         assert params["n_draws"] == 50
         assert params["seed"] == 7
+        assert params["treatment"] == TREATMENT_HIDDEN_FIRST_PRICE
 
     def test_rows_included(self):
         records = [
@@ -242,3 +284,70 @@ class TestSummarizeAuctionResults:
         result = summarize_auction_results(records, price_per_token=0.00001, penalty=1.0)
         row = result["rows"][0]
         assert row["breakeven_bid"] == pytest.approx(0.375)
+
+    def test_hidden_first_price_direct_bid_fallback(self):
+        records = [
+            self._make_record(
+                strategy="direct_bid",
+                p_success=0.5,
+                estimated_tokens_total=0,
+                outcome=1,
+            )
+        ]
+        result = summarize_auction_results(
+            records,
+            price_per_token=0.0,
+            penalty=1.0,
+            max_reserve=10.0,
+            n_draws=10,
+            seed=5,
+            treatment=TREATMENT_HIDDEN_FIRST_PRICE,
+        )
+        row = result["rows"][0]
+        # breakeven=1.0 => uniform-Bayes fallback ask=(1+10)/2=5.5
+        assert row["ask_used"] == pytest.approx(5.5)
+        assert row["ask_source"] == "fallback"
+
+    def test_hidden_first_price_prob_tokens_uses_uniform_bayes(self):
+        records = [
+            self._make_record(strategy="prob_tokens", p_success=0.5, estimated_tokens_total=0)
+        ]
+        result = summarize_auction_results(
+            records,
+            price_per_token=0.0,
+            penalty=1.0,
+            max_reserve=10.0,
+            n_draws=10,
+            seed=5,
+            treatment=TREATMENT_HIDDEN_FIRST_PRICE,
+        )
+        row = result["rows"][0]
+        assert row["ask_used"] == pytest.approx(5.5)
+        assert row["ask_source"] == "uniform_bayes"
+
+    def test_known_first_price_matches_legacy_summary_profit(self):
+        records = [self._make_record(p_success=0.7, estimated_tokens_total=0)]
+        known = summarize_auction_results(
+            records,
+            price_per_token=0.0,
+            penalty=1.0,
+            max_reserve=10.0,
+            n_draws=100,
+            seed=17,
+            treatment=TREATMENT_KNOWN_FIRST_PRICE,
+        )
+        legacy = summarize_auction_results(
+            records,
+            price_per_token=0.0,
+            penalty=1.0,
+            max_reserve=10.0,
+            n_draws=100,
+            seed=17,
+            treatment=TREATMENT_LEGACY_PAY_RESERVE,
+        )
+        assert known["overall"]["mean_expected_profit"] == pytest.approx(
+            legacy["overall"]["mean_expected_profit"]
+        )
+        assert known["overall"]["mean_win_rate"] == pytest.approx(
+            legacy["overall"]["mean_win_rate"]
+        )
