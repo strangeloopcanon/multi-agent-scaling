@@ -134,6 +134,38 @@ def test_elicit_calibration_informed_bid_records_reserve() -> None:
     assert rec.strategy == PromptStrategy.INFORMED_BID
 
 
+def test_build_calibration_prompt_second_price_informed_bid() -> None:
+    prompt = build_calibration_prompt(
+        task_id="T1",
+        task_title="Title",
+        task_description="Description",
+        acceptance_commands=["pytest -q"],
+        strategy=PromptStrategy.SECOND_PRICE_INFORMED_BID,
+        reserve_shown=10.0,
+        penalty=1.0,
+        price_per_token=0.00001,
+    )
+    assert "second-lowest ask" in prompt
+    assert "true cost" in prompt
+    assert "not your own ask" in prompt
+    assert "$10.00" in prompt
+    assert "$1.00" in prompt
+    assert "ask" in prompt
+
+    first_price_prompt = build_calibration_prompt(
+        task_id="T1",
+        task_title="Title",
+        task_description="Description",
+        acceptance_commands=["pytest -q"],
+        strategy=PromptStrategy.INFORMED_BID,
+        reserve_shown=10.0,
+        penalty=1.0,
+        price_per_token=0.00001,
+    )
+    assert "second-lowest ask" not in first_price_prompt
+    assert "paid your ask price" in first_price_prompt
+
+
 def test_elicit_calibration_direct_bid_captures_ask() -> None:
     class _FakeLLMWithAsk(_FakeLLM):
         def call_json(self, **kwargs):  # type: ignore[override]

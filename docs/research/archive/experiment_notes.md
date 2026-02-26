@@ -139,6 +139,22 @@ The one newly-resolved task was:
 
 ---
 
+## Phase IIa: Second-price auction comparison (2026-02-26)
+
+Same 50 tasks and models, but the prompt now says "you are paid the second-lowest ask, not your own ask; bidding your true cost is optimal."
+
+### The headline finding
+
+Opus behaves as Vickrey theory predicts: its anchoring ratio collapsed from 1.61x to 1.10x. GPT-5.2 does the opposite: its ratio *increased* from 2.21x to 4.55x, suggesting it doesn't grasp the second-price mechanism.
+
+All three models dropped asks dramatically (60--90% reduction). Mean asks went from $1--$4.50 to $0.14--$0.79. But most bids fell *below* breakeven (only 13/100 Opus bids and 59/100 GPT-5.2 bids above breakeven). Models interpreted "bid your true cost" as compute cost alone, ignoring expected penalty for failure.
+
+Allocation accuracy was unchanged (68% under both regimes), despite radically different bid levels and winner distributions. GPT-5.2 went from winning 3/50 tasks (first-price) to 23/50 tasks (second-price) under min\_ask, because its bids are no longer inflated.
+
+Run artifacts: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota-limited)
+
+---
+
 ## Phase IIa: Informed competitive auctions (2026-02-26)
 
 50 SWE-bench tasks, 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro), 2 reserve levels ($5, $10), 300 LLM calls.
