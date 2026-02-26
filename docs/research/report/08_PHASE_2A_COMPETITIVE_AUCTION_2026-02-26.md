@@ -85,3 +85,68 @@ min\_ask is consistently cheaper per solve than the formula because winners bid 
 4. **The bottleneck is calibration, not the scoring rule.** Both mechanisms produce similar accuracy because the underlying `p_success` estimates are similarly noisy. Improving self-assessment would help more than changing the allocation rule.
 
 5. **Opus's underbidding is economically rational but allocation-suboptimal.** It wins most tasks under min\_ask by bidding low, but this doesn't match capability. A mechanism that verifies post-hoc solve rates and penalises over-claiming could rebalance allocation without changing the bidding protocol.
+
+---
+
+## Second-price (Vickrey) auction comparison
+
+To test whether the anchoring behaviour observed under first-price rules is strategic or mere pattern-matching, we re-ran the same 50-task experiment with a second-price prompt: models were told they'd be paid the second-lowest ask (not their own), and that bidding their true cost was optimal.
+
+226/300 calls succeeded (Gemini hit a daily API quota limit; 100/100 GPT-5.2 and 100/100 Opus completed cleanly, plus 26/100 Gemini).
+
+### Asks collapsed toward breakeven
+
+| Model | 1st-price mean @$5 | 2nd-price mean @$5 | 1st-price mean @$10 | 2nd-price mean @$10 |
+|---|---|---|---|---|
+| Opus | $1.27 | **$0.50** | $1.92 | **$0.54** |
+| GPT-5.2 | $2.04 | **$0.66** | $4.50 | **$0.79** |
+| Gemini | $2.14 | $0.14 (n=14) | $2.21 | $0.27 (n=12) |
+
+All three models dropped their asks dramatically -- Opus by 60%, GPT-5.2 by 68--82%, Gemini by 87--93%. Under second-price rules, models bid near their estimated cost rather than inflating toward the budget.
+
+### Opus's anchoring collapsed; GPT-5.2's inverted
+
+| Model | 1st-price ratio ($10/$5) | 2nd-price ratio ($10/$5) | Change |
+|---|---|---|---|
+| GPT-5.2 | 2.21x | **4.55x** | Increased -- opposite of expected |
+| Opus | 1.61x | **1.10x** | Collapsed toward 1.0x as predicted |
+| Gemini | 1.05x | 1.60x (n=12) | Increased, but small sample |
+
+Opus behaves as theory predicts: under second-price, it bids near true cost regardless of the budget, and the anchoring ratio drops to near 1.0x. GPT-5.2 does the opposite -- its ratio actually increases to 4.55x, suggesting it doesn't understand the Vickrey mechanism and still tries to extract surplus (or it interprets the higher budget as a signal about task difficulty).
+
+### Rationality dropped sharply
+
+| Model | 1st-price rational | 2nd-price rational |
+|---|---|---|
+| Opus | 100/100 | **13/100** |
+| GPT-5.2 | 99/100 | **59/100** |
+| Gemini | 99/100 | 22/26 |
+
+Under second-price, most models bid *below* breakeven. This is economically irrational in any auction format -- you'd lose money if you won. The prompt told them to bid their "true cost", and they interpreted this as expected compute cost alone, ignoring the expected penalty for failure. They're being too literal about "cost" and not accounting for risk.
+
+### Allocation accuracy held steady
+
+| Mechanism | 1st-price @$5 | 2nd-price @$5 | 1st-price @$10 | 2nd-price @$10 |
+|---|---|---|---|---|
+| min\_ask | 70% | 68% | 68% | 68% |
+| formula | 68% | 64% | 70% | 68% |
+
+Accuracy barely changed despite radically different bid levels. The winner distribution shifted substantially (GPT-5.2 wins 23/50 under second-price min\_ask vs 3/50 under first-price), but outcomes are similar because the task-model match quality hasn't changed.
+
+### What this means
+
+1. **Models respond to mechanism design, but inconsistently.** Opus understands second-price incentives (anchoring collapses, bids near cost). GPT-5.2 doesn't (anchoring increases, suggesting it's still trying to extract surplus).
+
+2. **"Bid your true cost" is taken too literally.** Most models bid compute cost and ignore expected penalty risk, producing below-breakeven bids. A more explicit prompt that defines "true cost = compute + expected penalty" might fix this.
+
+3. **Allocation accuracy is mechanism-invariant.** Whether bids are inflated (first-price) or compressed (second-price), the auction picks winners with similar accuracy. The information content of the bids hasn't changed, just the scale.
+
+4. **Second-price produces much cheaper payments.** Mean asks dropped 60--90%. In a real market, this would slash procurement costs without reducing allocation quality -- but only if the below-breakeven bidding problem is addressed (otherwise the winning agents lose money).
+
+<details>
+<summary>Data lineage</summary>
+
+- First-price data: `runs/research/phase2a_competitive_50task/` (300/300 clean)
+- Second-price data: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota errors)
+- Gemini data is partial (26/100 records); GPT-5.2 and Opus are complete (100/100 each)
+</details>

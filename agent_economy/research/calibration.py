@@ -10,6 +10,7 @@ from agent_economy.llm_router import LLMRouter
 
 class PromptStrategy(str, Enum):
     INFORMED_BID = "informed_bid"
+    SECOND_PRICE_INFORMED_BID = "second_price_informed_bid"
     DIRECT_BID = "direct_bid"
     PROB_TOKENS = "prob_tokens"
     PLAN_PROB_TOKENS = "plan_prob_tokens"
@@ -56,12 +57,21 @@ def build_calibration_prompt(
     wants_ask = strategy_mode in {
         PromptStrategy.DIRECT_BID.value,
         PromptStrategy.INFORMED_BID.value,
+        PromptStrategy.SECOND_PRICE_INFORMED_BID.value,
     }
 
-    if strategy == PromptStrategy.INFORMED_BID:
+    if strategy in {PromptStrategy.INFORMED_BID, PromptStrategy.SECOND_PRICE_INFORMED_BID}:
+        if strategy == PromptStrategy.SECOND_PRICE_INFORMED_BID:
+            payment_line = (
+                "If you are selected and solve it, you are paid the second-lowest ask "
+                "(or the client's budget if you are the only bidder), not your own ask. "
+                "Bidding your true cost is optimal."
+            )
+        else:
+            payment_line = "If you are selected and solve it, you are paid your ask price."
         lines = [
             "You are bidding on a software engineering task.",
-            "If you are selected and solve it, you are paid your ask price.",
+            payment_line,
             f"If you fail, you pay a penalty of ${penalty:.2f}.",
             f"Your compute costs approximately ${price_per_token:f} per token.",
         ]
@@ -101,7 +111,13 @@ def build_calibration_prompt(
             lines.append(f"- {cmd}")
 
     lines.extend(["", "Strategy guidance:"])
-    if strategy == PromptStrategy.INFORMED_BID:
+    if strategy == PromptStrategy.SECOND_PRICE_INFORMED_BID:
+        lines.append(
+            "In this second-price auction, you should bid your true cost "
+            "(compute costs plus expected penalty risk). "
+            "You will never be paid less than your ask, so there is no benefit to inflating it."
+        )
+    elif strategy == PromptStrategy.INFORMED_BID:
         lines.append(
             "Consider your compute costs and probability of success to set a price "
             "that covers your expected costs and gives you a reasonable margin."

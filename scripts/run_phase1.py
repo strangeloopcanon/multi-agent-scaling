@@ -46,6 +46,7 @@ def _norm_csv(values: str) -> list[str]:
 def _strategy_list(values: str) -> list[PromptStrategy]:
     aliases: dict[str, PromptStrategy] = {
         "informed_bid": PromptStrategy.INFORMED_BID,
+        "second_price_informed_bid": PromptStrategy.SECOND_PRICE_INFORMED_BID,
         "direct_bid": PromptStrategy.DIRECT_BID,
         "direct": PromptStrategy.DIRECT,
         "prob_tokens": PromptStrategy.PROB_TOKENS,
