@@ -1,152 +1,219 @@
-# Phase IIa: Informed Competitive Auction (2026-02-26)
+# Phase IIa: Informed Competitive Auctions
 
-## What changed
+Phase IIa is a series of three experiments investigating how LLMs bid when given economic context, and whether auction mechanism design can improve task allocation. All experiments use the same 50 SWE-bench Lite tasks with external ground-truth labels, 3 frontier models (GPT-5.2, Claude Opus 4.5, Gemini 3 Pro Preview), and 2 reserve levels ($5, $10).
 
-We redesigned the Phase IIa reserve auction experiment to test a real behavioural question: can price-based allocation outperform the confidence-weighted formula used in Phase II?
+The core question: when models are told their costs, the penalty for failure, and the payment rules, do they bid rationally? And can we exploit that to allocate tasks better than the confidence-weighted formula used in Phase II?
 
-Instead of mechanically simulating reserves against fixed calibration data (the earlier design), we now elicit *informed bids* from models: each model sees the task, the penalty ($1.00), its compute cost rate ($0.00001/token), and the client's budget cap ($5 or $10), then submits a dollar ask. The competitive auction allocates each task by either lowest ask (min\_ask) or highest `p_success * reserve - ask` (the Phase II formula), and we compare allocation accuracy against ground-truth external labels.
+## Experiment overview
 
-## Parameters
+| | Exp 1: First-price | Exp 2: Second-price | Exp 3: Formula second-price |
+|---|---|---|---|
+| **Payment rule** | Winner pays own ask | Winner pays second-lowest ask | Winner pays second-lowest ask |
+| **Cost info** | Pre-computed: "$0.000010/token" | Pre-computed: "$0.000010/token" | Raw parameter: "0.00001 $/token" |
+| **Formula given** | No | No | Yes: `breakeven = tokens * ppt + penalty * (1-p)` |
+| **Dominant strategy stated** | No | "Bid your true cost" (vague) | "Bidding above or below cannot improve your outcome" |
+| **Reserve conditions** | $5, $10 (always shown) | $5, $10 (always shown) | $5, $10 shown + hidden |
+| **Calls** | 300 | 300 (226 clean) | 450 (303 clean) |
 
-- **50 tasks** from `external_covered_lite` (SWE-bench Lite, external labels)
-- 3 models: GPT-5.2, Claude Opus 4.5, Gemini 3 Pro Preview
-- 2 reserve levels: $5, $10
-- 300 total LLM calls (50 tasks x 3 models x 2 reserves)
-- Run incrementally: 20-task pilot first, then 30 additional tasks merged via `--resume-from`
+Gemini hit daily API quota limits in Exp 2 (74/100 failures) and Exp 3 (147/150 failures). Gemini data is partial in those experiments; GPT-5.2 and Opus are complete throughout.
 
 <details>
 <summary>Data lineage</summary>
 
-- Pilot (120 records): `runs/research/phase2a_competitive_20260226T090231Z/`
-- Full run (300 records): `runs/research/phase2a_competitive_50task/`
-- 0 errors, 0 missing asks across all 300 records
+- Exp 1: `runs/research/phase2a_competitive_50task/` (300/300 clean)
+- Exp 2: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota errors)
+- Exp 3: `runs/research/phase2a_formula_sp/` (303/450 clean; 147 Gemini quota errors)
 </details>
-
-## Key findings
-
-### 1. Economic context fixes the ask-scale problem
-
-With informed bids, all models produce asks in the $0.05–$6.50 range, all below the reserve, and 298/300 above breakeven. The economic framing gives models enough context to price rationally. (Compare: without economic context, GPT-5.2 asked $18–$1,800 and Gemini asked $2–$250.)
-
-| Model | Ask range | Mean ask @$5 | Mean ask @$10 | Rational asks |
-|---|---|---|---|---|
-| Opus | $0.45–$3.85 | $1.27 | $1.92 | 100/100 |
-| GPT-5.2 | $1.25–$6.50 | $2.04 | $4.50 | 99/100 |
-| Gemini | $0.05–$4.50 | $2.14 | $2.21 | 99/100 |
-
-### 2. Reserve anchoring is model-specific and stable at scale
-
-How much does each model adjust its ask when the budget doubles from $5 to $10?
-
-| Model | Mean ratio ($10/$5) | 20-task pilot ratio | Interpretation |
-|---|---|---|---|
-| GPT-5.2 | 2.21x | 2.18x | Highly strategic: doubles ask with budget |
-| Opus | 1.61x | 1.51x | Moderate adjustment |
-| Gemini | 1.05x | 1.12x | Price-rigid: ignores budget signal |
-
-The pattern from the 20-task pilot holds almost exactly at 50 tasks, increasing confidence that these are genuine model-level behaviours rather than sampling noise.
-
-### 3. Allocation accuracy: both mechanisms reach 68–70%
-
-| Mechanism | Reserve=$5 | Reserve=$10 |
-|---|---|---|
-| min\_ask | 35/50 (70%) | 34/50 (68%) |
-| formula | 34/50 (68%) | 35/50 (70%) |
-| oracle | 40/50 (80%) | 40/50 (80%) |
-
-Neither mechanism consistently outperforms. Both sit 10–12pp below the oracle ceiling, up from 15–20pp gap at 20 tasks. The scaling improved absolute accuracy from ~42% to ~69% (the task pool at 50 is more solvable: 80% oracle vs 60% at 20), but the relative gap between mechanisms remains negligible.
-
-### 4. Opus dominates min\_ask allocation by underbidding
-
-| Reserve | min\_ask winner distribution | formula winner distribution |
-|---|---|---|
-| $5 | Opus 42, Gemini 5, GPT-5.2 3 | Opus 33, Gemini 17 |
-| $10 | Opus 34, Gemini 14, GPT-5.2 2 | Gemini 29, Opus 21 |
-
-Under min\_ask, Opus wins 68–84% of tasks because it consistently bids lowest. Under the formula (which rewards high confidence), Gemini's high `p_success` claims shift allocation toward it, especially at the $10 reserve. GPT-5.2 rarely wins under either mechanism because it bids highest.
-
-### 5. Cost efficiency
-
-| Metric | min\_ask @$5 | min\_ask @$10 | formula @$5 | formula @$10 |
-|---|---|---|---|---|
-| Cost per solve (1st-price) | $1.72 | $2.31 | $1.99 | $2.41 |
-| Cost per solve (2nd-price) | $2.67 | $3.61 | $2.99 | $3.48 |
-
-min\_ask is consistently cheaper per solve than the formula because winners bid low. The formula pays more but doesn't improve accuracy enough to justify the premium.
-
-## What this means
-
-1. **Economic context works and scales.** The ask-scale fix holds at 50 tasks. Models price rationally when given penalty, compute cost, and budget information.
-
-2. **Reserve anchoring is a stable model-level trait.** GPT-5.2's 2.2x ratio and Gemini's 1.05x ratio are essentially unchanged from the 20-task pilot. This is a reliable finding for mechanism design: budget-responsive models can be influenced by reserve levels, price-rigid ones cannot.
-
-3. **Price alone doesn't fix allocation.** Neither min\_ask nor the formula closes the gap to the oracle ceiling. The 10pp gap at 50 tasks is smaller than the 20pp gap at 20 tasks, but this is driven by a more solvable task pool rather than better allocation.
-
-4. **The bottleneck is calibration, not the scoring rule.** Both mechanisms produce similar accuracy because the underlying `p_success` estimates are similarly noisy. Improving self-assessment would help more than changing the allocation rule.
-
-5. **Opus's underbidding is economically rational but allocation-suboptimal.** It wins most tasks under min\_ask by bidding low, but this doesn't match capability. A mechanism that verifies post-hoc solve rates and penalises over-claiming could rebalance allocation without changing the bidding protocol.
 
 ---
 
-## Second-price (Vickrey) auction comparison
+## Exp 1: First-price informed bids
 
-To test whether the anchoring behaviour observed under first-price rules is strategic or mere pattern-matching, we re-ran the same 50-task experiment with a second-price prompt: models were told they'd be paid the second-lowest ask (not their own), and that bidding their true cost was optimal.
+Models see the task, penalty ($1.00), compute cost rate ($0.00001/token), and the client's budget cap. They submit a dollar ask and are paid that ask if they win and solve the task.
 
-226/300 calls succeeded (Gemini hit a daily API quota limit; 100/100 GPT-5.2 and 100/100 Opus completed cleanly, plus 26/100 Gemini).
+### Ask distributions
+
+| Model | Ask range | Mean ask @$5 | Mean ask @$10 | Rational asks |
+|---|---|---|---|---|
+| Opus | $0.45--$3.85 | $1.27 | $1.92 | 100/100 |
+| GPT-5.2 | $1.25--$6.50 | $2.04 | $4.50 | 99/100 |
+| Gemini | $0.05--$4.50 | $2.14 | $2.21 | 99/100 |
+
+Economic context solved the ask-scale problem: all asks fell in a rational range, versus $18--$1,800 without it.
+
+### Reserve anchoring
+
+| Model | Ratio ($10/$5) | Interpretation |
+|---|---|---|
+| GPT-5.2 | 2.21x | Doubles ask when budget doubles |
+| Opus | 1.61x | Moderate adjustment |
+| Gemini | 1.05x | Ignores budget signal |
+
+### Allocation accuracy
+
+| Mechanism | @$5 | @$10 | Oracle |
+|---|---|---|---|
+| min\_ask | 35/50 (70%) | 34/50 (68%) | 40/50 (80%) |
+| formula | 34/50 (68%) | 35/50 (70%) | 40/50 (80%) |
+
+Neither mechanism dominates. Both sit ~10pp below the oracle ceiling.
+
+---
+
+## Exp 2: Second-price (Vickrey) informed bids
+
+Same economic information as Exp 1, but models are told they'll be paid the second-lowest ask, not their own. The prompt says "bidding your true cost is optimal."
 
 ### Asks collapsed toward breakeven
 
-| Model | 1st-price mean @$5 | 2nd-price mean @$5 | 1st-price mean @$10 | 2nd-price mean @$10 |
+| Model | 1st-price @$5 | 2nd-price @$5 | 1st-price @$10 | 2nd-price @$10 |
 |---|---|---|---|---|
-| Opus | $1.27 | **$0.50** | $1.92 | **$0.54** |
-| GPT-5.2 | $2.04 | **$0.66** | $4.50 | **$0.79** |
+| Opus | $1.27 | $0.50 | $1.92 | $0.54 |
+| GPT-5.2 | $2.04 | $0.66 | $4.50 | $0.79 |
 | Gemini | $2.14 | $0.14 (n=14) | $2.21 | $0.27 (n=12) |
 
-All three models dropped their asks dramatically -- Opus by 60%, GPT-5.2 by 68--82%, Gemini by 87--93%. Under second-price rules, models bid near their estimated cost rather than inflating toward the budget.
+All models dropped asks 60--90%. Under second-price, they bid near estimated cost rather than inflating toward the budget.
 
-### Opus's anchoring collapsed; GPT-5.2's inverted
+### Anchoring diverged
 
-| Model | 1st-price ratio ($10/$5) | 2nd-price ratio ($10/$5) | Change |
+| Model | 1st-price ratio | 2nd-price ratio | Change |
 |---|---|---|---|
-| GPT-5.2 | 2.21x | **4.55x** | Increased -- opposite of expected |
-| Opus | 1.61x | **1.10x** | Collapsed toward 1.0x as predicted |
-| Gemini | 1.05x | 1.60x (n=12) | Increased, but small sample |
+| GPT-5.2 | 2.21x | 4.55x | Increased -- opposite of theory |
+| Opus | 1.61x | 1.10x | Collapsed toward 1.0x as predicted |
+| Gemini | 1.05x | 1.60x (n=12) | Increased, small sample |
 
-Opus behaves as theory predicts: under second-price, it bids near true cost regardless of the budget, and the anchoring ratio drops to near 1.0x. GPT-5.2 does the opposite -- its ratio actually increases to 4.55x, suggesting it doesn't understand the Vickrey mechanism and still tries to extract surplus (or it interprets the higher budget as a signal about task difficulty).
+Opus understood the Vickrey mechanism: anchoring collapsed. GPT-5.2 did the opposite, inflating its ratio to 4.55x.
 
 ### Rationality dropped sharply
 
 | Model | 1st-price rational | 2nd-price rational |
 |---|---|---|
-| Opus | 100/100 | **13/100** |
-| GPT-5.2 | 99/100 | **59/100** |
+| Opus | 100/100 | 13/100 |
+| GPT-5.2 | 99/100 | 59/100 |
 | Gemini | 99/100 | 22/26 |
 
-Under second-price, most models bid *below* breakeven. This is economically irrational in any auction format -- you'd lose money if you won. The prompt told them to bid their "true cost", and they interpreted this as expected compute cost alone, ignoring the expected penalty for failure. They're being too literal about "cost" and not accounting for risk.
+Models interpreted "true cost" as compute cost only, ignoring expected penalty for failure. Most bids fell below breakeven.
 
-### Allocation accuracy held steady
+### Allocation accuracy held
 
-| Mechanism | 1st-price @$5 | 2nd-price @$5 | 1st-price @$10 | 2nd-price @$10 |
+| Mechanism | 1st @$5 | 2nd @$5 | 1st @$10 | 2nd @$10 |
 |---|---|---|---|---|
 | min\_ask | 70% | 68% | 68% | 68% |
 | formula | 68% | 64% | 70% | 68% |
 
-Accuracy barely changed despite radically different bid levels. The winner distribution shifted substantially (GPT-5.2 wins 23/50 under second-price min\_ask vs 3/50 under first-price), but outcomes are similar because the task-model match quality hasn't changed.
+Despite radically different ask levels, accuracy barely changed.
 
-### What this means
+---
 
-1. **Models respond to mechanism design, but inconsistently.** Opus understands second-price incentives (anchoring collapses, bids near cost). GPT-5.2 doesn't (anchoring increases, suggesting it's still trying to extract surplus).
+## Exp 3: Formula second-price (reserve shown vs hidden)
 
-2. **"Bid your true cost" is taken too literally.** Most models bid compute cost and ignore expected penalty risk, producing below-breakeven bids. A more explicit prompt that defines "true cost = compute + expected penalty" might fix this.
+This experiment addressed both problems from Exp 2: (1) models ignored penalty in their cost estimate, and (2) we couldn't tell if remaining anchoring was caused by seeing the reserve or by intrinsic model behaviour.
 
-3. **Allocation accuracy is mechanism-invariant.** Whether bids are inflated (first-price) or compressed (second-price), the auction picks winners with similar accuracy. The information content of the bids hasn't changed, just the scale.
+Changes from Exp 2:
+- The breakeven formula is stated explicitly: `breakeven = estimated_tokens x price_per_token + penalty x (1 - p_success)`
+- The dominant strategy is stated unambiguously: "Bidding above or below cannot improve your outcome"
+- Price per token is given as a raw number (0.00001), not a pre-computed dollar amount
+- A third condition is added: reserve hidden (no budget information in the prompt)
 
-4. **Second-price produces much cheaper payments.** Mean asks dropped 60--90%. In a real market, this would slash procurement costs without reducing allocation quality -- but only if the below-breakeven bidding problem is addressed (otherwise the winning agents lose money).
+GPT-5.2 and Opus: 300/300 clean. Gemini: 3/150 clean (daily quota exhausted).
 
-<details>
-<summary>Data lineage</summary>
+### The formula eliminated anchoring
 
-- First-price data: `runs/research/phase2a_competitive_50task/` (300/300 clean)
-- Second-price data: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota errors)
-- Gemini data is partial (26/100 records); GPT-5.2 and Opus are complete (100/100 each)
-</details>
+| Model | Exp 1 ratio | Exp 2 ratio | Exp 3 ratio (shown) |
+|---|---|---|---|
+| GPT-5.2 | 2.21x | 4.55x | **0.97x** |
+| Opus | 1.61x | 1.10x | **0.99x** |
+
+Both models now bid virtually the same regardless of the budget level. The explicit formula gave GPT-5.2 the structure it needed to stop anchoring -- its ratio dropped from 4.55x to 0.97x.
+
+### Ask levels dropped to true cost
+
+| Model | Exp 1 @$5 | Exp 2 @$5 | Exp 3 @$5 | Exp 3 hidden |
+|---|---|---|---|---|
+| GPT-5.2 | $2.04 | $0.66 | $0.48 | $0.40 |
+| Opus | $1.27 | $0.50 | $0.37 | $0.37 |
+
+With the formula, models bid at their computed breakeven rather than padding margins or anchoring on the budget.
+
+### Reserve visibility barely matters
+
+| Model | Hidden ask | Shown @$5 | Shown @$10 | Hidden/Shown@$5 |
+|---|---|---|---|---|
+| GPT-5.2 | $0.40 | $0.48 | $0.46 | 0.83x |
+| Opus | $0.37 | $0.37 | $0.37 | 1.00x |
+
+Opus is perfectly indifferent to whether the reserve is shown -- pure cost-based bidding. GPT-5.2 bids ~17% lower when the reserve is hidden, suggesting a small residual anchoring effect, but compared to its 2.21x ratio in Exp 1, this is negligible.
+
+### Penalty inclusion fixed
+
+| Model | Exp 2: asks above compute-only | Exp 3: asks above compute-only |
+|---|---|---|
+| GPT-5.2 | low (most bids below breakeven) | 94.7% |
+| Opus | low (13/100 above breakeven) | 100% |
+
+The explicit formula made penalty inclusion nearly universal.
+
+### Rationality improved for Opus, still mixed for GPT-5.2
+
+| Model | Exp 1 rational | Exp 2 rational | Exp 3 rational |
+|---|---|---|---|
+| Opus | 100/100 | 13/100 | **150/150** |
+| GPT-5.2 | 99/100 | 59/100 | **85/150** (56.7%) |
+
+Opus returned to 100% rationality with the formula. GPT-5.2 improved from 59% to 57% (similar), but when irrational its bids average 71% of breakeven -- it systematically underestimates its costs on some tasks.
+
+### Allocation accuracy stable
+
+| Condition | min\_ask | formula | Oracle |
+|---|---|---|---|
+| Shown @$5 | 34/50 (68%) | 33/50 (66%) | 39/50 (78%) |
+| Shown @$10 | 33/50 (66%) | 32/50 (64%) | 38/50 (76%) |
+| Hidden @$5 | 33/50 (66%) | 33/50 (66%) | 38/50 (76%) |
+| Hidden @$10 | 33/50 (66%) | 33/50 (66%) | 38/50 (76%) |
+
+Accuracy sits at 64--68% across all conditions, consistent with Exp 1 and 2.
+
+---
+
+## Cross-experiment comparison
+
+### Anchoring trajectory
+
+| Model | Exp 1 (1st-price) | Exp 2 (2nd-price, vague) | Exp 3 (2nd-price, formula) |
+|---|---|---|---|
+| GPT-5.2 | 2.21x | 4.55x | **0.97x** |
+| Opus | 1.61x | 1.10x | **0.99x** |
+| Gemini | 1.05x | 1.60x (n=12) | insufficient data |
+
+The explicit formula collapsed anchoring for both models. Opus was already heading there (1.10x in Exp 2); GPT-5.2 needed the formula to stop extracting surplus.
+
+### What each experiment told us
+
+| Finding | Exp 1 | Exp 2 | Exp 3 |
+|---|---|---|---|
+| Economic context solves ask-scale | Yes | Yes | Yes |
+| Models anchor on reserve | GPT-5.2 strongly, Opus moderately | Opus collapses, GPT-5.2 inflates | Both collapse |
+| Models include penalty in cost | Yes (implicit) | No -- ignores penalty | Yes (explicit formula) |
+| Bids are rational (above breakeven) | 99%+ | 28% (Opus+GPT combined) | 78% overall, 100% Opus |
+| Allocation accuracy | 68--70% | 64--68% | 64--68% |
+| Oracle ceiling | 80% | 76--78% | 76--78% |
+
+### What drives model bidding
+
+1. **Opus** responds correctly to mechanism design. It adjusted its anchoring from 1.61x (first-price, rational surplus extraction) to 1.10x (second-price, near-truthful) to 0.99x (formula, perfectly truthful). It is the most economically sophisticated bidder.
+
+2. **GPT-5.2** needed explicit structural guidance. Telling it to "bid true cost" made anchoring *worse* (4.55x). Giving it the formula made it *perfect* (0.97x). It's good at following formulas, bad at inferring economic strategy.
+
+3. **Gemini** is price-rigid in Exp 1 (1.05x), suggesting cost-based rather than strategic bidding. Insufficient data in Exp 2/3 due to quota limits.
+
+---
+
+## Conclusions
+
+**The allocation bottleneck is not the auction mechanism.** Across three experiments, two payment rules, and multiple reserve conditions, allocation accuracy stays at 64--70%, always ~10pp below the oracle ceiling. The bottleneck is the quality of `p_success` self-assessment, not how bids are scored or priced.
+
+**Prompt design matters more than mechanism design.** The difference between Exp 2 (vague "bid true cost") and Exp 3 (explicit formula) is dramatic: anchoring collapses, penalty inclusion jumps from ~28% to ~95%, and bid rationality recovers. For LLM-based markets, giving models clear decision procedures outperforms giving them strategic advice.
+
+**Reserve visibility is a non-issue when the formula is explicit.** With the formula in the prompt, models bid at breakeven regardless of whether they see the budget. The reserve anchor that dominated Exp 1 (2.21x for GPT-5.2) is entirely a product of ambiguous pricing instructions, not a fundamental model limitation.
+
+**Second-price auctions work as intended -- when paired with explicit formulas.** Exp 3 achieves the Vickrey ideal: near-truthful bidding, no anchoring, rational cost inclusion. Exp 2 showed that second-price alone is insufficient; models need the computational structure to produce truthful bids.

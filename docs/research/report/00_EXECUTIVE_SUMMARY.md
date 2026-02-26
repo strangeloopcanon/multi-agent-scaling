@@ -1,7 +1,7 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-02-26
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments
+**Last updated:** 2026-02-25
+**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments)
 
 ---
 
@@ -48,28 +48,26 @@ On this 50-task sample, the market shows a practical gain over the strongest sam
 
 ---
 
-## Phase IIa: Informed Competitive Auctions (2026-02-26)
+## Phase IIa: Informed Competitive Auctions (2026-02-25/26)
 
-Phase IIa investigated the allocation bottleneck identified in Phase II: can we improve task routing by changing how models bid and how winners are selected?
-
-We gave models full economic context (penalty, compute cost, client budget) and had them submit dollar asks. We then compared two allocation mechanisms -- lowest ask wins (min\_ask) vs the Phase II confidence-weighted formula -- on 50 SWE-bench tasks across 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro) at 2 reserve levels ($5, $10). 300 total LLM calls, zero errors.
+Phase IIa investigated the allocation bottleneck identified in Phase II through three experiments testing how LLMs bid under different economic framings: first-price, second-price, and second-price with an explicit breakeven formula. All used 50 SWE-bench Lite tasks, 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro), and reserve levels of $5 and $10.
 
 ### Key findings
 
-**Models price rationally with economic context.** All 300 asks fell in the $0.05--$6.50 range, with 298/300 above the theoretical breakeven. This solves the wild ask-scale problem seen without economic framing ($18--$1,800 from GPT-5.2 alone).
+**Prompt design matters more than mechanism design.** Across three experiments, allocation accuracy stayed at 64--70% regardless of payment rule or reserve conditions. The bottleneck is `p_success` self-assessment quality, not the auction mechanism. But *how* models are told to bid changes their behaviour dramatically.
 
-**Reserve anchoring is a stable, model-specific trait.** When the budget doubles from $5 to $10:
+**Reserve anchoring is curable with explicit formulas.** GPT-5.2's ask ratio ($10/$5) trajectory across experiments:
 
-| Model | Ask ratio ($10/$5) | Behaviour |
+| Experiment | GPT-5.2 ratio | Opus ratio |
 |---|---|---|
-| GPT-5.2 | 2.21x | Strategically extracts surplus |
-| Opus | 1.61x | Moderate adjustment |
-| Gemini | 1.05x | Price-rigid, ignores budget |
+| Exp 1: First-price | 2.21x | 1.61x |
+| Exp 2: Second-price ("bid true cost") | 4.55x | 1.10x |
+| Exp 3: Second-price (explicit formula) | **0.97x** | **0.99x** |
 
-These ratios held almost exactly from the 20-task pilot to the full 50-task run.
+Telling GPT-5.2 to "bid its true cost" made anchoring *worse*. Giving it the breakeven formula made it *perfect*. Opus responded correctly to Vickrey incentives even without the formula.
 
-**Neither allocation mechanism dominates.** Both min\_ask and the formula reached 68--70% accuracy against an 80% oracle ceiling. They route tasks to entirely different models (Opus wins 84% under min\_ask; Gemini wins 58% under formula at $10) but produce similar outcomes.
+**Reserve visibility is a non-issue with the right prompt.** In Exp 3, we tested bids with and without showing the budget. Opus bid identically either way. GPT-5.2 bid ~17% lower when the budget was hidden -- a small residual effect, but negligible compared to the 2.21x ratio from Exp 1.
 
-**The bottleneck is calibration, not the scoring rule.** Both mechanisms produce similar accuracy because the underlying `p_success` estimates are similarly noisy. Improving model self-assessment would help more than changing the allocation rule.
+**Models need computational structure, not strategic advice.** The explicit formula fixed two problems at once: anchoring collapsed (both models near 1.0x) and penalty inclusion jumped from ~28% to ~95% of bids above breakeven. LLMs follow formulas well but infer economic strategy poorly.
 
 For full details, see the [Phase IIa report](08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md).

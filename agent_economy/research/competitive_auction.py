@@ -41,7 +41,8 @@ def allocate_task(
     Returns a result dict or ``None`` if no eligible bidder.
     """
     eligible = [
-        b for b in bids
+        b
+        for b in bids
         if _finite(b.get("ask"), default=float("inf")) <= reserve
         and _finite(b.get("ask"), default=-1) > 0
     ]
