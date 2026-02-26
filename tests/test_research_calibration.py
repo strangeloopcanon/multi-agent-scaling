@@ -166,6 +166,57 @@ def test_build_calibration_prompt_second_price_informed_bid() -> None:
     assert "paid your ask price" in first_price_prompt
 
 
+def test_build_calibration_prompt_formula_second_price_includes_formula() -> None:
+    prompt = build_calibration_prompt(
+        task_id="T1",
+        task_title="Title",
+        task_description="Description",
+        acceptance_commands=["pytest -q"],
+        strategy=PromptStrategy.FORMULA_SECOND_PRICE,
+        reserve_shown=5.0,
+        penalty=1.0,
+        price_per_token=0.00001,
+    )
+    assert "breakeven cost" in prompt
+    assert "price_per_token" in prompt
+    assert "dominant strategy" in prompt.lower()
+    assert "second-price" in prompt.lower()
+    assert "second-lowest ask" in prompt
+    assert "$5.00" in prompt
+    assert "1e-05" not in prompt, "should use decimal, not scientific notation"
+    assert "0.00001 $/token" in prompt
+
+
+def test_build_calibration_prompt_formula_second_price_no_reserve() -> None:
+    prompt = build_calibration_prompt(
+        task_id="T1",
+        task_title="Title",
+        task_description="Description",
+        acceptance_commands=[],
+        strategy=PromptStrategy.FORMULA_SECOND_PRICE,
+        reserve_shown=None,
+    )
+    assert "ask" in prompt
+    assert "budget cap" not in prompt.lower()
+    assert "breakeven cost" in prompt
+
+
+def test_build_calibration_prompt_formula_second_price_with_reserve() -> None:
+    prompt = build_calibration_prompt(
+        task_id="T1",
+        task_title="Title",
+        task_description="Description",
+        acceptance_commands=["make test"],
+        strategy=PromptStrategy.FORMULA_SECOND_PRICE,
+        reserve_shown=10.0,
+        penalty=2.0,
+        price_per_token=0.00002,
+    )
+    assert "$10.00" in prompt
+    assert "$2.00" in prompt
+    assert "2e-05" in prompt or "0.00002" in prompt
+
+
 def test_elicit_calibration_direct_bid_captures_ask() -> None:
     class _FakeLLMWithAsk(_FakeLLM):
         def call_json(self, **kwargs):  # type: ignore[override]
