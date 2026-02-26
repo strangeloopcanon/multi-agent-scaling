@@ -155,13 +155,11 @@ Run artifacts: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 G
 
 ---
 
-## Phase IIa: Informed competitive auctions (2026-02-26)
+## Phase IIa: Informed competitive auctions (2026-02-25/26)
 
-50 SWE-bench tasks, 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro), 2 reserve levels ($5, $10), 300 LLM calls.
+Three experiments on 50 SWE-bench tasks, 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro), 2 reserve levels ($5, $10).
 
-### Reserve anchoring by model
-
-When the client budget doubles from $5 to $10, each model responds differently:
+### Exp 1: First-price informed bids (300 calls, all clean)
 
 | Model | Mean ask @$5 | Mean ask @$10 | Ratio | Pattern |
 |---|---|---|---|---|
@@ -169,24 +167,30 @@ When the client budget doubles from $5 to $10, each model responds differently:
 | Opus | $1.27 | $1.92 | 1.61x | Moderate upward adjustment |
 | Gemini | $2.14 | $2.21 | 1.05x | Flat -- prices by task, ignores budget |
 
-These ratios were near-identical at the 20-task pilot (2.18x, 1.51x, 1.12x). This is a stable model-level trait, not statistical noise.
+Allocation accuracy: 68--70% for both min\_ask and formula, vs 80% oracle.
 
-### Allocation accuracy
+### Exp 2: Second-price Vickrey bids (226/300 clean; 74 Gemini quota errors)
 
-| Mechanism | Reserve=$5 | Reserve=$10 | Oracle |
-|---|---|---|---|
-| min\_ask | 35/50 (70%) | 34/50 (68%) | 40/50 (80%) |
-| formula | 34/50 (68%) | 35/50 (70%) | 40/50 (80%) |
+Asks dropped 60--90%. Opus anchoring collapsed (1.10x), GPT-5.2 anchoring *increased* (4.55x). 72% of bids fell below breakeven -- models ignored penalty risk when told to "bid true cost."
 
-Neither mechanism dominates. Both sit 10pp below the oracle ceiling. The winner distributions are completely different (Opus dominates min\_ask; Gemini dominates formula at $10) but outcomes are similar.
+### Exp 3: Formula second-price (303/450 clean; 147 Gemini quota errors)
 
-### Interpretation
+Explicit breakeven formula in the prompt + reserve-hidden condition.
 
-The allocation bottleneck identified in Phase II is not fixable by changing the scoring rule alone. Both mechanisms produce the same accuracy because the underlying `p_success` self-assessments are similarly noisy. The path to better allocation runs through better calibration, not better auction design.
+| Model | Exp 1 ratio | Exp 2 ratio | Exp 3 ratio | Exp 3 hidden ask |
+|---|---|---|---|---|
+| GPT-5.2 | 2.21x | 4.55x | 0.97x | $0.40 |
+| Opus | 1.61x | 1.10x | 0.99x | $0.37 |
 
-The anchoring finding has practical value for mechanism design: budget-responsive models (GPT-5.2) can be steered through reserve levels; price-rigid models (Gemini) cannot.
+The formula eliminated anchoring for both models. Penalty inclusion jumped to 95%+. Opus bid identically with or without seeing the reserve. GPT-5.2 bid ~17% lower when hidden -- small residual effect.
 
-Run artifacts: `runs/research/phase2a_competitive_50task/`
+Allocation accuracy: 64--68% across all conditions (shown, hidden, both reserves), consistent with Exp 1/2.
+
+### Takeaway
+
+The allocation bottleneck is not the auction mechanism. Accuracy stays at 64--70% regardless of payment rules. The bottleneck is `p_success` calibration quality. But prompt design dramatically affects bidding behaviour: explicit formulas produce near-truthful bids, while vague instructions produce irrational ones.
+
+Run artifacts: `runs/research/phase2a_competitive_50task/`, `runs/research/phase2a_second_price_50task/`, `runs/research/phase2a_formula_sp/`
 
 ---
 

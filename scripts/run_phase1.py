@@ -47,6 +47,7 @@ def _strategy_list(values: str) -> list[PromptStrategy]:
     aliases: dict[str, PromptStrategy] = {
         "informed_bid": PromptStrategy.INFORMED_BID,
         "second_price_informed_bid": PromptStrategy.SECOND_PRICE_INFORMED_BID,
+        "formula_second_price": PromptStrategy.FORMULA_SECOND_PRICE,
         "direct_bid": PromptStrategy.DIRECT_BID,
         "direct": PromptStrategy.DIRECT,
         "prob_tokens": PromptStrategy.PROB_TOKENS,
@@ -515,7 +516,9 @@ def _run_calibration(
                     },
                 )
         if skipped:
-            print(f"[phase1] resumed {skipped}/{total} from prior run, skipping LLM calls", flush=True)
+            print(
+                f"[phase1] resumed {skipped}/{total} from prior run, skipping LLM calls", flush=True
+            )
         if quality_checks_path is not None:
             snapshot = _quality_snapshot(rows=records)
             _append_jsonl(
@@ -530,7 +533,10 @@ def _run_calibration(
         return records
 
     def _run_one(
-        model_ref: str, task: dict, strategy: PromptStrategy, reserve: float | None,
+        model_ref: str,
+        task: dict,
+        strategy: PromptStrategy,
+        reserve: float | None,
     ) -> CalibrationRecord:
         try:
             return elicit_calibration(
@@ -578,7 +584,10 @@ def _run_calibration(
         if (model_ref, str(task["task_id"]), strategy.value, reserve) not in _resume
     ]
     if skipped:
-        print(f"[phase1] resumed {skipped}/{total} from prior run, {len(new_jobs)} new calls", flush=True)
+        print(
+            f"[phase1] resumed {skipped}/{total} from prior run, {len(new_jobs)} new calls",
+            flush=True,
+        )
 
     done = skipped
     max_workers = max(1, int(calibration_concurrency))
@@ -891,7 +900,9 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"tasks={len(tasks)} models={len(models)} strategies={len(strategies)} reserves={reserves}")
+    print(
+        f"tasks={len(tasks)} models={len(models)} strategies={len(strategies)} reserves={reserves}"
+    )
     print(f"calibration_results={Path(args.output_root) / 'calibration_results.jsonl'}")
     print(f"solo_results={Path(args.output_root) / 'solo_results.jsonl'}")
     print(f"quality_checks={quality_checks_path}")

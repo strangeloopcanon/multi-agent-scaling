@@ -5,6 +5,7 @@ a specified reserve level, and allocates tasks under min-ask and
 formula mechanisms.  Outputs per-task allocation results and summary
 metrics as JSON.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -47,9 +48,9 @@ def main() -> None:
     reserve = float(args.reserve)
 
     filtered = [
-        r for r in records
-        if r.get("reserve_shown") is not None
-        and abs(float(r["reserve_shown"]) - reserve) < 0.001
+        r
+        for r in records
+        if r.get("reserve_shown") is not None and abs(float(r["reserve_shown"]) - reserve) < 0.001
     ]
     if not filtered:
         print(
@@ -88,7 +89,9 @@ def main() -> None:
         )
     oracle_acc = oracle.get("oracle_accuracy")
     oracle_str = f"{oracle_acc:.1%}" if oracle_acc is not None else "N/A"
-    print(f"  oracle: accuracy={oracle_str} solvable={oracle.get('n_solvable')}/{oracle.get('n_with_outcome')}")
+    print(
+        f"  oracle: accuracy={oracle_str} solvable={oracle.get('n_solvable')}/{oracle.get('n_with_outcome')}"
+    )
 
 
 if __name__ == "__main__":

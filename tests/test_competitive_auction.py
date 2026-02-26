@@ -112,7 +112,13 @@ def test_run_calibration_with_reserves(tmp_path) -> None:
     from agent_economy.research.calibration import PromptStrategy
 
     tasks = [
-        {"benchmark": "swebench", "task_id": "T1", "title": "t1", "description": "d1", "acceptance": []},
+        {
+            "benchmark": "swebench",
+            "task_id": "T1",
+            "title": "t1",
+            "description": "d1",
+            "acceptance": [],
+        },
     ]
     records = _run_calibration(
         execute_calibration=False,

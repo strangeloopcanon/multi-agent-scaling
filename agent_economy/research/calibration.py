@@ -11,6 +11,7 @@ from agent_economy.llm_router import LLMRouter
 class PromptStrategy(str, Enum):
     INFORMED_BID = "informed_bid"
     SECOND_PRICE_INFORMED_BID = "second_price_informed_bid"
+    FORMULA_SECOND_PRICE = "formula_second_price"
     DIRECT_BID = "direct_bid"
     PROB_TOKENS = "prob_tokens"
     PLAN_PROB_TOKENS = "plan_prob_tokens"
@@ -58,9 +59,35 @@ def build_calibration_prompt(
         PromptStrategy.DIRECT_BID.value,
         PromptStrategy.INFORMED_BID.value,
         PromptStrategy.SECOND_PRICE_INFORMED_BID.value,
+        PromptStrategy.FORMULA_SECOND_PRICE.value,
     }
 
-    if strategy in {PromptStrategy.INFORMED_BID, PromptStrategy.SECOND_PRICE_INFORMED_BID}:
+    if strategy == PromptStrategy.FORMULA_SECOND_PRICE:
+        lines = [
+            "You are bidding on a software engineering task in a second-price sealed-bid auction.",
+            "",
+            "Payment rule: if you win, you are paid the second-lowest ask "
+            "(or the client's budget if you are the only bidder), not your own ask.",
+            "",
+            "Economics:",
+            f"- Price per token: {price_per_token:.10f}".rstrip("0").rstrip(".") + " $/token",
+            f"- Failure penalty: ${penalty:.2f}",
+            "- Your breakeven cost = (estimated_tokens x price_per_token) + penalty x (1 - p_success)",
+            "",
+            "Dominant strategy: in a second-price auction, the dominant strategy is to bid "
+            "your true expected cost. Bidding above or below cannot improve your outcome.",
+        ]
+        if reserve_shown is not None:
+            lines.append(f"The client's budget cap for this task is ${reserve_shown:.2f}.")
+        lines.extend(
+            [
+                "",
+                "Return JSON only with fields: ask (your price in dollars), "
+                "p_success (0..1), estimated_tokens_total "
+                "(total model tokens for one full solve attempt), rationale (optional).",
+            ]
+        )
+    elif strategy in {PromptStrategy.INFORMED_BID, PromptStrategy.SECOND_PRICE_INFORMED_BID}:
         if strategy == PromptStrategy.SECOND_PRICE_INFORMED_BID:
             payment_line = (
                 "If you are selected and solve it, you are paid the second-lowest ask "
@@ -77,12 +104,14 @@ def build_calibration_prompt(
         ]
         if reserve_shown is not None:
             lines.append(f"The client's maximum budget for this task is ${reserve_shown:.2f}.")
-        lines.extend([
-            "",
-            "Return JSON only with fields: ask (your price in dollars), "
-            "p_success (0..1), estimated_tokens_total "
-            "(total model tokens for one full solve attempt), rationale (optional).",
-        ])
+        lines.extend(
+            [
+                "",
+                "Return JSON only with fields: ask (your price in dollars), "
+                "p_success (0..1), estimated_tokens_total "
+                "(total model tokens for one full solve attempt), rationale (optional).",
+            ]
+        )
     elif wants_ask:
         lines = [
             "Estimate the probability that you could complete this task correctly in one attempt.",
@@ -97,13 +126,15 @@ def build_calibration_prompt(
             "(total model tokens for one full solve attempt), rationale (optional).",
         ]
 
-    lines.extend([
-        "",
-        f"Task ID: {task_id}",
-        f"Title: {task_title}",
-        "Description:",
-        task_description.strip() or "(none)",
-    ])
+    lines.extend(
+        [
+            "",
+            f"Task ID: {task_id}",
+            f"Title: {task_title}",
+            "Description:",
+            task_description.strip() or "(none)",
+        ]
+    )
 
     if acceptance_commands:
         lines.extend(["", "Acceptance commands:"])
@@ -111,7 +142,12 @@ def build_calibration_prompt(
             lines.append(f"- {cmd}")
 
     lines.extend(["", "Strategy guidance:"])
-    if strategy == PromptStrategy.SECOND_PRICE_INFORMED_BID:
+    if strategy == PromptStrategy.FORMULA_SECOND_PRICE:
+        lines.append(
+            "Estimate your token usage and probability of success, then apply the "
+            "breakeven formula above to determine your ask."
+        )
+    elif strategy == PromptStrategy.SECOND_PRICE_INFORMED_BID:
         lines.append(
             "In this second-price auction, you should bid your true cost "
             "(compute costs plus expected penalty risk). "

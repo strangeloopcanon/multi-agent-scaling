@@ -172,11 +172,11 @@ For the SWE-bench evaluation writeup (market vs solo vs external baselines), see
 
 ### Phase IIa: Informed Competitive Auctions
 
-Phase II's allocation bottleneck (overconfident models stealing assignments) led to a follow-up: what if models bid with real economic context?
+Phase II's allocation bottleneck (overconfident models stealing assignments) led to a series of three experiments testing how LLMs bid under different economic framings. All used 50 SWE-bench tasks, 3 models (GPT-5.2, Opus, Gemini), and reserve levels of $5 and $10.
 
-We gave 3 models (GPT-5.2, Opus, Gemini) the penalty structure, compute costs, and client budget, then had them submit dollar asks on 50 SWE-bench tasks at two reserve levels ($5, $10).
+The central finding across all three experiments: **prompt design matters more than mechanism design.** Allocation accuracy stays at 64--70% regardless of payment rules; the bottleneck is calibration quality. But how models are instructed to bid dramatically affects behaviour.
 
-The standout finding is **reserve anchoring** -- a stable, model-specific trait. GPT-5.2 doubles its ask when the budget doubles (2.21x ratio), Opus adjusts moderately (1.61x), and Gemini barely notices (1.05x). Both allocation mechanisms (lowest ask vs confidence-weighted formula) reach 68--70% accuracy against an 80% oracle ceiling; the bottleneck is calibration quality, not the scoring rule.
+GPT-5.2's anchoring ratio ($10/$5 ask) went from 2.21x (first-price) to 4.55x (second-price with vague instructions) to 0.97x (second-price with explicit breakeven formula). Giving models the formula to compute their own costs eliminated anchoring entirely and made penalty inclusion nearly universal.
 
 Full details: [Phase IIa Report](docs/research/report/08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md)
 
@@ -204,7 +204,7 @@ python scripts/run_phase2.py \
   --isolate-state --execute --check-every 25 \
   --output-root runs/research/phase2/<ts>_batch1
 
-# Phase IIa: informed competitive auction (50 tasks, 3 models, 2 reserves)
+# Phase IIa Exp 1: first-price informed bids
 python scripts/run_phase1.py \
   --execute-calibration \
   --task-source external_covered_lite --tasks-limit 50 \
@@ -213,11 +213,20 @@ python scripts/run_phase1.py \
   --calibration-concurrency 2 \
   --output-root runs/research/phase2a_competitive_50task
 
+# Phase IIa Exp 3: formula second-price (reserve shown + hidden)
+python scripts/run_phase1.py \
+  --execute-calibration \
+  --task-source external_covered_lite --tasks-limit 50 \
+  --models "openai:gpt-5.2-2025-12-11,anthropic:claude-opus-4-5-20251101,google:models/gemini-3-pro-preview" \
+  --strategies "formula_second_price" --reserves "5.0,10.0" \
+  --calibration-concurrency 2 \
+  --output-root runs/research/phase2a_formula_sp
+
 # Phase IIa: competitive auction analysis (post-processing, no LLM calls)
 python scripts/run_competitive_auction.py \
-  --phase1-dir runs/research/phase2a_competitive_50task --reserve 5.0
+  --phase1-dir runs/research/phase2a_formula_sp --reserve 5.0
 python scripts/run_competitive_auction.py \
-  --phase1-dir runs/research/phase2a_competitive_50task --reserve 10.0
+  --phase1-dir runs/research/phase2a_formula_sp --reserve 10.0
 
 # Incremental scaling with --resume-from (reuses existing records)
 python scripts/run_phase1.py \

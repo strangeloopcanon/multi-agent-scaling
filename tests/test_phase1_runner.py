@@ -298,16 +298,18 @@ def test_strategy_list_accepts_human_readable_aliases() -> None:
 def test_resume_from_skips_existing_combos(tmp_path: Path) -> None:
     prior = tmp_path / "prior.jsonl"
     prior.write_text(
-        json.dumps({
-            "benchmark": "swebench",
-            "task_id": "T1",
-            "model_ref": "m1",
-            "strategy": "direct",
-            "p_success": 0.9,
-            "estimated_tokens_total": 1000,
-            "reserve_shown": None,
-            "rationale": "prior run",
-        })
+        json.dumps(
+            {
+                "benchmark": "swebench",
+                "task_id": "T1",
+                "model_ref": "m1",
+                "strategy": "direct",
+                "p_success": 0.9,
+                "estimated_tokens_total": 1000,
+                "reserve_shown": None,
+                "rationale": "prior run",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -315,8 +317,20 @@ def test_resume_from_skips_existing_combos(tmp_path: Path) -> None:
     assert ("m1", "T1", "direct", None) in resume
 
     tasks = [
-        {"benchmark": "swebench", "task_id": "T1", "title": "t1", "description": "d1", "acceptance": []},
-        {"benchmark": "swebench", "task_id": "T2", "title": "t2", "description": "d2", "acceptance": []},
+        {
+            "benchmark": "swebench",
+            "task_id": "T1",
+            "title": "t1",
+            "description": "d1",
+            "acceptance": [],
+        },
+        {
+            "benchmark": "swebench",
+            "task_id": "T2",
+            "title": "t2",
+            "description": "d2",
+            "acceptance": [],
+        },
     ]
     records = _run_calibration(
         execute_calibration=False,
