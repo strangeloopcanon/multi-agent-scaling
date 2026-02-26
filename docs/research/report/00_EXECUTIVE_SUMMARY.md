@@ -1,9 +1,11 @@
-# Executive Summary: Agent Economy Phase II Evaluation
+# Executive Summary: Agent Economy Research
 
-**Date:** 2026-02-20
-**Scope:** 50-task analysis set from SWE-bench Lite (first 50 manifest slots, with one deterministic replacement after strict preflight failure)
+**Last updated:** 2026-02-26
+**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments
 
-## The Core Thesis
+---
+
+## Phase II: Market vs Solo (2026-02-20)
 
 The primary goal of Phase II was to test whether a multi-agent market with economic allocation and retry-exclusion could outperform the strongest individual frontier model on a level playing field.
 
@@ -42,4 +44,32 @@ While the market outperforms single models, it currently sits below the theoreti
 
 ## Conclusion
 
-On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. Future improvements should focus on bid calibration and assignment scoring to capture more oracle upside, followed by incremental scaffold enhancements.
+On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. The remaining bottlenecks are allocation quality and scaffold limitations.
+
+---
+
+## Phase IIa: Informed Competitive Auctions (2026-02-26)
+
+Phase IIa investigated the allocation bottleneck identified in Phase II: can we improve task routing by changing how models bid and how winners are selected?
+
+We gave models full economic context (penalty, compute cost, client budget) and had them submit dollar asks. We then compared two allocation mechanisms -- lowest ask wins (min\_ask) vs the Phase II confidence-weighted formula -- on 50 SWE-bench tasks across 3 models (GPT-5.2, Opus 4.5, Gemini 3 Pro) at 2 reserve levels ($5, $10). 300 total LLM calls, zero errors.
+
+### Key findings
+
+**Models price rationally with economic context.** All 300 asks fell in the $0.05--$6.50 range, with 298/300 above the theoretical breakeven. This solves the wild ask-scale problem seen without economic framing ($18--$1,800 from GPT-5.2 alone).
+
+**Reserve anchoring is a stable, model-specific trait.** When the budget doubles from $5 to $10:
+
+| Model | Ask ratio ($10/$5) | Behaviour |
+|---|---|---|
+| GPT-5.2 | 2.21x | Strategically extracts surplus |
+| Opus | 1.61x | Moderate adjustment |
+| Gemini | 1.05x | Price-rigid, ignores budget |
+
+These ratios held almost exactly from the 20-task pilot to the full 50-task run.
+
+**Neither allocation mechanism dominates.** Both min\_ask and the formula reached 68--70% accuracy against an 80% oracle ceiling. They route tasks to entirely different models (Opus wins 84% under min\_ask; Gemini wins 58% under formula at $10) but produce similar outcomes.
+
+**The bottleneck is calibration, not the scoring rule.** Both mechanisms produce similar accuracy because the underlying `p_success` estimates are similarly noisy. Improving model self-assessment would help more than changing the allocation rule.
+
+For full details, see the [Phase IIa report](08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md).

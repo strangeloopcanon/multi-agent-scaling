@@ -170,6 +170,16 @@ Pipeline was clean: 100% parse success, 0 provider errors, 0 missing fields.
 ### Phase II: Market vs Solo Evaluation
 For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
 
+### Phase IIa: Informed Competitive Auctions
+
+Phase II's allocation bottleneck (overconfident models stealing assignments) led to a follow-up: what if models bid with real economic context?
+
+We gave 3 models (GPT-5.2, Opus, Gemini) the penalty structure, compute costs, and client budget, then had them submit dollar asks on 50 SWE-bench tasks at two reserve levels ($5, $10).
+
+The standout finding is **reserve anchoring** -- a stable, model-specific trait. GPT-5.2 doubles its ask when the budget doubles (2.21x ratio), Opus adjusts moderately (1.61x), and Gemini barely notices (1.05x). Both allocation mechanisms (lowest ask vs confidence-weighted formula) reach 68--70% accuracy against an 80% oracle ceiling; the bottleneck is calibration quality, not the scoring rule.
+
+Full details: [Phase IIa Report](docs/research/report/08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md)
+
 <details>
 <summary>Running BidBench</summary>
 
@@ -194,20 +204,28 @@ python scripts/run_phase2.py \
   --isolate-state --execute --check-every 25 \
   --output-root runs/research/phase2/<ts>_batch1
 
-# Phase II run: remaining 63 tasks (resume-safe)
-python scripts/run_phase2.py \
-  --task-manifest runs/research/phase2/_prepared/<ts>/prepared_manifest.json \
-  --task-offset 30 --task-limit 63 \
-  --dag-mode off \
-  --market-only --settlement-mode direct_penalty \
-  --isolate-state --execute --resume --check-every 25 \
-  --output-root runs/research/phase2/<ts>_batch2
+# Phase IIa: informed competitive auction (50 tasks, 3 models, 2 reserves)
+python scripts/run_phase1.py \
+  --execute-calibration \
+  --task-source external_covered_lite --tasks-limit 50 \
+  --models "openai:gpt-5.2-2025-12-11,anthropic:claude-opus-4-5-20251101,google:models/gemini-3-pro-preview" \
+  --strategies "informed_bid" --reserves "5.0,10.0" \
+  --calibration-concurrency 2 \
+  --output-root runs/research/phase2a_competitive_50task
 
-# Cross-phase comparison
-python scripts/compare_phases.py \
-  --phase1-metrics runs/research/phase1/<ts>/metrics_summary.json \
-  --phase2-summaries runs/research/phase2/<ts>_batch2/market_run_summaries.json \
-  --output-dir runs/research/comparison
+# Phase IIa: competitive auction analysis (post-processing, no LLM calls)
+python scripts/run_competitive_auction.py \
+  --phase1-dir runs/research/phase2a_competitive_50task --reserve 5.0
+python scripts/run_competitive_auction.py \
+  --phase1-dir runs/research/phase2a_competitive_50task --reserve 10.0
+
+# Incremental scaling with --resume-from (reuses existing records)
+python scripts/run_phase1.py \
+  --execute-calibration \
+  --task-source external_covered_lite --tasks-limit 80 \
+  --strategies "informed_bid" --reserves "5.0,10.0" \
+  --resume-from runs/research/phase2a_competitive_50task/calibration_results.jsonl \
+  --output-root runs/research/phase2a_competitive_80task
 ```
 
 Artifacts land in `runs/research/`.
