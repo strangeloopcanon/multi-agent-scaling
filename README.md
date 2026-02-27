@@ -174,9 +174,9 @@ For the SWE-bench evaluation writeup (market vs solo vs external baselines), see
 
 Phase II's allocation bottleneck (overconfident models stealing assignments) led to a series of three experiments testing how LLMs bid under different economic framings. All used 50 SWE-bench tasks, 3 models (GPT-5.2, Opus, Gemini), and reserve levels of $5 and $10.
 
-The central finding across all three experiments: **prompt design matters more than mechanism design.** Allocation accuracy stays at 64--70% regardless of payment rules; the bottleneck is calibration quality. But how models are instructed to bid dramatically affects behaviour.
+The central finding across all three experiments: **prompt design matters more than mechanism design.** Allocation accuracy stays at 62--70% regardless of payment rules; the bottleneck is calibration quality. But how models are instructed to bid dramatically affects behaviour.
 
-GPT-5.2's anchoring ratio ($10/$5 ask) went from 2.21x (first-price) to 4.55x (second-price with vague instructions) to 0.97x (second-price with explicit breakeven formula). Giving models the formula to compute their own costs eliminated anchoring entirely and made penalty inclusion nearly universal.
+Anchoring ratio ($10/$5 ask) went from 2.21x/1.61x/1.05x (first-price) to 0.97x/0.99x/1.08x (second-price with explicit breakeven formula) for GPT-5.2/Opus/Gemini. With all three models competing, Gemini dominates allocation by underbidding ($0.20 vs $0.37/$0.48) but wins tasks it can't solve -- quality signals beyond price are needed.
 
 Full details: [Phase IIa Report](docs/research/report/08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md)
 
