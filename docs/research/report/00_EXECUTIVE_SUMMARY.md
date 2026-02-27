@@ -3,6 +3,20 @@
 **Last updated:** 2026-02-26
 **Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments, 3 models)
 
+Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer: yes, but the bottleneck isn't the auction mechanism, it's how well models know their own capabilities.
+
+---
+
+## Phase I: Calibration (2026-02-15)
+
+Phase I evaluated 6 frontier models on 93 SWE-bench Lite tasks to establish the oracle ceiling and test whether self-assessed confidence could drive allocation.
+
+The oracle ceiling (best possible model for each task) is **84%** on the 50-task subset. But self-assessed confidence turned out to be noise: most models had near-zero or negative Brier skill scores, with only Claude Sonnet 4.5 (+0.07) beating a naive base-rate predictor. Overconfident models consistently stole assignments from more capable ones.
+
+This established the core challenge for Phase II: the market mechanism works, but allocation quality is bottlenecked by calibration, not by the auction design.
+
+For details, see [Phase I Calibration](01_PHASE_1_CALIBRATION.md).
+
 ---
 
 ## Phase II: Market vs Solo (2026-02-20)

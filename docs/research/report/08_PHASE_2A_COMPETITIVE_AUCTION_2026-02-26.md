@@ -13,16 +13,16 @@ The core question: when models are told their costs, the penalty for failure, an
 | **Formula given** | No | No | Yes: `breakeven = tokens * ppt + penalty * (1-p)` |
 | **Dominant strategy stated** | No | "Bid your true cost" (vague) | "Bidding above or below cannot improve your outcome" |
 | **Reserve conditions** | $5, $10 (always shown) | $5, $10 (always shown) | $5, $10 shown + hidden |
-| **Calls** | 300 | 300 (226 clean) | 450 (303 clean) |
+| **Calls** | 300 | 300 (226 clean) | 450 |
 
-Gemini hit daily API quota limits in Exp 2 (74/100 failures) and Exp 3 (147/150 failures). Gemini data is partial in those experiments; GPT-5.2 and Opus are complete throughout.
+Gemini hit daily API quota limits in Exp 2 (74/100 failures) and initially in Exp 3 (147/150 failures). Exp 3 Gemini data was completed after quota reset; Exp 2 Gemini data remains partial.
 
 <details>
 <summary>Data lineage</summary>
 
 - Exp 1: `runs/research/phase2a_competitive_50task/` (300/300 clean)
 - Exp 2: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota errors)
-- Exp 3: `runs/research/phase2a_formula_sp/` (303/450 clean; 147 Gemini quota errors)
+- Exp 3: `runs/research/phase2a_formula_sp/` (450/450 clean after Gemini retry; see `calibration_results_complete.jsonl`)
 </details>
 
 ---
@@ -197,7 +197,7 @@ The explicit formula collapsed anchoring for all three models. Gemini was alread
 | Finding | Exp 1 | Exp 2 | Exp 3 |
 |---|---|---|---|
 | Economic context solves ask-scale | Yes | Yes | Yes |
-| Models anchor on reserve | GPT-5.2 strongly, Opus moderately | Opus collapses, GPT-5.2 inflates | Both collapse |
+| Models anchor on reserve | GPT-5.2 strongly, Opus moderately, Gemini rigid | Opus collapses, GPT-5.2 inflates | All three collapse (0.97--1.08x) |
 | Models include penalty in cost | Yes (implicit) | No -- ignores penalty | Yes (explicit formula) |
 | Bids are rational (above breakeven) | 99%+ | 28% (Opus+GPT combined) | 86% overall; Opus+Gemini 100% |
 | Allocation accuracy | 68--70% | 64--68% | 62--63% (3-model) |
