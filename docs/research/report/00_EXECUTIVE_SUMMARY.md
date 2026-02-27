@@ -1,7 +1,7 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-02-25
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments)
+**Last updated:** 2026-02-26
+**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments, 3 models)
 
 ---
 
@@ -54,20 +54,22 @@ Phase IIa investigated the allocation bottleneck identified in Phase II through 
 
 ### Key findings
 
-**Prompt design matters more than mechanism design.** Across three experiments, allocation accuracy stayed at 64--70% regardless of payment rule or reserve conditions. The bottleneck is `p_success` self-assessment quality, not the auction mechanism. But *how* models are told to bid changes their behaviour dramatically.
+**Prompt design matters more than mechanism design.** Across three experiments, allocation accuracy stayed at 62--70% regardless of payment rule or reserve conditions. The bottleneck is `p_success` self-assessment quality, not the auction mechanism. But *how* models are told to bid changes their behaviour dramatically.
 
-**Reserve anchoring is curable with explicit formulas.** GPT-5.2's ask ratio ($10/$5) trajectory across experiments:
+**Reserve anchoring is curable with explicit formulas.** Ask ratio ($10/$5) trajectory across experiments:
 
-| Experiment | GPT-5.2 ratio | Opus ratio |
-|---|---|---|
-| Exp 1: First-price | 2.21x | 1.61x |
-| Exp 2: Second-price ("bid true cost") | 4.55x | 1.10x |
-| Exp 3: Second-price (explicit formula) | **0.97x** | **0.99x** |
+| Experiment | GPT-5.2 ratio | Opus ratio | Gemini ratio |
+|---|---|---|---|
+| Exp 1: First-price | 2.21x | 1.61x | 1.05x |
+| Exp 2: Second-price ("bid true cost") | 4.55x | 1.10x | 1.60x (n=12) |
+| Exp 3: Second-price (explicit formula) | **0.97x** | **0.99x** | **1.08x** |
 
-Telling GPT-5.2 to "bid its true cost" made anchoring *worse*. Giving it the breakeven formula made it *perfect*. Opus responded correctly to Vickrey incentives even without the formula.
+Telling GPT-5.2 to "bid its true cost" made anchoring *worse*. Giving it the breakeven formula made it *perfect*. Opus responded correctly to Vickrey incentives even without the formula. Gemini was price-rigid throughout.
 
-**Reserve visibility is a non-issue with the right prompt.** In Exp 3, we tested bids with and without showing the budget. Opus bid identically either way. GPT-5.2 bid ~17% lower when the budget was hidden -- a small residual effect, but negligible compared to the 2.21x ratio from Exp 1.
+**Cheap bidders dominate but don't always deliver.** With all three models competing in Exp 3, Gemini wins 85--92% of tasks by bidding $0.20 vs Opus's $0.37 and GPT-5.2's $0.48. But it wins tasks beyond its capability, pulling 3-model allocation accuracy (62--63%) below the 2-model results (66--68%). A well-designed market needs quality signals beyond price.
 
-**Models need computational structure, not strategic advice.** The explicit formula fixed two problems at once: anchoring collapsed (both models near 1.0x) and penalty inclusion jumped from ~28% to ~95% of bids above breakeven. LLMs follow formulas well but infer economic strategy poorly.
+**Reserve visibility is a non-issue with the right prompt.** In Exp 3, all three models bid at breakeven regardless of whether they see the budget. The reserve anchor that dominated Exp 1 is entirely a product of ambiguous pricing instructions.
+
+**Models need computational structure, not strategic advice.** The explicit formula fixed two problems at once: anchoring collapsed (all models near 1.0x) and penalty inclusion jumped from ~28% to ~97% of bids above breakeven. LLMs follow formulas well but infer economic strategy poorly.
 
 For full details, see the [Phase IIa report](08_PHASE_2A_COMPETITIVE_AUCTION_2026-02-26.md).

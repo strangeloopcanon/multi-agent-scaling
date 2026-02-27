@@ -173,22 +173,23 @@ Allocation accuracy: 68--70% for both min\_ask and formula, vs 80% oracle.
 
 Asks dropped 60--90%. Opus anchoring collapsed (1.10x), GPT-5.2 anchoring *increased* (4.55x). 72% of bids fell below breakeven -- models ignored penalty risk when told to "bid true cost."
 
-### Exp 3: Formula second-price (303/450 clean; 147 Gemini quota errors)
+### Exp 3: Formula second-price (450/450 clean after Gemini retry)
 
-Explicit breakeven formula in the prompt + reserve-hidden condition.
+Explicit breakeven formula in the prompt + reserve-hidden condition. Gemini initially quota-exhausted (147/150 errors); retried next day with full success.
 
 | Model | Exp 1 ratio | Exp 2 ratio | Exp 3 ratio | Exp 3 hidden ask |
 |---|---|---|---|---|
 | GPT-5.2 | 2.21x | 4.55x | 0.97x | $0.40 |
 | Opus | 1.61x | 1.10x | 0.99x | $0.37 |
+| Gemini | 1.05x | 1.60x (n=12) | 1.08x | $0.21 |
 
-The formula eliminated anchoring for both models. Penalty inclusion jumped to 95%+. Opus bid identically with or without seeing the reserve. GPT-5.2 bid ~17% lower when hidden -- small residual effect.
+The formula eliminated anchoring for all three models. Penalty inclusion jumped to 97%+. Gemini bids cheapest ($0.20 mean) and dominates allocation (85--92% of tasks), but wins tasks it can't solve.
 
-Allocation accuracy: 64--68% across all conditions (shown, hidden, both reserves), consistent with Exp 1/2.
+Allocation accuracy (3-model): 62--63% across all conditions, slightly below 2-model results (66--68%) because Gemini wins tasks beyond its capability. Oracle ceiling: 77%.
 
 ### Takeaway
 
-The allocation bottleneck is not the auction mechanism. Accuracy stays at 64--70% regardless of payment rules. The bottleneck is `p_success` calibration quality. But prompt design dramatically affects bidding behaviour: explicit formulas produce near-truthful bids, while vague instructions produce irrational ones.
+The allocation bottleneck is not the auction mechanism. Accuracy stays at 62--70% regardless of payment rules. The bottleneck is `p_success` calibration quality. Prompt design dramatically affects bidding behaviour: explicit formulas produce near-truthful bids, while vague instructions produce irrational ones. Cheap bidders can dominate allocation without delivering results -- quality signals beyond price are needed.
 
 Run artifacts: `runs/research/phase2a_competitive_50task/`, `runs/research/phase2a_second_price_50task/`, `runs/research/phase2a_formula_sp/`
 
