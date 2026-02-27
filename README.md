@@ -167,6 +167,8 @@ Pipeline was clean: 100% parse success, 0 provider errors, 0 missing fields.
 
 **Takeaway:** treat self-assessed confidence as weak signal in auction design; lean on empirical performance history instead.
 
+Full details: [Phase I Calibration](docs/research/report/01_PHASE_1_CALIBRATION.md)
+
 ### Phase II: Market vs Solo Evaluation
 For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
 
