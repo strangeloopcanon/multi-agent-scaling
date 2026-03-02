@@ -20,9 +20,11 @@ Gemini hit daily API quota limits in Exp 2 (74/100 failures) and initially in Ex
 <details>
 <summary>Data lineage</summary>
 
-- Exp 1: `runs/research/phase2a_competitive_50task/` (300/300 clean)
-- Exp 2: `runs/research/phase2a_second_price_50task/` (226/300 clean; 74 Gemini quota errors)
-- Exp 3: `runs/research/phase2a_formula_sp/` (450/450 clean after Gemini retry; see `calibration_results_complete.jsonl`)
+Published data (committed to repo):
+- Exp 1: [`docs/research/data/phase2a/exp1_calibration.jsonl`](../data/phase2a/exp1_calibration.jsonl) (300/300 clean)
+- Exp 2: [`docs/research/data/phase2a/exp2_calibration.jsonl`](../data/phase2a/exp2_calibration.jsonl) (226/300 clean; 74 Gemini quota errors)
+- Exp 3: [`docs/research/data/phase2a/exp3_calibration.jsonl`](../data/phase2a/exp3_calibration.jsonl) (450/450 clean)
+- Exp 3 auction analysis: [`docs/research/data/phase2a/exp3_auction_results.json`](../data/phase2a/exp3_auction_results.json)
 </details>
 
 ---

@@ -28,6 +28,15 @@ Evaluate whether a multi-model market configuration improves SWE-bench task comp
 - `execution_timeout_seconds=900`
 
 ## Data Sources
+
+Published summary data (committed to repo):
+- Phase I calibration: [`docs/research/data/phase1/calibration_results.jsonl`](../data/phase1/calibration_results.jsonl)
+- Phase II rollup: [`docs/research/data/phase2/`](../data/phase2/)
+- Phase IIa experiments: [`docs/research/data/phase2a/`](../data/phase2a/)
+
+<details>
+<summary>Raw execution run paths (local only, gitignored)</summary>
+
 - Market rollup data:
   - `runs/research/phase2/gateB10_exclfix_t900_20260218T190909Z`
   - `runs/research/phase2/next20_market_20260219T074528Z`
@@ -38,6 +47,7 @@ Evaluate whether a multi-model market configuration improves SWE-bench task comp
 - External labels:
   - `runs/research/phase1/full_external_20260216T070002Z/calibration_results.jsonl`
   - `runs/research/phase1/next63_external_20260216T191746Z/calibration_results.jsonl`
+</details>
 
 ## Primary Metrics
 - Pass rate (`passes / tasks`)
@@ -69,6 +79,6 @@ Evaluate whether a multi-model market configuration improves SWE-bench task comp
 
 ## Reproducibility
 - Canonical summary artifacts used by the report:
-  - `docs/research/report/data/phase2_rollup_50.json`
-  - `docs/research/report/data/market_vs_gpt52_solo50_summary.json`
+  - [`docs/research/data/phase2/phase2_rollup_50.json`](../data/phase2/phase2_rollup_50.json)
+  - [`docs/research/data/phase2/market_vs_solo_summary.json`](../data/phase2/market_vs_solo_summary.json)
 - The narrative sections in this folder should be interpreted as derived commentary over those two data artifacts.

@@ -1,0 +1,21 @@
+{
+  "mode": "prepared_market_only",
+  "settlement_mode": "direct_penalty",
+  "selected_tasks": 40,
+  "completed_runs": 40,
+  "failed_runs": 0,
+  "skipped_existing": 0,
+  "output_root": "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/solo_gpt52_market50_remaining40_20260219T221230Z",
+  "isolate_state": true,
+  "rounds": 24,
+  "concurrency": 6,
+  "bid_timeout_seconds": 90.0,
+  "execution_timeout_seconds": 900.0,
+  "require_bid_barrier": true,
+  "force_bids": true,
+  "retry_score_penalty_fraction": 0.0,
+  "exclude_failed_workers": false,
+  "dag_mode": "off",
+  "replan": false,
+  "planner_max_tasks": 8
+}
