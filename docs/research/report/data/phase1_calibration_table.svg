@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="964" viewBox="0 0 1840 964">
+<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<text x="60" y="78" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#111827">Phase I Calibration: Probability Signal and Token Estimates</text>
+<text x="60" y="125" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#374151">Calibration metrics from JSONL outcomes and token fields.</text>
+<rect x="60" y="200" width="1720" height="82" fill="#f3f4f6"/>
+<rect x="60" y="364" width="1720" height="82" fill="#f9fafb"/>
+<rect x="60" y="528" width="1720" height="82" fill="#f9fafb"/>
+<rect x="60" y="692" width="1720" height="82" fill="#f9fafb"/>
+<g stroke="#d0d7de" stroke-width="2">
+<line x1="60" y1="200" x2="60" y2="774"/>
+<line x1="420" y1="200" x2="420" y2="774"/>
+<line x1="505" y1="200" x2="505" y2="774"/>
+<line x1="700" y1="200" x2="700" y2="774"/>
+<line x1="855" y1="200" x2="855" y2="774"/>
+<line x1="1005" y1="200" x2="1005" y2="774"/>
+<line x1="1145" y1="200" x2="1145" y2="774"/>
+<line x1="1350" y1="200" x2="1350" y2="774"/>
+<line x1="1570" y1="200" x2="1570" y2="774"/>
+<line x1="1780" y1="200" x2="1780" y2="774"/>
+<line x1="60" y1="200" x2="1780" y2="200"/>
+<line x1="60" y1="282" x2="1780" y2="282"/>
+<line x1="60" y1="364" x2="1780" y2="364"/>
+<line x1="60" y1="446" x2="1780" y2="446"/>
+<line x1="60" y1="528" x2="1780" y2="528"/>
+<line x1="60" y1="610" x2="1780" y2="610"/>
+<line x1="60" y1="692" x2="1780" y2="692"/>
+<line x1="60" y1="774" x2="1780" y2="774"/>
+</g>
+<text x="72" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Model</text>
+<text x="432" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">N</text>
+<text x="517" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Mean p</text>
+<text x="712" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Pass %</text>
+<text x="867" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Brier</text>
+<text x="1017" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Skill</text>
+<text x="1157" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Est toks</text>
+<text x="1362" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">$-implied toks</text>
+<text x="1582" y="252" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">Est/$</text>
+<text x="72" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">Claude Opus 4.5</text>
+<text x="432" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">76.5%</text>
+<text x="712" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">80.6%</text>
+<text x="867" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.156</text>
+<text x="1017" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#065f46">+0.060</text>
+<text x="1157" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">14,774</text>
+<text x="1362" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">35,820</text>
+<text x="1582" y="334" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.406</text>
+<text x="72" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">Gemini 3 Pro Preview</text>
+<text x="432" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">92.9%</text>
+<text x="712" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">80.6%</text>
+<text x="867" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.184</text>
+<text x="1017" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#7f1d1d">-0.111</text>
+<text x="1157" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">1,801</text>
+<text x="1362" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">55,969</text>
+<text x="1582" y="416" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.025</text>
+<text x="72" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">GPT-5.2</text>
+<text x="432" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">63.2%</text>
+<text x="712" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">80.6%</text>
+<text x="867" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.198</text>
+<text x="1017" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#7f1d1d">-0.195</text>
+<text x="1157" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">2,909</text>
+<text x="1362" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">25,036</text>
+<text x="1582" y="498" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.138</text>
+<text x="72" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">GPT-5.2-pro</text>
+<text x="432" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">66.3%</text>
+<text x="712" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">79.6%</text>
+<text x="867" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.184</text>
+<text x="1017" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#7f1d1d">-0.111</text>
+<text x="1157" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">2,647</text>
+<text x="1362" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">3,970</text>
+<text x="1582" y="580" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.905</text>
+<text x="72" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">Claude Sonnet 4.5</text>
+<text x="432" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">75.8%</text>
+<text x="712" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">77.4%</text>
+<text x="867" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.163</text>
+<text x="1017" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#065f46">+0.018</text>
+<text x="1157" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">18,333</text>
+<text x="1362" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">53,085</text>
+<text x="1582" y="662" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.252</text>
+<text x="72" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">GPT-5-mini</text>
+<text x="432" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">93</text>
+<text x="517" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">61.4%</text>
+<text x="712" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">75.3%</text>
+<text x="867" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.216</text>
+<text x="1017" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#7f1d1d">-0.305</text>
+<text x="1157" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">2,595</text>
+<text x="1362" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">28,276</text>
+<text x="1582" y="744" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">0.110</text>
+</svg>
