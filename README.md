@@ -239,9 +239,17 @@ python scripts/run_phase1.py \
   --output-root runs/research/phase2a_competitive_80task
 ```
 
-Artifacts land in `runs/research/`.
+Artifacts land in `runs/research/` (local, gitignored).
 
 </details>
+
+### Data
+
+All canonical experiment datasets are committed under [`docs/research/data/`](docs/research/data/):
+
+- [`phase1/`](docs/research/data/phase1/) -- 558-row calibration dataset (93 tasks x 6 models), metrics, external evidence
+- [`phase2/`](docs/research/data/phase2/) -- 50-task market-vs-solo summary JSONs
+- [`phase2a/`](docs/research/data/phase2a/) -- Phase IIa experiment calibration files (exp1/exp2/exp3) and auction results
 
 ---
 
