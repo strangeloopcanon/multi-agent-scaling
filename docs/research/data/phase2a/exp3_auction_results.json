@@ -1,0 +1,5802 @@
+{
+  "shown_5": {
+    "parameters": {
+      "reserve": 5.0
+    },
+    "per_task": [
+      {
+        "task_id": "astropy__astropy-12907",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14182",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14365",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14995",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-10914",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11099",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.085,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.085,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11133",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.10000000000000002,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11179",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11815",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11848",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11964",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12125",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12308",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12708",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.075,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.075,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.075,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.075,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13028",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13033",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.495,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.495,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13158",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.46,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.46,
+          "payment_second_price": 0.495,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.46,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.46,
+          "payment_second_price": 0.495,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13315",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13401",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13551",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13590",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13658",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13925",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.37000000000000005,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.37000000000000005,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-13933",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-14155",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14534",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "django__django-15252",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-15695",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23299",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23314",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23476",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.55,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-24149",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "psf__requests-2317",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pydata__xarray-4094",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 0.225,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 0.225,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pylint-dev__pylint-7080",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 0.225,
+          "payment_second_price": 0.47000000000000003,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 0.225,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7432",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7490",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-10297",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13142",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.33,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.33,
+          "payment_second_price": 0.4600000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.33,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.33,
+          "payment_second_price": 1.175,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13439",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-25747",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.345,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.345,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 1.06,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-11445",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.345,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.345,
+          "payment_second_price": 0.375,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.375,
+          "winner_p_success": 0.75,
+          "payment_first_price": 0.375,
+          "payment_second_price": 0.345,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8595",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8721",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12419",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12481",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-17630",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18199",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18698",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "sympy__sympy-21612",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      }
+    ],
+    "summary": {
+      "min_ask": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 32,
+        "allocation_accuracy": 0.6153846153846154,
+        "total_payment_first_price": 8.362999999999998,
+        "total_payment_second_price": 27.164999999999992,
+        "cost_per_solve_first_price": 0.26134374999999993,
+        "cost_per_solve_second_price": 0.8489062499999998,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 44,
+          "openai:gpt-5.2-2025-12-11": 4,
+          "anthropic:claude-opus-4-5-20251101": 4
+        }
+      },
+      "formula": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 33,
+        "allocation_accuracy": 0.6346153846153846,
+        "total_payment_first_price": 8.767999999999999,
+        "total_payment_second_price": 29.33499999999999,
+        "cost_per_solve_first_price": 0.26569696969696965,
+        "cost_per_solve_second_price": 0.8889393939393937,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 45,
+          "anthropic:claude-opus-4-5-20251101": 7
+        }
+      }
+    },
+    "oracle": {
+      "n_tasks": 52,
+      "n_with_outcome": 52,
+      "n_solvable": 40,
+      "oracle_accuracy": 0.7692307692307693
+    }
+  },
+  "shown_10": {
+    "parameters": {
+      "reserve": 10.0
+    },
+    "per_task": [
+      {
+        "task_id": "astropy__astropy-12907",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14182",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14365",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14995",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-10914",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11099",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.0207,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.0207,
+          "payment_second_price": 0.025,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.0207,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11133",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11179",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11815",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.4600000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.4600000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11848",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11964",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12125",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12308",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12708",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.63,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.63,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13028",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13033",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.53,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.53,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13158",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13315",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13401",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13551",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13590",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13658",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.100022,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13925",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-13933",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.16,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.16,
+          "payment_second_price": 0.332,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.16,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.16,
+          "payment_second_price": 0.332,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-14155",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14534",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "django__django-15252",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-15695",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23299",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.6,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23314",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23476",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-24149",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "psf__requests-2317",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pydata__xarray-4094",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pylint-dev__pylint-7080",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.5600000000000002,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.5600000000000002,
+          "payment_second_price": 0.63,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.175,
+          "payment_second_price": 0.63,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7432",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7490",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-10297",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13142",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13439",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-25747",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.06,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.06,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-11445",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.37000000000000005,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.37000000000000005,
+          "payment_second_price": 0.375,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.375,
+          "winner_p_success": 0.75,
+          "payment_first_price": 0.375,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8595",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8721",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.345,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.345,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12419",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12481",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-17630",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18199",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18698",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "sympy__sympy-21612",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      }
+    ],
+    "summary": {
+      "min_ask": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 33,
+        "allocation_accuracy": 0.6346153846153846,
+        "total_payment_first_price": 8.444700000000003,
+        "total_payment_second_price": 37.01702199999999,
+        "cost_per_solve_first_price": 0.25590000000000007,
+        "cost_per_solve_second_price": 1.121727939393939,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 43,
+          "openai:gpt-5.2-2025-12-11": 4,
+          "anthropic:claude-opus-4-5-20251101": 5
+        }
+      },
+      "formula": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 33,
+        "allocation_accuracy": 0.6346153846153846,
+        "total_payment_first_price": 10.854000000000005,
+        "total_payment_second_price": 37.81769999999999,
+        "cost_per_solve_first_price": 0.32890909090909104,
+        "cost_per_solve_second_price": 1.1459909090909086,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 48,
+          "anthropic:claude-opus-4-5-20251101": 4
+        }
+      }
+    },
+    "oracle": {
+      "n_tasks": 52,
+      "n_with_outcome": 52,
+      "n_solvable": 40,
+      "oracle_accuracy": 0.7692307692307693
+    }
+  },
+  "hidden@5": {
+    "parameters": {
+      "reserve": 5.0
+    },
+    "per_task": [
+      {
+        "task_id": "astropy__astropy-12907",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14182",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14365",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14995",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.332,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-10914",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11099",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.0657,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11133",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11179",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.000345,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.000345,
+          "payment_second_price": 0.065,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11815",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11848",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11964",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12125",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12308",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12708",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13028",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13033",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.495,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.495,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13158",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.46,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.46,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13315",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13401",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13551",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2808,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13590",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13658",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.100022,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13925",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-13933",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.280042,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.280042,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-14155",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14534",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "django__django-15252",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.47000000000000003,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-15695",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23299",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23314",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23476",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.55,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-24149",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "psf__requests-2317",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pydata__xarray-4094",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pylint-dev__pylint-7080",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.4600000000000001,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.4600000000000001,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 1.225,
+          "payment_second_price": 0.4600000000000001,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7432",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7490",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.37000000000000005,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.37000000000000005,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-10297",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.13,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.13,
+          "payment_second_price": 0.175,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.13,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.13,
+          "payment_second_price": 0.175,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13142",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13439",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-25747",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.2800000000000001,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.2800000000000001,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 1.0625,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-11445",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8595",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8721",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12419",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12481",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-17630",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18199",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065015,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065015,
+          "payment_second_price": 0.345,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065015,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065015,
+          "payment_second_price": 0.345,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18698",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 5.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "sympy__sympy-21612",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      }
+    ],
+    "summary": {
+      "min_ask": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 32,
+        "allocation_accuracy": 0.6153846153846154,
+        "total_payment_first_price": 8.36536,
+        "total_payment_second_price": 26.508563999999996,
+        "cost_per_solve_first_price": 0.2614175,
+        "cost_per_solve_second_price": 0.8283926249999999,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 43,
+          "openai:gpt-5.2-2025-12-11": 6,
+          "anthropic:claude-opus-4-5-20251101": 3
+        }
+      },
+      "formula": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 33,
+        "allocation_accuracy": 0.6346153846153846,
+        "total_payment_first_price": 10.440015000000006,
+        "total_payment_second_price": 28.127541999999995,
+        "cost_per_solve_first_price": 0.31636409090909107,
+        "cost_per_solve_second_price": 0.8523497575757574,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 46,
+          "anthropic:claude-opus-4-5-20251101": 6
+        }
+      }
+    },
+    "oracle": {
+      "n_tasks": 52,
+      "n_with_outcome": 52,
+      "n_solvable": 40,
+      "oracle_accuracy": 0.7692307692307693
+    }
+  },
+  "hidden@10": {
+    "parameters": {
+      "reserve": 10.0
+    },
+    "per_task": [
+      {
+        "task_id": "astropy__astropy-12907",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14182",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14365",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "astropy__astropy-14995",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.332,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-10914",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11099",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.0657,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11133",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11179",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.000345,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.000345,
+          "payment_second_price": 0.065,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.16,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11815",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11848",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11964",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-11999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12125",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12308",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-12708",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.17,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.17,
+          "payment_second_price": 0.6,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13028",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13033",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.495,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.495,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13158",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.46,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.46,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13315",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13401",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.062,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.062,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13551",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.2808,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13590",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13658",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.100022,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.035,
+          "winner_p_success": 0.98,
+          "payment_first_price": 0.035,
+          "payment_second_price": 0.13,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-13925",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.36,
+          "winner_p_success": 0.82,
+          "payment_first_price": 0.36,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-13933",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.280042,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.165,
+          "winner_p_success": 0.92,
+          "payment_first_price": 0.165,
+          "payment_second_price": 0.280042,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 2,
+          "n_bidders": 2
+        }
+      },
+      {
+        "task_id": "django__django-14155",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14534",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.165,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-14999",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "django__django-15252",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.47000000000000003,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "django__django-15695",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.27,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.27,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23299",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23314",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-23476",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.38000000000000006,
+          "winner_p_success": 0.62,
+          "payment_first_price": 0.38000000000000006,
+          "payment_second_price": 0.55,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.56,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.56,
+          "payment_second_price": 0.38000000000000006,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "matplotlib__matplotlib-24149",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "psf__requests-2317",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065,
+          "payment_second_price": 0.27,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pydata__xarray-4094",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.36,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pylint-dev__pylint-7080",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.4600000000000001,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.4600000000000001,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.225,
+          "winner_p_success": 0.9,
+          "payment_first_price": 1.225,
+          "payment_second_price": 0.4600000000000001,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7432",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.27,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "pytest-dev__pytest-7490",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.37000000000000005,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.37000000000000005,
+          "payment_second_price": 0.56,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-10297",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.13,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.13,
+          "payment_second_price": 0.175,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "anthropic:claude-opus-4-5-20251101",
+          "winner_ask": 0.13,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.13,
+          "payment_second_price": 0.175,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13142",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.2800000000000001,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13439",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.025,
+          "winner_p_success": 0.99,
+          "payment_first_price": 0.025,
+          "payment_second_price": 0.165,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-25747",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "openai:gpt-5.2-2025-12-11",
+          "winner_ask": 0.2800000000000001,
+          "winner_p_success": 0.72,
+          "payment_first_price": 0.2800000000000001,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 1.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 1.0625,
+          "payment_second_price": 0.36,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-11445",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8595",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.33,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8721",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12419",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.38000000000000006,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.275,
+          "winner_p_success": 0.85,
+          "payment_first_price": 0.275,
+          "payment_second_price": 0.56,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-12481",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.37000000000000005,
+          "solved": true,
+          "outcome": 1,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-17630",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 0.46,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18199",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065015,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065015,
+          "payment_second_price": 0.345,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.065015,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.065015,
+          "payment_second_price": 0.345,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      },
+      {
+        "task_id": "sympy__sympy-18698",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.175,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.175,
+          "payment_second_price": 10.0,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 1,
+          "n_bidders": 1
+        }
+      },
+      {
+        "task_id": "sympy__sympy-21612",
+        "min_ask": {
+          "mechanism": "min_ask",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        },
+        "formula": {
+          "mechanism": "formula",
+          "winner_model": "google:models/gemini-3-pro-preview",
+          "winner_ask": 0.0625,
+          "winner_p_success": 0.95,
+          "payment_first_price": 0.0625,
+          "payment_second_price": 0.33,
+          "solved": false,
+          "outcome": 0,
+          "n_eligible": 3,
+          "n_bidders": 3
+        }
+      }
+    ],
+    "summary": {
+      "min_ask": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 32,
+        "allocation_accuracy": 0.6153846153846154,
+        "total_payment_first_price": 8.36536,
+        "total_payment_second_price": 36.50856399999999,
+        "cost_per_solve_first_price": 0.2614175,
+        "cost_per_solve_second_price": 1.1408926249999998,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 43,
+          "openai:gpt-5.2-2025-12-11": 6,
+          "anthropic:claude-opus-4-5-20251101": 3
+        }
+      },
+      "formula": {
+        "n_tasks": 52,
+        "n_allocated": 52,
+        "n_with_outcome": 52,
+        "n_solved": 33,
+        "allocation_accuracy": 0.6346153846153846,
+        "total_payment_first_price": 11.142515000000007,
+        "total_payment_second_price": 37.42504199999999,
+        "cost_per_solve_first_price": 0.3376519696969699,
+        "cost_per_solve_second_price": 1.1340921818181815,
+        "winner_distribution": {
+          "google:models/gemini-3-pro-preview": 47,
+          "anthropic:claude-opus-4-5-20251101": 5
+        }
+      }
+    },
+    "oracle": {
+      "n_tasks": 52,
+      "n_with_outcome": 52,
+      "n_solvable": 40,
+      "oracle_accuracy": 0.7692307692307693
+    }
+  }
+}

@@ -191,7 +191,7 @@ Allocation accuracy (3-model): 62--63% across all conditions, slightly below 2-m
 
 The allocation bottleneck is not the auction mechanism. Accuracy stays at 62--70% regardless of payment rules. The bottleneck is `p_success` calibration quality. Prompt design dramatically affects bidding behaviour: explicit formulas produce near-truthful bids, while vague instructions produce irrational ones. Cheap bidders can dominate allocation without delivering results -- quality signals beyond price are needed.
 
-Run artifacts: `runs/research/phase2a_competitive_50task/`, `runs/research/phase2a_second_price_50task/`, `runs/research/phase2a_formula_sp/`
+Published data: [`docs/research/data/phase2a/`](../data/phase2a/) (exp1/exp2/exp3 calibration + auction results)
 
 ---
 

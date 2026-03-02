@@ -19,6 +19,14 @@ The 50-task evaluation was compiled by joining data across multiple independent 
 - `runs/research/phase1/full_external_20260216T070002Z/calibration_results.jsonl`
 - `runs/research/phase1/next63_external_20260216T191746Z/calibration_results.jsonl`
 
+**Published summary data** (committed to repo):
+- [`docs/research/data/phase1/calibration_results.jsonl`](../data/phase1/calibration_results.jsonl) -- merged 558-row Phase I calibration dataset
+- [`docs/research/data/phase2/phase2_rollup_50.json`](../data/phase2/phase2_rollup_50.json) -- 50-task market rollup
+- [`docs/research/data/phase2/market_vs_solo_summary.json`](../data/phase2/market_vs_solo_summary.json) -- market vs solo comparison
+- [`docs/research/data/phase2/final_summary.json`](../data/phase2/final_summary.json) -- aggregate pass rates
+
+Raw execution logs (Docker output, patches, model responses) are local-only under `runs/` (gitignored).
+
 ---
 
 ## 2. Recomputed 50-Task Summary
