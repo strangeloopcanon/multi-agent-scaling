@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1230" height="760" viewBox="0 0 1230 760">
+<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<text x="60" y="74" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700" fill="#111827">Reserve Auction: Model Summary</text>
+<text x="60" y="118" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#374151">Model-level summary from reserve auction simulation.</text>
+<rect x="60" y="180" width="1110" height="78" fill="#f3f4f6"/>
+<rect x="60" y="336" width="1110" height="78" fill="#f9fafb"/>
+<rect x="60" y="492" width="1110" height="78" fill="#f9fafb"/>
+<g stroke="#d0d7de" stroke-width="2">
+<line x1="60" y1="180" x2="60" y2="648"/>
+<line x1="450" y1="180" x2="450" y2="648"/>
+<line x1="540" y1="180" x2="540" y2="648"/>
+<line x1="660" y1="180" x2="660" y2="648"/>
+<line x1="830" y1="180" x2="830" y2="648"/>
+<line x1="1000" y1="180" x2="1000" y2="648"/>
+<line x1="1170" y1="180" x2="1170" y2="648"/>
+<line x1="60" y1="180" x2="1170" y2="180"/>
+<line x1="60" y1="258" x2="1170" y2="258"/>
+<line x1="60" y1="336" x2="1170" y2="336"/>
+<line x1="60" y1="414" x2="1170" y2="414"/>
+<line x1="60" y1="492" x2="1170" y2="492"/>
+<line x1="60" y1="570" x2="1170" y2="570"/>
+<line x1="60" y1="648" x2="1170" y2="648"/>
+</g>
+<text x="72" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">Model</text>
+<text x="462" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">N</text>
+<text x="552" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">Win %</text>
+<text x="672" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">Exp Profit</text>
+<text x="842" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">Realized</text>
+<text x="1012" y="230" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#111827">Oracle Profit</text>
+<text x="72" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">Claude Opus 4.5</text>
+<text x="462" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">93</text>
+<text x="552" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">28.2%</text>
+<text x="672" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.077</text>
+<text x="842" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.080</text>
+<text x="1012" y="308" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#1d4ed8">$0.260</text>
+<text x="72" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">Claude Sonnet 4.5</text>
+<text x="462" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">93</text>
+<text x="552" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">29.3%</text>
+<text x="672" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.062</text>
+<text x="842" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.064</text>
+<text x="1012" y="386" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#1d4ed8">$0.288</text>
+<text x="72" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">GPT-5-mini</text>
+<text x="462" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">93</text>
+<text x="552" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">21.6%</text>
+<text x="672" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.054</text>
+<text x="842" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.050</text>
+<text x="1012" y="464" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#1d4ed8">$0.375</text>
+<text x="72" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">GPT-5.2-pro</text>
+<text x="462" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">93</text>
+<text x="552" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">5.3%</text>
+<text x="672" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.007</text>
+<text x="842" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.007</text>
+<text x="1012" y="542" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#1d4ed8">$0.227</text>
+<text x="72" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">GPT-5.2</text>
+<text x="462" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">93</text>
+<text x="552" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">5.4%</text>
+<text x="672" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.005</text>
+<text x="842" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#111827">$0.006</text>
+<text x="1012" y="620" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#1d4ed8">$0.385</text>
+<text x="60" y="692" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#6b7280">Source: docs/research/data/phase1/reserve_auction_results_20260303T185808Z.json</text>
+</svg>
