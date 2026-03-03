@@ -1,0 +1,65 @@
+{
+  "description": "The 30 Phase II tasks with surviving raw ledger data (market execution). 20 additional tasks (from the next20_market run) were lost during cleanup. Pass/fail for all 50 is in per_task_outcomes.jsonl; this manifest covers the subset with full provenance (tokens, clearing details, bid logs).",
+  "task_count": 30,
+  "task_ids": [
+    "astropy__astropy-14182",
+    "django__django-11133",
+    "django__django-11179",
+    "django__django-11815",
+    "django__django-11964",
+    "django__django-11999",
+    "django__django-12125",
+    "django__django-12308",
+    "django__django-12708",
+    "django__django-14155",
+    "matplotlib__matplotlib-23299",
+    "matplotlib__matplotlib-23476",
+    "matplotlib__matplotlib-24970",
+    "matplotlib__matplotlib-25311",
+    "matplotlib__matplotlib-25332",
+    "psf__requests-2317",
+    "pylint-dev__pylint-7080",
+    "pytest-dev__pytest-7432",
+    "scikit-learn__scikit-learn-13142",
+    "scikit-learn__scikit-learn-13439",
+    "scikit-learn__scikit-learn-13496",
+    "scikit-learn__scikit-learn-25747",
+    "sphinx-doc__sphinx-8721",
+    "sympy__sympy-12481",
+    "sympy__sympy-13031",
+    "sympy__sympy-13480",
+    "sympy__sympy-13647",
+    "sympy__sympy-15345",
+    "sympy__sympy-16792",
+    "sympy__sympy-17630"
+  ],
+  "source_runs": [
+    "gateB10_exclfix_t900_20260218T190909Z (tasks 0-9, 10 tasks)",
+    "next20_contiguous_market_20260219T183750Z (tasks 30-49, 20 tasks)"
+  ],
+  "missing_run": "next20_market_20260219T074528Z (tasks 10-29, 20 tasks, raw data lost)",
+  "overlap_pass_rates": {
+    "market": {
+      "passes": 17,
+      "total": 30,
+      "rate": 0.567
+    },
+    "solo": {
+      "passes": 13,
+      "total": 30,
+      "rate": 0.433
+    }
+  },
+  "overlap_confusion": {
+    "both_pass": 11,
+    "market_only": 6,
+    "solo_only": 2,
+    "both_fail": 11
+  },
+  "provenance": {
+    "per_task_outcomes_source": "docs/research/data/phase2/per_task_outcomes.jsonl",
+    "full_50_task_summary": "docs/research/data/phase2/market_vs_solo_summary.json",
+    "token_usage": "docs/research/data/phase2/execution_token_usage.jsonl",
+    "overlap_tokens_csv": "docs/research/data/phase2/market_vs_solo_overlap_tokens.csv"
+  }
+}

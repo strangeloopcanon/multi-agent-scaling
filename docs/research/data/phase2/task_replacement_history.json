@@ -1,0 +1,14 @@
+{
+  "description": "Task replacement history for the Phase II 50-task benchmark. One instance was swapped during the third run batch because its gold patch failed deterministic strict preflight validation.",
+  "replacements": [
+    {
+      "replaced_instance_id": "sphinx-doc__sphinx-8595",
+      "replacement_instance_id": "django__django-12708",
+      "reason": "deterministic strict preflight failure on gold patch",
+      "run_batch": "next20_contiguous_market_20260219T183750Z",
+      "affected_task_indices": "30-49"
+    }
+  ],
+  "original_50_task_source": "external_covered_lite (SWE-bench Lite, filtered to tasks with external scaffold pass/fail labels)",
+  "provenance": "Extracted from phase2_rollup_50.json notes.this_run_replacement"
+}

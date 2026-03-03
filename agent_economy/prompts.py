@@ -127,9 +127,7 @@ def bid_prompt(
             f"- {spec.id}: {spec.title} (bounty={rt.bounty_current} fail_count={rt.fail_count})"
         )
         if spec.description.strip():
-            blurb = spec.description.strip().splitlines()[0].strip()
-            if blurb:
-                lines.append(f"  {blurb}")
+            lines.append(f"  {spec.description.strip()}")
         lines.append("  public_acceptance:")
         for cmd in spec.acceptance:
             lines.append(f"    - {cmd.cmd}")
