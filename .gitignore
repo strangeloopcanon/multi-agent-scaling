@@ -11,3 +11,5 @@ dist/
 runs/
 .beads/
 .codex/
+.dolt/
+*.db
