@@ -49,3 +49,4 @@ Because the scoring formula (`p_success * bounty - ask - expected_cost`) heavily
 The model most likely to solve the task (GPT-5.2, scoring 74% externally) is under-allocated because it bids honestly, while the models least likely to solve it win every round by over-promising. 
 
 This sets the stage for Phase II: overcoming allocation inefficiencies and a rigid scaffold to prove the value of the market structure.
+****
