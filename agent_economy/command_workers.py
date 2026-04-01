@@ -21,6 +21,7 @@ from agent_economy.sandbox import (
     build_patch_from_dirs,
     enforce_allowed_paths,
     parse_patch_changes,
+    prune_generated_workspace_artifacts,
     write_command_results_json,
     write_text_atomic,
 )
@@ -271,6 +272,7 @@ class CommandExecutor:
 
         work_dir = sandbox_dir / "workspace"
         self._sandbox.copy_workspace(workspace_dir=self._workspace_dir, sandbox_dir=work_dir)
+        prune_generated_workspace_artifacts(workspace_dir=work_dir)
 
         task_payload = {
             "schema_version": 1,

@@ -25,6 +25,63 @@ _DIFF_HEADER_RE = re.compile(r"^diff --git a/(.+) b/(.+)$")
 _HUNK_HEADER_RE = re.compile(r"^@@\s+-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s+@@(.*)$")
 
 
+def _normalize_relpath(path: str) -> str:
+    rel = str(path or "").replace("\\", "/").strip()
+    while rel.startswith("./"):
+        rel = rel[2:]
+    return rel
+
+
+def is_generated_workspace_artifact(path: str) -> bool:
+    rel = _normalize_relpath(path)
+    if not rel:
+        return False
+    if rel == "patch.diff":
+        return True
+    if rel == ".ae_harness_runner" or rel.startswith(".ae_harness_runner/"):
+        return True
+    if rel == "logs/run_evaluation" or rel.startswith("logs/run_evaluation/"):
+        return True
+
+    name = Path(rel).name
+    if re.fullmatch(r"predictions_[^/]+\.jsonl", name):
+        return True
+    if re.fullmatch(r"harness_[^/]+\.json", name):
+        return True
+    if re.fullmatch(r"agent-economy-market\.[^/]+\.json", name):
+        return True
+    return False
+
+
+def prune_generated_workspace_artifacts(*, workspace_dir: Path) -> list[str]:
+    removed: list[str] = []
+    candidates = [
+        workspace_dir / "patch.diff",
+        workspace_dir / ".ae_harness_runner",
+        workspace_dir / "logs" / "run_evaluation",
+        *workspace_dir.glob("predictions_*.jsonl"),
+        *workspace_dir.glob("harness_*.json"),
+        *workspace_dir.glob("agent-economy-market.*.json"),
+    ]
+    seen: set[Path] = set()
+    for candidate in candidates:
+        key = candidate.resolve() if candidate.exists() else candidate
+        if key in seen:
+            continue
+        seen.add(key)
+        if not candidate.exists():
+            continue
+        rel = str(candidate.relative_to(workspace_dir))
+        if not is_generated_workspace_artifact(rel):
+            continue
+        if candidate.is_dir():
+            shutil.rmtree(candidate)
+        else:
+            candidate.unlink()
+        removed.append(rel)
+    return sorted(set(removed))
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -381,7 +438,104 @@ def _relativize_no_index_diff(*, patch_text: str, base_dir: Path, work_dir: Path
     return "\n".join(out_lines).rstrip() + "\n"
 
 
+def _filter_generated_artifacts_from_patch(patch_text: str) -> str:
+    blocks: list[list[str]] = []
+    cur: list[str] = []
+    for raw in patch_text.splitlines(keepends=True):
+        if raw.startswith("diff --git "):
+            if cur:
+                blocks.append(cur)
+            cur = [raw]
+            continue
+        if cur:
+            cur.append(raw)
+    if cur:
+        blocks.append(cur)
+
+    if not blocks:
+        return patch_text
+
+    kept_blocks: list[str] = []
+    for block in blocks:
+        block_text = "".join(block)
+        changes = parse_patch_changes(block_text)
+        paths = [p for change in changes for p in (change.old_path, change.new_path) if p]
+        if paths and all(is_generated_workspace_artifact(path) for path in paths):
+            continue
+        kept_blocks.append(block_text)
+    return "".join(kept_blocks)
+
+
+def _run_git_diff(*, cwd: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=cwd,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return proc
+
+
+def _is_git_worktree(*, cwd: Path) -> bool:
+    proc = _run_git_diff(cwd=cwd, args=["rev-parse", "--is-inside-work-tree"])
+    return proc.returncode == 0 and proc.stdout.strip() == "true"
+
+
+def _build_patch_from_git_worktree(*, work_dir: Path) -> PatchBuildResult:
+    tracked = _run_git_diff(
+        cwd=work_dir,
+        args=["diff", "--no-ext-diff", "--binary", "--relative", "HEAD", "--"],
+    )
+    if tracked.returncode not in {0, 1}:
+        raise RuntimeError(f"git diff failed: rc={tracked.returncode}\n{_tail(tracked.stderr)}")
+
+    untracked = _run_git_diff(
+        cwd=work_dir,
+        args=["ls-files", "--others", "--exclude-standard", "-z", "--"],
+    )
+    if untracked.returncode != 0:
+        raise RuntimeError(
+            f"git ls-files failed: rc={untracked.returncode}\n{_tail(untracked.stderr)}"
+        )
+
+    blocks: list[str] = []
+    if tracked.stdout.strip():
+        blocks.append(tracked.stdout)
+
+    for raw_path in sorted(p for p in untracked.stdout.split("\0") if p):
+        rel_path = _normalize_relpath(raw_path)
+        if not rel_path or is_generated_workspace_artifact(rel_path):
+            continue
+
+        add_proc = _run_git_diff(
+            cwd=work_dir,
+            args=["diff", "--no-index", "--binary", "--no-ext-diff", "--", "/dev/null", rel_path],
+        )
+        if add_proc.returncode not in {0, 1}:
+            raise RuntimeError(
+                f"git diff --no-index failed: rc={add_proc.returncode}\n{_tail(add_proc.stderr)}"
+            )
+        if add_proc.stdout.strip():
+            blocks.append(add_proc.stdout)
+
+    patch_text = "".join(blocks)
+    if not patch_text.strip():
+        return PatchBuildResult(patch_text="", touched_paths=[])
+
+    patch_text = _filter_generated_artifacts_from_patch(patch_text)
+    if not patch_text.strip():
+        return PatchBuildResult(patch_text="", touched_paths=[])
+
+    changes = parse_patch_changes(patch_text)
+    touched = sorted({p for ch in changes for p in (ch.old_path, ch.new_path) if p is not None})
+    return PatchBuildResult(patch_text=patch_text, touched_paths=touched)
+
+
 def build_patch_from_dirs(*, base_dir: Path, work_dir: Path) -> PatchBuildResult:
+    if _is_git_worktree(cwd=work_dir):
+        return _build_patch_from_git_worktree(work_dir=work_dir)
+
     proc = subprocess.run(
         ["git", "diff", "--no-index", str(base_dir), str(work_dir)],
         text=True,
@@ -396,6 +550,9 @@ def build_patch_from_dirs(*, base_dir: Path, work_dir: Path) -> PatchBuildResult
     patch_text = _relativize_no_index_diff(
         patch_text=proc.stdout, base_dir=base_dir, work_dir=work_dir
     )
+    patch_text = _filter_generated_artifacts_from_patch(patch_text)
+    if not patch_text.strip():
+        return PatchBuildResult(patch_text="", touched_paths=[])
     changes = parse_patch_changes(patch_text)
     touched = sorted({p for ch in changes for p in (ch.old_path, ch.new_path) if p is not None})
     return PatchBuildResult(patch_text=patch_text, touched_paths=touched)

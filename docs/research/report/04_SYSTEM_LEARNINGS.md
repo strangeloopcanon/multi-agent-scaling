@@ -36,3 +36,15 @@ Phase I external labels (from standard SWE-bench interactive scaffolds) proved o
 - **Conversion rate when routing to an external passer is ~50%.** Even when the market successfully assigned a task to a model known to pass it externally, the conversion rate was only around 50%.
 
 The external labels come from different scaffolds with different prompts, timeouts, and execution environments. They are invaluable for task selection and estimating theoretical ceilings (the Oracle), but they cannot be used to predict precise per-model, per-task outcomes in a different environment. This reinforces the need for dynamic routing and retries.
+
+## 4. 2026-04-01 Codex-Direct 10-Task Sample
+
+A clean 10-task Codex-direct Phase II sample landed at **2 / 10 passes (20%)** on the same first-10-task slice where the archived market run scored **3 / 10** and the archived solo GPT-5.2 run scored **1 / 10**.
+
+The result matters less for the raw pass rate than for the reliability lessons it surfaced:
+
+- The SWE-bench harness must run from a neutral working directory. Running it from inside the task repo lets task packages such as `requests` shadow harness dependencies and creates false failures before grading even begins.
+- Patch construction must come from the sandbox repo's own git state, not from a raw directory diff. The raw diff path leaked ignored build outputs and benchmark side files into submissions, which turned valid edits into patch-apply failures.
+- After those fixes, Codex-direct produced clean end-to-end outcomes across the sample. The remaining notable operational miss was `matplotlib__matplotlib-23476`, where the executor hit the 900-second limit without returning a patch.
+
+The per-task pattern was mixed rather than uniformly weak. Codex-direct solved `astropy__astropy-14182` and `scikit-learn__scikit-learn-25747`, both of which the archived market and solo GPT-5.2 runs missed on this slice, but it failed `django__django-11964`, `django__django-12308`, and `pylint-dev__pylint-7080`, which the market had solved.

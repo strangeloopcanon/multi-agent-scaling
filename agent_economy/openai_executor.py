@@ -22,6 +22,7 @@ from agent_economy.sandbox import (
     extract_file_blocks,
     extract_git_diff,
     parse_patch_changes,
+    prune_generated_workspace_artifacts,
     write_command_results_json,
     write_text_atomic,
 )
@@ -182,6 +183,7 @@ class OpenAIExecutor:
             sandbox_rel = str(sandbox_dir)
         work_dir = sandbox_dir / "workspace"
         self._sandbox.copy_workspace(workspace_dir=self._workspace_dir, sandbox_dir=work_dir)
+        prune_generated_workspace_artifacts(workspace_dir=work_dir)
 
         hint_files = _read_hint_files(root=work_dir, rel_paths=list(task.files_hint))
         ready = ReadyTask(
