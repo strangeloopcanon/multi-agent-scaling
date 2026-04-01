@@ -206,6 +206,16 @@ python scripts/run_phase2.py \
   --isolate-state --execute --check-every 25 \
   --output-root runs/research/phase2/<ts>_batch1
 
+# Phase II run: Codex direct as a single external worker
+PYTHONPATH=. python -m scripts.run_phase2 \
+  --task-manifest runs/research/phase2/_prepared/<ts>/prepared_manifest.json \
+  --task-offset 0 --task-limit 1 \
+  --workers benchmarks/workers_codex_direct.json \
+  --models "" \
+  --market-only --settlement-mode direct_penalty \
+  --isolate-state --execute \
+  --output-root runs/research/phase2/<ts>_codex_direct
+
 # Phase IIa Exp 1: first-price informed bids
 python scripts/run_phase1.py \
   --execute-calibration \
