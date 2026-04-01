@@ -48,3 +48,24 @@ The result matters less for the raw pass rate than for the reliability lessons i
 - After those fixes, Codex-direct produced clean end-to-end outcomes across the sample. The remaining notable operational miss was `matplotlib__matplotlib-23476`, where the executor hit the 900-second limit without returning a patch.
 
 The per-task pattern was mixed rather than uniformly weak. Codex-direct solved `astropy__astropy-14182` and `scikit-learn__scikit-learn-25747`, both of which the archived market and solo GPT-5.2 runs missed on this slice, but it failed `django__django-11964`, `django__django-12308`, and `pylint-dev__pylint-7080`, which the market had solved.
+
+## 5. 2026-04-01 Codex-Direct Full-50 False Failure
+
+The first full-50 Codex-direct rerun on 2026-04-01 produced an alarming early readout of **0 / 44 completed**. That result was not trustworthy and should not be treated as a real benchmark outcome.
+
+**What happened:**
+- The executor built submission patches by asking `git` whether the sandbox workspace was "inside a git repo."
+- The copied SWE-bench task workspaces did not have their own `.git` metadata, but they lived underneath the main `agent-economy` repo on disk.
+- `git` therefore latched onto the host repo instead of the copied task workspace.
+- Because the host repo ignores `runs/`, the patch builder concluded there were **no workspace changes produced**, even when Codex had edited task files inside the sandbox.
+
+**Why it mattered:**
+- The ledger recorded repeated verification failures with `no workspace changes produced`.
+- The worker notes still described concrete repo-specific edits, which made the apparent `0 / 44` collapse look like model failure when it was really a packaging bug.
+- Every affected task was effectively graded as an empty submission.
+
+**Fix:**
+- Only use the git-based patch path when the sandbox workspace itself contains local git metadata (`.git` file or directory).
+- Otherwise, fall back to the directory-to-directory diff path, which correctly compares the prepared workspace copy against the edited sandbox copy.
+
+This bug invalidated the original `codex_direct_market50_full50_20260401T185430Z` run. After the fix, replaying the saved Astropy task sandbox produced the expected two-file patch instead of an empty result.

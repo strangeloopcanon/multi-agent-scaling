@@ -164,9 +164,7 @@ def test_prune_generated_workspace_artifacts_removes_benchmark_side_files(tmp_pa
     (workspace_dir / "harness_demo.json").write_text("{}\n", encoding="utf-8")
     (workspace_dir / "agent-economy-market.demo.json").write_text("{}\n", encoding="utf-8")
     (workspace_dir / ".ae_harness_runner" / "report.json").parent.mkdir(parents=True)
-    (workspace_dir / ".ae_harness_runner" / "report.json").write_text(
-        "{}\n", encoding="utf-8"
-    )
+    (workspace_dir / ".ae_harness_runner" / "report.json").write_text("{}\n", encoding="utf-8")
     (workspace_dir / "logs" / "run_evaluation" / "demo").mkdir(parents=True)
     (workspace_dir / "logs" / "run_evaluation" / "demo" / "run_instance.log").write_text(
         "log\n", encoding="utf-8"
@@ -231,3 +229,43 @@ def test_build_patch_from_dirs_prefers_git_repo_and_skips_ignored_files(tmp_path
     assert "added.txt" in patch.patch_text
     assert "ignored.log" not in patch.patch_text
     assert ".ae_harness_runner" not in patch.patch_text
+
+
+def test_build_patch_from_dirs_ignores_parent_git_repo(tmp_path) -> None:
+    host_repo = tmp_path / "host_repo"
+    host_repo.mkdir()
+
+    subprocess.run(["git", "init"], cwd=host_repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "tests@example.com"],
+        cwd=host_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Tests"],
+        cwd=host_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    (host_repo / ".gitignore").write_text("runs/\n", encoding="utf-8")
+    subprocess.run(["git", "add", ".gitignore"], cwd=host_repo, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=host_repo, check=True, capture_output=True)
+
+    base_dir = host_repo / "runs" / "base"
+    work_dir = host_repo / "runs" / "sandbox" / "workspace"
+    base_dir.mkdir(parents=True)
+    work_dir.mkdir(parents=True)
+
+    (base_dir / "tracked.txt").write_text("before\n", encoding="utf-8")
+    (work_dir / "tracked.txt").write_text("after\n", encoding="utf-8")
+    (work_dir / "added.txt").write_text("new file\n", encoding="utf-8")
+
+    patch = build_patch_from_dirs(base_dir=base_dir, work_dir=work_dir)
+
+    assert patch.touched_paths == ["added.txt", "tracked.txt"]
+    assert "tracked.txt" in patch.patch_text
+    assert "added.txt" in patch.patch_text

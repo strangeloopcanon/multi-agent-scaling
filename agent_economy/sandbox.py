@@ -477,7 +477,13 @@ def _run_git_diff(*, cwd: Path, args: list[str]) -> subprocess.CompletedProcess[
     return proc
 
 
+def _has_local_git_marker(*, cwd: Path) -> bool:
+    return (cwd / ".git").exists()
+
+
 def _is_git_worktree(*, cwd: Path) -> bool:
+    if not _has_local_git_marker(cwd=cwd):
+        return False
     proc = _run_git_diff(cwd=cwd, args=["rev-parse", "--is-inside-work-tree"])
     return proc.returncode == 0 and proc.stdout.strip() == "true"
 
