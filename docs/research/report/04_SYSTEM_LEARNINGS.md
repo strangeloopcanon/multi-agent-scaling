@@ -69,3 +69,18 @@ The first full-50 Codex-direct rerun on 2026-04-01 produced an alarming early re
 - Otherwise, fall back to the directory-to-directory diff path, which correctly compares the prepared workspace copy against the edited sandbox copy.
 
 This bug invalidated the original `codex_direct_market50_full50_20260401T185430Z` run. After the fix, replaying the saved Astropy task sandbox produced the expected two-file patch instead of an empty result.
+
+## 6. 2026-04-01 Relaxed-Time GPT-5.2 Codex Sanity Check
+
+A one-task Codex-direct sanity run with the underlying model fixed to **GPT-5.2** and the execution budget doubled from **900 seconds** to **1800 seconds** completed cleanly and passed end to end.
+
+**What was verified:**
+- Clean preflight state: no leftover benchmark containers, images, or volumes before launch.
+- Worker identity stayed pinned to `openai:gpt-5.2-2025-12-11`.
+- Codex produced a real patch, the patch was handed off to the grader, and the grader generated the normal verification artifacts.
+- The final benchmark result agreed with the checker output: `astropy__astropy-14182` resolved successfully.
+- No executor-timeout marker appeared on the winning attempt.
+
+**Why it matters:**
+- This separates the earlier 900-second misses from the more serious infrastructure bugs. The Codex + GPT-5.2 path can now complete a full Phase II loop cleanly when given a longer budget.
+- The remaining open question is no longer whether the pipeline works. It is whether Codex + GPT-5.2 can produce competitive results under the original 900-second budget, or whether its main weakness in this scaffold is speed.
