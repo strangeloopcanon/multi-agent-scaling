@@ -78,7 +78,15 @@ This run was materially heavier than the published baselines:
 
 That matters because the result is not "free extra accuracy." It comes with a larger time and token budget.
 
-## 6. Interpretation
+## 6. How Much of the Gain Needed Extra Time
+
+Of the **35** passing tasks, **20** finished **after** the original 900-second budget and **15** finished within it.
+
+That split matters because it sharpens the interpretation:
+- at least **20** of the `35` passes clearly depended on the longer budget
+- the remaining **15** passes would have fit inside the old time limit, though they still came through the Codex execution path rather than the published baseline path
+
+## 7. Interpretation
 
 The cleanest read is that the Codex + GPT-5.2 path was mostly **speed-limited**, not fundamentally incapable on this task set.
 
