@@ -181,6 +181,39 @@
       }
     ]
   },
+  "efficiency_comparison": {
+    "published_market_900s": {
+      "task_count": 50,
+      "execution_timeout_seconds": 900,
+      "passes": 29,
+      "rate": 0.58,
+      "attempts_total": 82,
+      "tokens_total_approx": 5820000,
+      "tokens_per_pass_approx": 200800,
+      "penalties_per_task_approx": 47.6,
+      "notes": "Token and penalty figures come from the published Phase II appendix and should be treated as rolled-up summary values. The middle 20-task raw market batch was lost."
+    },
+    "published_solo_gpt52_900s": {
+      "task_count": 50,
+      "execution_timeout_seconds": 900,
+      "passes": 24,
+      "rate": 0.48,
+      "attempts_total": 82,
+      "tokens_total": 4373481,
+      "tokens_per_pass": 182228.375,
+      "penalties_per_task": 64.4
+    },
+    "codex_gpt52_relaxed_1800s": {
+      "task_count": 50,
+      "execution_timeout_seconds": 1800,
+      "passes": 35,
+      "rate": 0.7,
+      "attempts_total": 66,
+      "tokens_total": 321335319,
+      "tokens_per_pass": 9181009.114285715,
+      "penalties_per_task": 3920.5
+    }
+  },
   "overlap": {
     "relaxed_only_vs_market": [
       "astropy__astropy-14182",

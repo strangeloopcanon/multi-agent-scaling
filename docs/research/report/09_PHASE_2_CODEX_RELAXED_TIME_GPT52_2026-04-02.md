@@ -69,14 +69,25 @@ Tasks the published market solved that the relaxed Codex run did not:
 - `matplotlib__matplotlib-24970`
 - `pytest-dev__pytest-7490`
 
-## 5. Operational Cost
+## 5. Efficiency Comparison
 
-This run was materially heavier than the published baselines:
-- **321.3M total tokens**
-- **66 total attempts**
-- **195,802.39 usage-cost units** in the repo's internal accounting
+The relaxed-time Codex run won on pass rate, but it was not efficient in the same way as the published 900-second runs.
 
-That matters because the result is not "free extra accuracy." It comes with a larger time and token budget.
+| Execution Paradigm | Budget / task | Passes | Attempts | Total tokens | Tokens / pass | Penalties / task |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: |
+| Market (published) | 900s | 29 / 50 | 82 | ~5.82M* | ~200.8k* | 47.6* |
+| Solo GPT-5.2 (published) | 900s | 24 / 50 | 82 | 4.37M | 182.2k | 64.4 |
+| Codex + GPT-5.2 (relaxed follow-up) | 1800s | 35 / 50 | 66 | 321.3M | 9.18M | 3920.5 |
+
+Two things are true at once:
+- the Codex follow-up solved more tasks than either published baseline
+- it spent dramatically more tokens to get there
+
+The Codex follow-up used about **74x** as many tokens as the published solo GPT-5.2 run and about **55x** as many as the published market run. So the extra accuracy came with a very large efficiency tradeoff.
+
+`Penalties / task` uses the repo's internal accounting units, not literal billing.
+
+*Market token and penalty figures come from the published Phase II rollup and quantitative appendix. The middle 20-task raw market batch was lost, so the fine-grained run summaries for that batch are no longer recoverable.*
 
 ## 6. How Much of the Gain Needed Extra Time
 
