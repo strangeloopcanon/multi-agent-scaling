@@ -20,6 +20,7 @@ class FixedBidSpec(BaseModel):
 class CommandWorkerSpec(BaseModel):
     worker_id: str
     exec_cmd: str
+    model_ref: str | None = None
 
     # How this worker produces bids. Provide either:
     # - bid_cmd: a command that reads JSON on stdin and prints JSON on stdout, or
@@ -44,6 +45,16 @@ class CommandWorkerSpec(BaseModel):
         if not v.strip():
             raise ValueError("exec_cmd must be non-empty")
         return v
+
+    @field_validator("model_ref")
+    @classmethod
+    def _non_empty_model_ref(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        value = v.strip()
+        if not value:
+            raise ValueError("model_ref must be non-empty when provided")
+        return value
 
     @model_validator(mode="after")
     def _require_bid_source(self) -> "CommandWorkerSpec":
@@ -78,7 +89,7 @@ def _parse_worker_item(item: Any) -> tuple[WorkerRuntime, CommandWorkerSpec | No
         rt = WorkerRuntime(
             worker_id=spec.worker_id,
             worker_type=WorkerType.EXTERNAL_WORKER,
-            model_ref=None,
+            model_ref=spec.model_ref,
             balance=0.0,
             reputation=1.0,
         )

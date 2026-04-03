@@ -17,6 +17,7 @@ class Totals:
     total_tokens: int
     total_calls: int
 
+
 def _read_jsonl(path: Path) -> list[dict]:
     rows: list[dict] = []
     with path.open(encoding="utf-8") as f:

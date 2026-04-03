@@ -1,7 +1,7 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-02-26
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments, 3 models)
+**Last updated:** 2026-04-02
+**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, Phase IIa auction mechanism experiments (3 experiments, 3 models), and a later Codex follow-up diagnostic
 
 Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer: yes, but the bottleneck isn't the auction mechanism, it's how well models know their own capabilities.
 
@@ -59,6 +59,38 @@ While the market outperforms single models, it currently sits below the theoreti
 ## Conclusion
 
 On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. The remaining bottlenecks are allocation quality and scaffold limitations.
+
+## Later Follow-Up: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
+
+We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.
+
+That run finished at **35 / 50 passes (70%)**, ahead of both published same-task baselines:
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Codex + GPT-5.2 (relaxed 1800s budget) | 70.0% | 35 / 50 |
+| Market (published 900s benchmark) | 58.0% | 29 / 50 |
+| Solo GPT-5.2 (published 900s benchmark) | 48.0% | 24 / 50 |
+
+This result should **not** replace the published 900-second benchmark. It answers a different question: what happens if the same model family gets more time and uses the Codex execution path? The answer is that the Codex setup looks much more speed-limited than capability-limited. The biggest gains came in `django` and `sympy`, while `matplotlib` remained a weak spot.
+
+Of the **35** passing tasks in this relaxed-time follow-up, **20** finished after the original **900-second** budget and **15** finished within it. So most of the gain came from the extra runway, not from a hidden apples-to-apples improvement under the original limit.
+
+### Efficiency Snapshot
+
+| Execution Paradigm | Budget / task | Passes | Attempts | Total tokens | Tokens / pass | Penalties / task |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: |
+| Market (published) | 900s | 29 / 50 | 82 | ~5.82M* | ~200.8k* | 47.6* |
+| Solo GPT-5.2 (published) | 900s | 24 / 50 | 82 | 4.37M | 182.2k | 64.4 |
+| Codex + GPT-5.2 (relaxed follow-up) | 1800s | 35 / 50 | 66 | 321.3M | 9.18M | 3920.5 |
+
+The relaxed-time Codex run won on raw pass count, but it did so with a much larger time and token budget. It used about **74x** as many tokens as the published solo GPT-5.2 run and about **55x** as many as the published market run.
+
+`Penalties / task` uses the repo's internal accounting units, not literal billing.
+
+*Market token and penalty figures come from the published Phase II rollup and appendix. The middle 20-task raw market batch was lost, so the fine-grained run summaries for that batch are no longer recoverable.*
+
+For details, see [Phase II Codex Relaxed-Time Follow-Up](09_PHASE_2_CODEX_RELAXED_TIME_GPT52_2026-04-02.md).
 
 ---
 

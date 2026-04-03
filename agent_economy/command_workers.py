@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from agent_economy.sandbox import (
     build_patch_from_dirs,
     enforce_allowed_paths,
     parse_patch_changes,
+    prune_generated_workspace_artifacts,
     write_command_results_json,
     write_text_atomic,
 )
@@ -48,6 +50,8 @@ from agent_economy.verify import (
 from agent_economy.worker_specs import CommandWorkerSpec
 from agent_economy.worker_refs import resolve_worker_refs
 
+_HOST_REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 class BidEnvelope(BaseModel):
     bids: list[Bid] = Field(default_factory=list)
@@ -64,6 +68,30 @@ def _tail(text: str, *, max_chars: int = 2000) -> str:
     if len(text) <= max_chars:
         return text
     return text[: max_chars - 16] + "\n... (truncated)\n"
+
+
+def _load_llm_usage_sidecar(*, sandbox_dir: Path) -> dict[str, int] | None:
+    usage_path = sandbox_dir / "llm_usage.json"
+    if not usage_path.exists():
+        return None
+
+    try:
+        payload = json.loads(usage_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+
+    usage: dict[str, int] = {}
+    for key in ("calls", "input_tokens", "output_tokens"):
+        try:
+            value = int(payload.get(key, 0) or 0)
+        except Exception:
+            return None
+        if value < 0:
+            return None
+        usage[key] = value
+    return usage
 
 
 def _run_json_command(
@@ -148,8 +176,12 @@ class CommandBidder:
         env = _worker_env(spec=spec)
         env.setdefault("AE_WORKER_ID", worker.worker_id)
         env.setdefault("AE_PAYMENT_RULE", self._payment_rule.value)
+        env.setdefault("AE_HOST_PYTHON", sys.executable)
+        env.setdefault("AE_HOST_REPO_ROOT", str(_HOST_REPO_ROOT))
         env.setdefault("INST_WORKER_ID", worker.worker_id)
         env.setdefault("INST_PAYMENT_RULE", self._payment_rule.value)
+        env.setdefault("INST_HOST_PYTHON", sys.executable)
+        env.setdefault("INST_HOST_REPO_ROOT", str(_HOST_REPO_ROOT))
 
         payload: dict[str, Any] = {
             "schema_version": 1,
@@ -240,6 +272,7 @@ class CommandExecutor:
 
         work_dir = sandbox_dir / "workspace"
         self._sandbox.copy_workspace(workspace_dir=self._workspace_dir, sandbox_dir=work_dir)
+        prune_generated_workspace_artifacts(workspace_dir=work_dir)
 
         task_payload = {
             "schema_version": 1,
@@ -259,17 +292,21 @@ class CommandExecutor:
                 "AE_WORKER_ID": worker.worker_id,
                 "AE_TASK_ID": task.id,
                 "AE_ROUND_ID": str(round_id),
-                "AE_TASK_JSON": str(task_json_path),
-                "AE_SANDBOX_DIR": str(sandbox_dir),
-                "AE_WORKSPACE_DIR": str(work_dir),
-                "AE_ARTIFACTS_DIR": str(sandbox_dir),
+                "AE_TASK_JSON": str(task_json_path.resolve()),
+                "AE_SANDBOX_DIR": str(sandbox_dir.resolve()),
+                "AE_WORKSPACE_DIR": str(work_dir.resolve()),
+                "AE_ARTIFACTS_DIR": str(sandbox_dir.resolve()),
+                "AE_HOST_PYTHON": sys.executable,
+                "AE_HOST_REPO_ROOT": str(_HOST_REPO_ROOT),
                 "INST_WORKER_ID": worker.worker_id,
                 "INST_TASK_ID": task.id,
                 "INST_ROUND_ID": str(round_id),
-                "INST_TASK_JSON": str(task_json_path),
-                "INST_SANDBOX_DIR": str(sandbox_dir),
-                "INST_WORKSPACE_DIR": str(work_dir),
-                "INST_ARTIFACTS_DIR": str(sandbox_dir),
+                "INST_TASK_JSON": str(task_json_path.resolve()),
+                "INST_SANDBOX_DIR": str(sandbox_dir.resolve()),
+                "INST_WORKSPACE_DIR": str(work_dir.resolve()),
+                "INST_ARTIFACTS_DIR": str(sandbox_dir.resolve()),
+                "INST_HOST_PYTHON": sys.executable,
+                "INST_HOST_REPO_ROOT": str(_HOST_REPO_ROOT),
             }
         )
 
@@ -334,6 +371,16 @@ class CommandExecutor:
                 ),
             ]
         )
+        llm_usage = _load_llm_usage_sidecar(sandbox_dir=sandbox_dir)
+        if llm_usage is not None:
+            submission_artifacts.append(
+                artifact_for(
+                    sandbox_dir / "llm_usage.json",
+                    name="llm_usage.json",
+                    media_type="application/json",
+                    root=self._run_dir,
+                )
+            )
 
         if proc.returncode != 0:
             return ExecutionOutcome(
@@ -344,6 +391,7 @@ class CommandExecutor:
                 sandbox_rel=sandbox_rel,
                 patch_kind="diff" if task.submission_kind == SubmissionKind.PATCH else "none",
                 submission_kind=task.submission_kind,
+                llm_usage=llm_usage,
             )
 
         patch_kind = "none"
@@ -362,6 +410,7 @@ class CommandExecutor:
                         sandbox_rel=sandbox_rel,
                         patch_kind=patch_kind,
                         submission_kind=task.submission_kind,
+                        llm_usage=llm_usage,
                     )
                 patch_touched_paths = list(patch.touched_paths)
                 enforce_allowed_paths(paths=patch_touched_paths, allowed=task.allowed_paths)
@@ -384,6 +433,7 @@ class CommandExecutor:
                     sandbox_rel=sandbox_rel,
                     patch_kind=patch_kind,
                     submission_kind=task.submission_kind,
+                    llm_usage=llm_usage,
                 )
 
             patch_path = sandbox_dir / "patch.diff"
@@ -433,6 +483,7 @@ class CommandExecutor:
                     sandbox_rel=sandbox_rel,
                     patch_kind=patch_kind,
                     submission_kind=task.submission_kind,
+                    llm_usage=llm_usage,
                 )
 
         public: list[CommandResult] = []
@@ -610,6 +661,7 @@ class CommandExecutor:
             patch_kind=patch_kind,
             submission_kind=task.submission_kind,
             submission_preview=submission_text_for_judges,
+            llm_usage=llm_usage,
             verification_summary=verification_summary,
         )
 

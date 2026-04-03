@@ -114,9 +114,7 @@ def _summarize_with_model_pricing(
         },
         "overall": _summarize_group(per_row),
         "by_model": {k: _summarize_group(v) for k, v in sorted(by_model.items())},
-        "by_model_strategy": {
-            k: _summarize_group(v) for k, v in sorted(by_model_strategy.items())
-        },
+        "by_model_strategy": {k: _summarize_group(v) for k, v in sorted(by_model_strategy.items())},
         "rows": per_row,
     }
 
@@ -191,7 +189,11 @@ def _perfect_knowledge_oracle_summary(
         count = len(subset)
         mean_win = sum(float(r["oracle_win_rate"]) for r in subset) / count
         mean_profit = sum(float(r["oracle_profit"]) for r in subset) / count
-        bid_rows = [float(r["oracle_breakeven_bid"]) for r in subset if r["oracle_breakeven_bid"] is not None]
+        bid_rows = [
+            float(r["oracle_breakeven_bid"])
+            for r in subset
+            if r["oracle_breakeven_bid"] is not None
+        ]
         mean_bid = (sum(bid_rows) / len(bid_rows)) if bid_rows else 0.0
         return {
             "count": count,
@@ -339,4 +341,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 from agent_economy.research.swebench_eval import (
@@ -204,3 +205,38 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
     assert result.returncode == 2
     assert result.notes == "evaluation_error"
     assert result.report_path == str(summary_path)
+
+
+def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_path) -> None:
+    calls: dict[str, object] = {}
+
+    def _fake_run(cmd, cwd, text, capture_output):
+        calls["cmd"] = cmd
+        calls["cwd"] = cwd
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._load_report",
+        lambda **kwargs: ({"psf__requests-2317": {"resolved": False}}, tmp_path / "report.json"),
+    )
+
+    result = evaluate_with_harness(
+        instance_id="psf__requests-2317",
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+        timeout_sec=30,
+        work_dir=tmp_path,
+        run_id_prefix="ut",
+        patch_text="diff",
+        gold=False,
+    )
+
+    assert result.completed is True
+    assert result.resolved is False
+    assert calls["cwd"] == tmp_path / ".ae_harness_runner"
+    assert Path(calls["cwd"]).is_dir()
+    cmd = calls["cmd"]
+    assert isinstance(cmd, list)
+    report_dir_index = cmd.index("--report_dir")
+    assert cmd[report_dir_index + 1] == str(tmp_path)

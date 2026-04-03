@@ -21,8 +21,14 @@ def _render_overview(ax: plt.Axes, payload: dict) -> None:
 
     rows = [
         ["Common tasks", f"{common}"],
-        ["Market passes", f"{int(market.get('passes') or 0)}/{common} ({_fmt_pct(market.get('rate') or 0.0)})"],
-        ["Solo GPT-5.2 passes", f"{int(solo.get('passes') or 0)}/{common} ({_fmt_pct(solo.get('rate') or 0.0)})"],
+        [
+            "Market passes",
+            f"{int(market.get('passes') or 0)}/{common} ({_fmt_pct(market.get('rate') or 0.0)})",
+        ],
+        [
+            "Solo GPT-5.2 passes",
+            f"{int(solo.get('passes') or 0)}/{common} ({_fmt_pct(solo.get('rate') or 0.0)})",
+        ],
         ["Delta (market - solo)", f"{int(payload.get('delta_market_minus_solo') or 0):+d}"],
         [
             "Confusion (both_pass / market_only / solo_only / both_fail)",

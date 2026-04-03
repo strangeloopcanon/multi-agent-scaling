@@ -35,6 +35,22 @@ def _base_env(*, scrub_secrets: bool) -> dict[str, str]:
         python_bin = str(exe.resolve().parent)
     path = env.get("PATH", "")
     env["PATH"] = python_bin + os.pathsep + path if path else python_bin
+    pythonpath = env.get("PYTHONPATH", "")
+    if pythonpath:
+        normalized_entries: list[str] = []
+        for raw_entry in pythonpath.split(os.pathsep):
+            entry = str(raw_entry).strip()
+            if not entry:
+                continue
+            candidate = Path(entry)
+            if candidate.is_absolute():
+                normalized_entries.append(str(candidate))
+                continue
+            normalized_entries.append(str((Path.cwd() / candidate).resolve()))
+        if normalized_entries:
+            env["PYTHONPATH"] = os.pathsep.join(normalized_entries)
+        else:
+            env.pop("PYTHONPATH", None)
     if scrub_secrets:
         for key in list(env.keys()):
             if key in {"OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY"}:

@@ -92,6 +92,12 @@ def _resolved_from_report(*, report: dict, instance_id: str) -> bool:
     return False
 
 
+def _runner_dir(*, work_dir: Path) -> Path:
+    runner_dir = Path(work_dir) / ".ae_harness_runner"
+    runner_dir.mkdir(parents=True, exist_ok=True)
+    return runner_dir
+
+
 def evaluate_with_harness(
     *,
     instance_id: str,
@@ -103,6 +109,7 @@ def evaluate_with_harness(
     patch_text: str | None = None,
     gold: bool = False,
 ) -> HarnessEvalResult:
+    work_dir = Path(work_dir)
     run_id = _build_run_id(
         prefix=run_id_prefix, instance_id=instance_id, patch_text=patch_text, gold=gold
     )
@@ -119,7 +126,7 @@ def evaluate_with_harness(
                 returncode=2,
                 notes="missing_patch_text",
             )
-        predictions_file = Path(work_dir) / f"predictions_{_safe_token(instance_id)}.jsonl"
+        predictions_file = work_dir / f"predictions_{_safe_token(instance_id)}.jsonl"
         prediction = {
             "instance_id": instance_id,
             "model_name_or_path": "agent-economy-market",
@@ -163,19 +170,19 @@ def evaluate_with_harness(
         "--rewrite_reports",
         "false",
         "--report_dir",
-        ".",
+        str(work_dir),
         "--modal",
         "false",
     ]
 
     proc = subprocess.run(
         cmd,
-        cwd=work_dir,
+        cwd=_runner_dir(work_dir=work_dir),
         text=True,
         capture_output=True,
     )
 
-    result_path = Path(work_dir) / f"harness_{_safe_token(run_id)}.json"
+    result_path = work_dir / f"harness_{_safe_token(run_id)}.json"
     result_path.write_text(
         json.dumps(
             {

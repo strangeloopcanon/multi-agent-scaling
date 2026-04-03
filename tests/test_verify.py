@@ -20,6 +20,18 @@ def test_base_env_prepends_sys_executable_parent(tmp_path, monkeypatch) -> None:
     assert first == str(venv_bin)
 
 
+def test_base_env_normalizes_relative_pythonpath(tmp_path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setenv("PYTHONPATH", f".{os.pathsep}src")
+
+    env = verify._base_env(scrub_secrets=False)
+
+    entries = env["PYTHONPATH"].split(os.pathsep)
+    assert entries == [str(repo_root.resolve()), str((repo_root / "src").resolve())]
+
+
 def test_compact_verification_summary_includes_failed_streams() -> None:
     failed = verify.CommandResult(
         cmd="pytest -q",

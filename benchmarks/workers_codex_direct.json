@@ -1,0 +1,17 @@
+[
+  {
+    "worker_id": "codex-direct",
+    "model_ref": "openai:gpt-5.2-2025-12-11",
+    "exec_cmd": "\"$AE_HOST_PYTHON\" \"$AE_HOST_REPO_ROOT/scripts/codex_exec_worker.py\"",
+    "fixed_bid": {
+      "ask": 12,
+      "p_success": 0.45,
+      "eta_minutes": 75,
+      "notes": "Codex direct external worker"
+    },
+    "env": {
+      "AE_CODEX_MODEL": "gpt-5.2"
+    },
+    "timeout_sec": 1800
+  }
+]

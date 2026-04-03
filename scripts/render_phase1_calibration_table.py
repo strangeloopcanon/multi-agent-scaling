@@ -99,9 +99,7 @@ def _load_pricing_csv(pricing_csv: Path) -> dict[str, float]:
         required = {"model_ref", "blended_price_per_token"}
         missing = required - set(reader.fieldnames or [])
         if missing:
-            raise SystemExit(
-                f"pricing csv missing columns: {sorted(missing)} in {pricing_csv}"
-            )
+            raise SystemExit(f"pricing csv missing columns: {sorted(missing)} in {pricing_csv}")
         for row in reader:
             model_ref = str(row.get("model_ref") or "").strip()
             if not model_ref:
