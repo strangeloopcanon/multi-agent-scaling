@@ -82,7 +82,9 @@ def _load_overlap_token_rows(path: Path) -> tuple[dict[str, dict], dict[str, dic
     return market_rows, solo_rows, overlap
 
 
-def _load_external_rates_and_gpt52(path: Path, overlap: list[str]) -> tuple[dict[str, float], dict[str, int]]:
+def _load_external_rates_and_gpt52(
+    path: Path, overlap: list[str]
+) -> tuple[dict[str, float], dict[str, int]]:
     overlap_set = set(overlap)
     outcomes_by_task: dict[str, list[int]] = defaultdict(list)
     gpt52_outcome: dict[str, int] = {}
@@ -136,7 +138,9 @@ def _render(
         "Market-only",
         "Solo-only",
     ]
-    table = ax.table(cellText=rows, colLabels=col_labels, cellLoc="left", colLoc="left", loc="center")
+    table = ax.table(
+        cellText=rows, colLabels=col_labels, cellLoc="left", colLoc="left", loc="center"
+    )
     table.auto_set_font_size(False)
     table.set_fontsize(12)
     table.scale(1.0, 1.6)
@@ -153,7 +157,9 @@ def _render(
         if c == 0 and r > 0:
             cell.get_text().set_weight("bold")
 
-    fig.text(0.012, 0.965, title, color="#f8fafc", fontsize=18, fontweight="bold", ha="left", va="top")
+    fig.text(
+        0.012, 0.965, title, color="#f8fafc", fontsize=18, fontweight="bold", ha="left", va="top"
+    )
     fig.text(0.012, 0.918, subtitle, color="#94a3b8", fontsize=11, ha="left", va="top")
 
     fig.tight_layout(rect=[0, 0, 1, 0.88])
@@ -235,8 +241,12 @@ def main() -> None:
         for task in tasks:
             m = market_rows[task]
             s = solo_rows[task]
-            m_tokens += int(m.get("total_input_tokens") or 0) + int(m.get("total_output_tokens") or 0)
-            s_tokens += int(s.get("total_input_tokens") or 0) + int(s.get("total_output_tokens") or 0)
+            m_tokens += int(m.get("total_input_tokens") or 0) + int(
+                m.get("total_output_tokens") or 0
+            )
+            s_tokens += int(s.get("total_input_tokens") or 0) + int(
+                s.get("total_output_tokens") or 0
+            )
             ext_pass += int(gpt52_outcome.get(task, 0))
             market_only += 1 if task in market_only_ids else 0
             solo_only += 1 if task in solo_only_ids else 0
@@ -258,13 +268,18 @@ def main() -> None:
         for t in overlap
     )
     total_solo_tokens = sum(
-        int(solo_rows[t].get("total_input_tokens") or 0) + int(solo_rows[t].get("total_output_tokens") or 0)
+        int(solo_rows[t].get("total_input_tokens") or 0)
+        + int(solo_rows[t].get("total_output_tokens") or 0)
         for t in overlap
     )
     market_summary = summary.get("market", {}) if isinstance(summary, dict) else {}
     common_n = int(summary.get("common_task_count") or 0) if isinstance(summary, dict) else 0
-    market_passes = int(market_summary.get("passes") or 0) if isinstance(market_summary, dict) else 0
-    market_rate = float(market_summary.get("rate") or 0.0) if isinstance(market_summary, dict) else 0.0
+    market_passes = (
+        int(market_summary.get("passes") or 0) if isinstance(market_summary, dict) else 0
+    )
+    market_rate = (
+        float(market_summary.get("rate") or 0.0) if isinstance(market_summary, dict) else 0.0
+    )
     market_pass_label = (
         f"{_fmt_int(market_passes)}/{_fmt_int(common_n)} ({_fmt_pct(market_rate)})"
         if common_n > 0

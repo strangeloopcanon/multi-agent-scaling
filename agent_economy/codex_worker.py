@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-DEFAULT_CODEX_MODEL = "gpt-5.4"
+DEFAULT_CODEX_MODEL = "gpt-5.2"
 _USAGE_KEYS = ("input_tokens", "output_tokens", "cached_input_tokens")
 
 
@@ -29,6 +29,8 @@ def build_exec_prompt(*, task_payload: dict[str, Any]) -> str:
         "Work directly in the current workspace to complete the task.",
         "You may inspect files, edit files, and run local commands/tests as needed.",
         "Do not ask for user input. Finish the task or stop if you cannot make safe progress.",
+        "This is an ephemeral benchmark sandbox, not a normal repo work session.",
+        "Do not initialize bd, create or update issues, make commits, push branches, or do session-cleanup chores.",
         "",
         f"Task ID: {task.get('id', '')}",
         f"Title: {task.get('title', '')}",

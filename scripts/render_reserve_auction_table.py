@@ -45,7 +45,7 @@ def _load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     results = payload.get("results") or {}
     by_model = results.get("by_model") or {}
-    oracle_by_model = ((results.get("perfect_knowledge_oracle") or {}).get("by_model") or {})
+    oracle_by_model = (results.get("perfect_knowledge_oracle") or {}).get("by_model") or {}
     rows: list[dict[str, Any]] = []
     for model_ref, stats in by_model.items():
         if model_ref == "google:models/gemini-3-pro-preview":
@@ -66,7 +66,9 @@ def _load_rows(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     return rows, payload
 
 
-def _render_svg(rows: list[dict[str, Any]], *, title: str, out_svg: Path, source: Path) -> tuple[int, int]:
+def _render_svg(
+    rows: list[dict[str, Any]], *, title: str, out_svg: Path, source: Path
+) -> tuple[int, int]:
     headers = ["Model", "N", "Win %", "Exp Profit", "Realized", "Oracle Profit"]
     table_rows = [
         [
@@ -111,7 +113,9 @@ def _render_svg(rows: list[dict[str, Any]], *, title: str, out_svg: Path, source
     for i in range(len(table_rows)):
         if i % 2 == 1:
             yy = y0 + row_h * (i + 1)
-            lines.append(f'<rect x="{x0}" y="{yy}" width="{table_w}" height="{row_h}" fill="#f9fafb"/>')
+            lines.append(
+                f'<rect x="{x0}" y="{yy}" width="{table_w}" height="{row_h}" fill="#f9fafb"/>'
+            )
 
     lines.append('<g stroke="#d0d7de" stroke-width="2">')
     xx = x0
@@ -227,4 +231,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

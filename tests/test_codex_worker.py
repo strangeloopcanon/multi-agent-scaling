@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from agent_economy.codex_worker import build_exec_prompt, parse_usage_from_jsonl
+from agent_economy.codex_worker import (
+    DEFAULT_CODEX_MODEL,
+    build_exec_prompt,
+    parse_usage_from_jsonl,
+)
 
 
 def test_build_exec_prompt_includes_core_task_details() -> None:
@@ -23,7 +27,13 @@ def test_build_exec_prompt_includes_core_task_details() -> None:
     assert "Repair the failing parser." in prompt
     assert "- src/parser.py" in prompt
     assert "1. pytest tests/test_parser.py -q" in prompt
+    assert "This is an ephemeral benchmark sandbox" in prompt
+    assert "Do not initialize bd" in prompt
     assert "Keep changes as small and readable as you can." in prompt
+
+
+def test_default_codex_model_matches_relaxed_gpt52_baseline() -> None:
+    assert DEFAULT_CODEX_MODEL == "gpt-5.2"
 
 
 def test_parse_usage_from_jsonl_collects_turn_usage() -> None:

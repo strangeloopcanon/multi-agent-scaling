@@ -33,6 +33,154 @@
       "delta_relaxed_codex_minus_solo": 11
     }
   },
+  "timing_split_vs_published_900s": {
+    "passes_over_900_seconds": 20,
+    "passes_within_900_seconds": 15,
+    "passed_tasks_over_900_seconds": [
+      {
+        "task_id": "astropy__astropy-14182",
+        "elapsed_seconds": 1218.856
+      },
+      {
+        "task_id": "psf__requests-2317",
+        "elapsed_seconds": 1107.005
+      },
+      {
+        "task_id": "django__django-11964",
+        "elapsed_seconds": 1249.378
+      },
+      {
+        "task_id": "pylint-dev__pylint-7080",
+        "elapsed_seconds": 1217.05
+      },
+      {
+        "task_id": "django__django-11848",
+        "elapsed_seconds": 1004.009
+      },
+      {
+        "task_id": "pydata__xarray-4094",
+        "elapsed_seconds": 1296.278
+      },
+      {
+        "task_id": "sympy__sympy-12419",
+        "elapsed_seconds": 1089.065
+      },
+      {
+        "task_id": "matplotlib__matplotlib-24149",
+        "elapsed_seconds": 1333.612
+      },
+      {
+        "task_id": "django__django-15252",
+        "elapsed_seconds": 1734.557
+      },
+      {
+        "task_id": "sympy__sympy-18698",
+        "elapsed_seconds": 1722.884
+      },
+      {
+        "task_id": "astropy__astropy-14995",
+        "elapsed_seconds": 1055.216
+      },
+      {
+        "task_id": "sympy__sympy-12481",
+        "elapsed_seconds": 973.895
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13142",
+        "elapsed_seconds": 1353.371
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-8721",
+        "elapsed_seconds": 1015.438
+      },
+      {
+        "task_id": "django__django-11815",
+        "elapsed_seconds": 1177.728
+      },
+      {
+        "task_id": "sympy__sympy-15345",
+        "elapsed_seconds": 1122.444
+      },
+      {
+        "task_id": "django__django-11999",
+        "elapsed_seconds": 1324.804
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13496",
+        "elapsed_seconds": 1132.299
+      },
+      {
+        "task_id": "django__django-12125",
+        "elapsed_seconds": 1128.463
+      },
+      {
+        "task_id": "django__django-12708",
+        "elapsed_seconds": 1127.896
+      }
+    ],
+    "passed_tasks_within_900_seconds": [
+      {
+        "task_id": "sympy__sympy-21379",
+        "elapsed_seconds": 331.961
+      },
+      {
+        "task_id": "astropy__astropy-12907",
+        "elapsed_seconds": 740.574
+      },
+      {
+        "task_id": "django__django-10914",
+        "elapsed_seconds": 647.422
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-10297",
+        "elapsed_seconds": 885.569
+      },
+      {
+        "task_id": "sphinx-doc__sphinx-11445",
+        "elapsed_seconds": 721.181
+      },
+      {
+        "task_id": "django__django-11099",
+        "elapsed_seconds": 690.718
+      },
+      {
+        "task_id": "sympy__sympy-21612",
+        "elapsed_seconds": 644.386
+      },
+      {
+        "task_id": "pytest-dev__pytest-7432",
+        "elapsed_seconds": 893.534
+      },
+      {
+        "task_id": "sympy__sympy-13031",
+        "elapsed_seconds": 746.049
+      },
+      {
+        "task_id": "django__django-11133",
+        "elapsed_seconds": 813.579
+      },
+      {
+        "task_id": "sympy__sympy-13480",
+        "elapsed_seconds": 798.546
+      },
+      {
+        "task_id": "django__django-11179",
+        "elapsed_seconds": 723.955
+      },
+      {
+        "task_id": "scikit-learn__scikit-learn-13439",
+        "elapsed_seconds": 721.59
+      },
+      {
+        "task_id": "sympy__sympy-13647",
+        "elapsed_seconds": 817.401
+      },
+      {
+        "task_id": "sympy__sympy-16792",
+        "elapsed_seconds": 744.038
+      }
+    ]
+  },
   "overlap": {
     "relaxed_only_vs_market": [
       "astropy__astropy-14182",

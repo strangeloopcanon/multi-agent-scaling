@@ -99,6 +99,7 @@ The full relaxed-time follow-up completed at **35 / 50 passes (70%)** with Codex
 - The run beat the published market baseline (**29 / 50**) by **6 tasks**.
 - It beat the published solo GPT-5.2 baseline (**24 / 50**) by **11 tasks**.
 - Gains concentrated in `django` and `sympy`. `matplotlib` remained a clear weak spot.
+- Of the **35** passes, **20** crossed the old **900-second** boundary and **15** stayed within it.
 - The run was expensive: **321.3M total tokens** across **66 attempts**.
 
 **How to interpret it:**
