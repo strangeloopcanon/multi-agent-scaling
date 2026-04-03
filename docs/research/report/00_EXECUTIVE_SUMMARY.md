@@ -1,7 +1,7 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-02-26
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, and Phase IIa auction mechanism experiments (3 experiments, 3 models)
+**Last updated:** 2026-04-02
+**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, Phase IIa auction mechanism experiments (3 experiments, 3 models), and a later Codex follow-up diagnostic
 
 Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer: yes, but the bottleneck isn't the auction mechanism, it's how well models know their own capabilities.
 
@@ -59,6 +59,22 @@ While the market outperforms single models, it currently sits below the theoreti
 ## Conclusion
 
 On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. The remaining bottlenecks are allocation quality and scaffold limitations.
+
+## Later Follow-Up: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
+
+We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.
+
+That run finished at **35 / 50 passes (70%)**, ahead of both published same-task baselines:
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Codex + GPT-5.2 (relaxed 1800s budget) | 70.0% | 35 / 50 |
+| Market (published 900s benchmark) | 58.0% | 29 / 50 |
+| Solo GPT-5.2 (published 900s benchmark) | 48.0% | 24 / 50 |
+
+This result should **not** replace the published 900-second benchmark. It answers a different question: what happens if the same model family gets more time and uses the Codex execution path? The answer is that the Codex setup looks much more speed-limited than capability-limited. The biggest gains came in `django` and `sympy`, while `matplotlib` remained a weak spot.
+
+For details, see [Phase II Codex Relaxed-Time Follow-Up](09_PHASE_2_CODEX_RELAXED_TIME_GPT52_2026-04-02.md).
 
 ---
 

@@ -84,3 +84,24 @@ A one-task Codex-direct sanity run with the underlying model fixed to **GPT-5.2*
 **Why it matters:**
 - This separates the earlier 900-second misses from the more serious infrastructure bugs. The Codex + GPT-5.2 path can now complete a full Phase II loop cleanly when given a longer budget.
 - The remaining open question is no longer whether the pipeline works. It is whether Codex + GPT-5.2 can produce competitive results under the original 900-second budget, or whether its main weakness in this scaffold is speed.
+
+## 7. 2026-04-02 Full 50-Task Relaxed-Time Codex Follow-Up
+
+The full relaxed-time follow-up completed at **35 / 50 passes (70%)** with Codex-direct on **GPT-5.2** and the execution limit doubled from **900 seconds** to **1800 seconds**.
+
+**What changed relative to the published benchmark:**
+- Same 50-task slice.
+- Same underlying model family as the published solo GPT-5.2 baseline.
+- Same broad Phase II scaffold and scoring setup.
+- Different execution path (`codex-direct`) and a doubled per-task time budget.
+
+**What the result says:**
+- The run beat the published market baseline (**29 / 50**) by **6 tasks**.
+- It beat the published solo GPT-5.2 baseline (**24 / 50**) by **11 tasks**.
+- Gains concentrated in `django` and `sympy`. `matplotlib` remained a clear weak spot.
+- The run was expensive: **321.3M total tokens** across **66 attempts**.
+
+**How to interpret it:**
+- This is strong evidence that the Codex + GPT-5.2 setup was mostly constrained by time budget, not by an inability to solve the tasks at all.
+- It is **not** a replacement for the published 900-second benchmark. The published market-vs-solo comparison should stay as-is.
+- The relaxed-time result is better thought of as a diagnostic upper bound on what this execution path can do when given more runway.

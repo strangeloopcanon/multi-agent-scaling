@@ -1,0 +1,139 @@
+{
+  "run_name": "codex_direct_gpt52_relaxedfull50_20260402T050426Z",
+  "run_root": "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/codex_direct_gpt52_relaxedfull50_20260402T050426Z",
+  "setup": {
+    "worker_path": "codex-direct",
+    "model_ref": "openai:gpt-5.2-2025-12-11",
+    "task_count": 50,
+    "execution_timeout_seconds": 1800,
+    "bid_timeout_seconds": 90,
+    "rounds": 24,
+    "settlement_mode": "direct_penalty"
+  },
+  "results": {
+    "passes": 35,
+    "fails": 15,
+    "rate": 0.7,
+    "attempts_total": 66,
+    "input_tokens_total": 318834324,
+    "output_tokens_total": 2500995,
+    "tokens_total": 321335319,
+    "usage_cost_total": 195802.38539999994,
+    "verification_fail_penalty_total": 222.29999999999995
+  },
+  "comparisons": {
+    "published_market_900s": {
+      "passes": 29,
+      "rate": 0.58,
+      "delta_relaxed_codex_minus_market": 6
+    },
+    "published_solo_gpt52_900s": {
+      "passes": 24,
+      "rate": 0.48,
+      "delta_relaxed_codex_minus_solo": 11
+    }
+  },
+  "overlap": {
+    "relaxed_only_vs_market": [
+      "astropy__astropy-14182",
+      "django__django-11999",
+      "django__django-12125",
+      "django__django-12708",
+      "django__django-15252",
+      "matplotlib__matplotlib-24149",
+      "psf__requests-2317",
+      "sphinx-doc__sphinx-11445",
+      "sympy__sympy-13031",
+      "sympy__sympy-21379"
+    ],
+    "market_only_vs_relaxed": [
+      "django__django-12308",
+      "matplotlib__matplotlib-23314",
+      "matplotlib__matplotlib-24970",
+      "pytest-dev__pytest-7490"
+    ],
+    "relaxed_only_vs_solo": [
+      "astropy__astropy-14182",
+      "django__django-11179",
+      "django__django-11964",
+      "django__django-12125",
+      "django__django-15252",
+      "psf__requests-2317",
+      "pydata__xarray-4094",
+      "sphinx-doc__sphinx-11445",
+      "sympy__sympy-12419",
+      "sympy__sympy-12481",
+      "sympy__sympy-13031",
+      "sympy__sympy-15345",
+      "sympy__sympy-16792",
+      "sympy__sympy-18698"
+    ],
+    "solo_only_vs_relaxed": [
+      "astropy__astropy-14365",
+      "django__django-14534",
+      "matplotlib__matplotlib-24970"
+    ]
+  },
+  "by_repo": {
+    "astropy": {
+      "n": 4,
+      "relaxed_codex": 3,
+      "published_market": 2,
+      "published_solo_gpt52": 3
+    },
+    "django": {
+      "n": 15,
+      "relaxed_codex": 11,
+      "published_market": 8,
+      "published_solo_gpt52": 8
+    },
+    "matplotlib": {
+      "n": 7,
+      "relaxed_codex": 1,
+      "published_market": 2,
+      "published_solo_gpt52": 2
+    },
+    "psf": {
+      "n": 1,
+      "relaxed_codex": 1,
+      "published_market": 0,
+      "published_solo_gpt52": 0
+    },
+    "pydata": {
+      "n": 1,
+      "relaxed_codex": 1,
+      "published_market": 1,
+      "published_solo_gpt52": 0
+    },
+    "pylint-dev": {
+      "n": 1,
+      "relaxed_codex": 1,
+      "published_market": 1,
+      "published_solo_gpt52": 1
+    },
+    "pytest-dev": {
+      "n": 2,
+      "relaxed_codex": 1,
+      "published_market": 2,
+      "published_solo_gpt52": 1
+    },
+    "scikit-learn": {
+      "n": 5,
+      "relaxed_codex": 4,
+      "published_market": 4,
+      "published_solo_gpt52": 4
+    },
+    "sphinx-doc": {
+      "n": 2,
+      "relaxed_codex": 2,
+      "published_market": 1,
+      "published_solo_gpt52": 1
+    },
+    "sympy": {
+      "n": 12,
+      "relaxed_codex": 10,
+      "published_market": 8,
+      "published_solo_gpt52": 4
+    }
+  }
+}
