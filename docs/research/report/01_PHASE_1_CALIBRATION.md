@@ -50,3 +50,15 @@ The model most likely to solve the task (GPT-5.2, scoring 74% externally) is und
 
 This sets the stage for Phase II: overcoming allocation inefficiencies and a rigid scaffold to prove the value of the market structure.
 ****
+
+## 2026-04-06 Self-Knowledge Prompt Follow-Up
+
+We re-ran the Phase I direct calibration prompt with a simple self-knowledge intervention. Each model saw a short held-out history card summarizing its own prior pass rate, average stated confidence, and typical token underestimation before forecasting the current task.
+
+The full run completed for 4 of the 6 models: GPT-5.2, GPT-5.2-pro, GPT-5-mini, and Gemini 3 Pro Preview. Both Anthropic models failed on every task because the local Anthropic API key returned `401 invalid x-api-key` during the run. The clean completed subset therefore covers 372 rows (93 tasks x 4 models).
+
+On that completed subset, calibration improved materially. Mean Brier score improved from `0.1956` to `0.1712`, and ECE improved from `0.1591` to `0.0740`. The intervention also pushed stated confidence upward, from `0.7094` to `0.8166`, against a realized pass rate of `0.7903`. Token forecasts became less severely underestimated: the median estimated-to-actual token ratio moved from `0.1279` to `0.2301`.
+
+The auction consequence was mixed rather than uniformly positive. Under the paper-aligned reserve-auction simulation (`penalty = 2`, `max_reserve = 1`, `legacy_pay_reserve`), mean realized profit on the completed subset moved from `$0.0921` to `$0.0881`, while the oracle gap narrowed from `0.2522` to `0.2380`. The intervention shifted allocation away from Gemini and toward the OpenAI workers: Gemini's mean realized profit fell by about `0.169`, while GPT-5-mini, GPT-5.2, and GPT-5.2-pro each gained realized profit.
+
+Artifacts for this follow-up live under `runs/research/phase1/self_knowledge_direct_full_20260406T221032Z/`, including the full raw run, the clean completed-model subset, and matched auction outputs for baseline versus self-knowledge prompting.
