@@ -50,3 +50,15 @@ The model most likely to solve the task (GPT-5.2, scoring 74% externally) is und
 
 This sets the stage for Phase II: overcoming allocation inefficiencies and a rigid scaffold to prove the value of the market structure.
 ****
+
+## 2026-04-06 Self-Knowledge Prompt Follow-Up
+
+We re-ran the Phase I direct calibration prompt with a simple self-knowledge intervention. Each model saw a short held-out history card summarizing its own prior pass rate, average stated confidence, and typical token underestimation before forecasting the current task.
+
+The final rerun completed for all 6 models, yielding a clean 558-row result (93 tasks x 6 models). The first pass failed on both Anthropic models because the local Anthropic API key returned `401 invalid x-api-key`; after updating the key and rerunning only the missing rows, the output folder was repaired in place so the experiment now reads as one cohesive full run.
+
+On the full six-model set, calibration still improved, though less dramatically than in the temporary four-model subset. Mean Brier score improved from `0.1835` to `0.1693`, and ECE improved from `0.1065` to `0.0616`. The intervention also pushed stated confidence upward, from `0.7268` to `0.8057`, against a realized pass rate of `0.7903`. Token forecasts became less severely underestimated: the median estimated-to-actual token ratio moved from `0.1929` to `0.2501`.
+
+The auction consequence remained mixed rather than uniformly positive. Under the paper-aligned reserve-auction simulation (`penalty = 2`, `max_reserve = 1`, `legacy_pay_reserve`), mean realized profit moved from `$0.0852` to `$0.0819`, while the oracle gap narrowed slightly from `0.2357` to `0.2330`. The intervention again shifted allocation away from Gemini and toward the OpenAI workers. Gemini's mean realized profit fell by about `0.169`, GPT-5-mini, GPT-5.2, and GPT-5.2-pro each gained realized profit, Claude Opus gained slightly, and Claude Sonnet lost slightly.
+
+Artifacts for this follow-up live under `runs/research/phase1/self_knowledge_direct_full_20260406T221032Z/`, including the repaired full raw run, the collated clean six-model JSONL files, and matched auction outputs for baseline versus self-knowledge prompting.
