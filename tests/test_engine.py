@@ -872,6 +872,61 @@ def test_engine_assignment_policy_routes_selected_worker_only(tmp_path) -> None:
     assert state.tasks["T1"].status == "DONE"
 
 
+def test_engine_assignment_policy_respects_exclusion_after_infra(tmp_path) -> None:
+    ledger = HashChainedLedger(tmp_path / "ledger.jsonl")
+    engine = ClearinghouseEngine(
+        ledger=ledger,
+        settings=EngineSettings(
+            max_concurrency=1,
+            deterministic=True,
+            exclude_failed_workers=True,
+        ),
+        assignment_policy=StaticAssignmentPolicy(
+            selections=[RouterSelection(task_id="T1", worker_id="w1")]
+        ),
+    )
+
+    tasks = [
+        TaskSpec(
+            id="T1",
+            title="t1",
+            bounty=100,
+            max_attempts=2,
+            deps=[],
+            acceptance=[CommandSpec(cmd="true")],
+        )
+    ]
+    workers = [WorkerRuntime(worker_id="w1", reputation=1.0)]
+    engine.create_run(run_id="run-1", payment_rule=PaymentRule.ASK, workers=workers, tasks=tasks)
+
+    bidder = ScriptedBidder(
+        {
+            (0, "w1"): [Bid(task_id="T1", ask=15, self_assessed_p_success=0.9, eta_minutes=10)],
+            (1, "w1"): [Bid(task_id="T1", ask=15, self_assessed_p_success=0.9, eta_minutes=10)],
+        }
+    )
+
+    class InfraExecutor:
+        def execute(
+            self,
+            *,
+            worker: WorkerRuntime,
+            task: TaskSpec,
+            bid: Bid,
+            round_id: int,
+            discussion_history: Sequence[Any],
+        ) -> ExecutionOutcome:
+            _ = worker, task, bid, round_id, discussion_history
+            return ExecutionOutcome(status=VerifyStatus.INFRA, notes="infra")
+
+    engine.step(bidder=bidder, executor=InfraExecutor())
+    engine.step(bidder=bidder, executor=InfraExecutor())
+
+    events = list(ledger.iter_events())
+    assignments = [event for event in events if event.type == EventType.TASK_ASSIGNED]
+    assert len(assignments) == 1
+
+
 def test_engine_posts_verification_feedback_to_discussion_on_failure(tmp_path) -> None:
     ledger = HashChainedLedger(tmp_path / "ledger.jsonl")
     engine = ClearinghouseEngine(

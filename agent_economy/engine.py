@@ -1160,6 +1160,11 @@ class ClearinghouseEngine:
                 events = list(self._ledger.iter_events())
                 state = replay_ledger(events=events, settlement=self._settlement)
                 task_specs = _load_task_specs_from_events(events=events)
+                excluded_pairs = (
+                    _failed_task_worker_pairs(events=events)
+                    if self._settings.exclude_failed_workers
+                    else set()
+                )
 
             ready_ids = _ready_task_ids(task_specs=task_specs, tasks=state.tasks)
             available_workers = [w for w in state.workers.values() if w.assigned_task is None]
