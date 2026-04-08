@@ -18,6 +18,7 @@ class EventType(str, Enum):
 
     BOUNTY_ADJUSTED = "bounty_adjusted"
     BID_SUBMITTED = "bid_submitted"
+    ROUTER_DECISION = "router_decision"
     MARKET_CLEARED = "market_cleared"
     TASK_ASSIGNED = "task_assigned"
     TASK_RELEASED = "task_released"

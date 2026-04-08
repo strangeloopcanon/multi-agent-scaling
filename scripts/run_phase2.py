@@ -10,12 +10,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from pydantic import BaseModel, Field
+
 from agent_economy.clearing import BidSubmission, choose_assignments, score_bid
 from agent_economy.command_workers import CommandBidder, CommandExecutor, CommandExecutorSettings
 from agent_economy.config import load_settings
 from agent_economy.cost_estimator import ExpectedCostEstimator
 from agent_economy.costing import load_pricing_from_env
-from agent_economy.engine import ClearinghouseEngine, ReadyTask
+from agent_economy.engine import (
+    AssignmentDecision,
+    ClearinghouseEngine,
+    ReadyTask,
+    RouterSelection,
+)
 from agent_economy.finalize import release_judges_holdbacks
 from agent_economy.ledger import HashChainedLedger
 from agent_economy.main import (
@@ -77,7 +84,7 @@ DEFAULT_SCENARIOS = {
 @dataclass(frozen=True)
 class RunSpec:
     benchmark: str
-    mode: str  # solo|market
+    mode: str  # solo|market|central_router
     settlement_mode: str  # reputation|direct_penalty
     repeat: int
     scenario_path: str
@@ -96,6 +103,17 @@ class PlannerRunContext:
     goal: str
     file_list: list[str]
     allowed_paths: list[str]
+
+
+class RouterAssignmentChoice(BaseModel):
+    task_id: str
+    worker_id: str
+    notes: str | None = None
+
+
+class RouterAssignmentEnvelope(BaseModel):
+    assignments: list[RouterAssignmentChoice] = Field(default_factory=list)
+    discussion: str | None = None
 
 
 def _now_tag() -> str:
@@ -406,6 +424,186 @@ def _planner_candidates(
             if spec is not None and spec.plan_cmd:
                 candidates.append(worker)
     return candidates
+
+
+def _router_hint_bid(*, task_id: str, bounty: int) -> Bid:
+    return Bid(
+        task_id=str(task_id),
+        ask=max(1, int(round(float(bounty) * 0.40))),
+        self_assessed_p_success=0.50,
+        eta_minutes=90,
+        notes="router_expected_cost_hint",
+    )
+
+
+def _router_prompt(
+    *,
+    ready_tasks: list[ReadyTask],
+    available_workers: list[WorkerRuntime],
+    discussion_history: list[Any],
+    round_id: int,
+    cost_estimator: ExpectedCostEstimator | None,
+    excluded_pairs: set[tuple[str, str]],
+) -> str:
+    lines: list[str] = []
+    lines.append("Choose workers for the current ready tasks.")
+    lines.append("Pick the workers most likely to pass verification on this round.")
+    lines.append("Use each worker at most once.")
+    lines.append("Use each task at most once.")
+    lines.append("Return an empty assignments list when nothing looks worth assigning.")
+    lines.append("")
+    lines.append(f"Round: {int(round_id)}")
+    lines.append("")
+
+    if discussion_history:
+        lines.append("Recent discussion:")
+        for message in list(discussion_history)[-10:]:
+            sender = str(getattr(message, "sender", "")).strip()
+            text = str(getattr(message, "message", "")).strip()
+            if sender and text:
+                lines.append(f"- {sender}: {text}")
+        lines.append("")
+
+    lines.append("Ready tasks:")
+    for ready in ready_tasks:
+        task_id = str(ready.spec.id)
+        spec = ready.spec
+        runtime = ready.runtime
+        lines.append(
+            f"- {task_id}: title={spec.title!r} bounty={int(runtime.bounty_current)} "
+            f"fail_count={int(runtime.fail_count)}"
+        )
+        if str(spec.description or "").strip():
+            lines.append(f"  description: {str(spec.description).strip()}")
+        if spec.acceptance:
+            lines.append("  public_acceptance:")
+            for command in spec.acceptance:
+                lines.append(f"    - {command.cmd}")
+        blocked_workers = sorted(
+            worker_id
+            for blocked_task_id, worker_id in excluded_pairs
+            if str(blocked_task_id) == task_id
+        )
+        if blocked_workers:
+            lines.append(f"  excluded_workers: {', '.join(blocked_workers)}")
+    lines.append("")
+
+    lines.append("Available workers:")
+    for worker in available_workers:
+        lines.append(
+            f"- {worker.worker_id}: model_ref={worker.model_ref} reputation={float(worker.reputation):.2f}"
+        )
+        for ready in ready_tasks:
+            task_id = str(ready.spec.id)
+            if (task_id, worker.worker_id) in excluded_pairs:
+                continue
+            expected_cost_hint = 0.0
+            if cost_estimator is not None:
+                try:
+                    expected_cost_hint = float(
+                        cost_estimator.expected_cost(
+                            worker=worker,
+                            task=ready.spec,
+                            bid=_router_hint_bid(
+                                task_id=task_id,
+                                bounty=int(ready.runtime.bounty_current),
+                            ),
+                            round_id=int(round_id),
+                        )
+                    )
+                except Exception:
+                    expected_cost_hint = 0.0
+            lines.append(f"  - task={task_id} expected_cost_hint≈{expected_cost_hint:.2f}")
+    lines.append("")
+    lines.append(
+        """Return JSON:
+{
+  "assignments": [
+    {"task_id":"T1","worker_id":"gpt-5.2-pro","notes":"optional"}
+  ],
+  "discussion": "optional short public message"
+}"""
+    )
+    return "\n".join(lines)
+
+
+class CentralRouterPolicy:
+    def __init__(
+        self,
+        *,
+        llm: Any,
+        model_ref: str,
+    ) -> None:
+        self._llm = llm
+        self._model_ref = str(model_ref)
+
+    def choose(
+        self,
+        *,
+        round_id: int,
+        ready_tasks: list[ReadyTask],
+        available_workers: list[WorkerRuntime],
+        discussion_history: list[Any],
+        cost_estimator: ExpectedCostEstimator | None,
+        excluded_pairs: set[tuple[str, str]],
+    ) -> AssignmentDecision:
+        system = "\n".join(
+            [
+                "You are a centralized task router for a software engineering benchmark.",
+                "Choose the worker-task assignments most likely to pass verification.",
+                "Use only the information in the prompt.",
+                "Return valid JSON only.",
+            ]
+        )
+        user = _router_prompt(
+            ready_tasks=ready_tasks,
+            available_workers=available_workers,
+            discussion_history=discussion_history,
+            round_id=round_id,
+            cost_estimator=cost_estimator,
+            excluded_pairs=excluded_pairs,
+        )
+        response, usage, _raw = self._llm.call_json(
+            model_ref=self._model_ref,
+            system=system,
+            user=user,
+            schema=RouterAssignmentEnvelope,
+            max_output_tokens=1200,
+        )
+        envelope = (
+            response
+            if isinstance(response, RouterAssignmentEnvelope)
+            else RouterAssignmentEnvelope.model_validate(response)
+        )
+        selections = [
+            RouterSelection(
+                task_id=str(choice.task_id),
+                worker_id=str(choice.worker_id),
+                notes=choice.notes,
+            )
+            for choice in list(envelope.assignments or [])
+        ]
+        return AssignmentDecision(
+            selections=selections,
+            model_ref=self._model_ref,
+            llm_usage={
+                "calls": int(getattr(usage, "calls", 0) or 0),
+                "input_tokens": int(getattr(usage, "input_tokens", 0) or 0),
+                "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),
+            },
+            payload={
+                "policy": "central_router",
+                "discussion": envelope.discussion,
+                "assignments": [
+                    {
+                        "task_id": choice.task_id,
+                        "worker_id": choice.worker_id,
+                        "notes": choice.notes,
+                    }
+                    for choice in list(envelope.assignments or [])
+                ],
+            },
+        )
 
 
 def _select_planner_via_market(
@@ -781,6 +979,8 @@ def _run_one_spec(
     dag_mode: str,
     replan: bool,
     planner_max_tasks: int,
+    assignment_policy: Any | None = None,
+    extra_run_config: dict[str, Any] | None = None,
 ) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
 
@@ -912,6 +1112,7 @@ def _run_one_spec(
         ledger=ledger,
         settings=engine_settings,
         settlement=settlement,
+        assignment_policy=assignment_policy,
     )
     run_id = run_dir.name
     engine.create_run(run_id=run_id, workers=workers, tasks=tasks)
@@ -1131,6 +1332,8 @@ def _run_one_spec(
             "retry_score_penalty_fraction": float(settlement.retry_score_penalty_fraction),
         },
     }
+    if extra_run_config:
+        run_config.update(dict(extra_run_config))
     (run_dir / "run_config.json").write_text(json.dumps(run_config, indent=2), encoding="utf-8")
 
     return run_dir
@@ -1186,12 +1389,15 @@ def _aggregate_model_outcomes(*, summaries: list[dict[str, Any]]) -> list[dict[s
     return rows
 
 
-def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> None:
+def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
     prepared_specs = load_prepared_task_specs(
         prepared_manifest=Path(args.task_manifest),
         task_offset=int(args.task_offset),
         task_limit=int(args.task_limit),
     )
+    prepared_mode = str(getattr(args, "prepared_mode", "market") or "market").strip()
+    if prepared_mode not in {"market", "central_router"}:
+        raise ValueError(f"unsupported prepared mode: {prepared_mode}")
 
     if bool(args.isolate_state):
         os.environ["AE_WORKER_STATE_ISOLATION"] = "1"
@@ -1221,7 +1427,38 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
         print(f"run_matrix={args.output_root / 'run_matrix.json'}")
         return
 
-    _require_credentials(models)
+    credential_models = list(models)
+    if prepared_mode == "central_router" and str(args.router_model_ref) not in credential_models:
+        credential_models.append(str(args.router_model_ref))
+    _require_credentials(credential_models)
+
+    router_policy_template = None
+    if prepared_mode == "central_router":
+        router_workers, _ = _select_workers(
+            spec=RunSpec(
+                benchmark="swebench",
+                mode="market",
+                settlement_mode=str(args.settlement_mode),
+                repeat=1,
+                scenario_path=str(prepared_specs[0].scenario_path),
+                model_ref=None,
+            ),
+            workers_path=Path(args.workers),
+        )
+        router_provider = _provider(str(args.router_model_ref))
+        if router_provider not in {_provider(worker.model_ref or "") for worker in router_workers}:
+            router_workers = [
+                *router_workers,
+                WorkerRuntime(
+                    worker_id="central-router",
+                    worker_type=WorkerType.MODEL_AGENT,
+                    model_ref=str(args.router_model_ref),
+                ),
+            ]
+        router_policy_template = CentralRouterPolicy(
+            llm=_llm_router_for_workers(settings=load_settings(), workers=router_workers),
+            model_ref=str(args.router_model_ref),
+        )
 
     completed_run_dirs: list[Path] = []
     task_rows: list[dict[str, Any]] = []
@@ -1229,7 +1466,10 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
     failed = 0
 
     for idx, spec in enumerate(prepared_specs, start=1):
-        run_name = f"swebench_market_{_safe_token(args.settlement_mode)}_{idx:03d}_{_safe_token(spec.instance_id)}"
+        run_name = (
+            f"swebench_{_safe_token(prepared_mode)}_{_safe_token(args.settlement_mode)}_"
+            f"{idx:03d}_{_safe_token(spec.instance_id)}"
+        )
         run_dir = args.output_root / run_name
 
         if run_dir.exists():
@@ -1249,12 +1489,13 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
 
         run_spec = RunSpec(
             benchmark="swebench",
-            mode="market",
+            mode="market" if prepared_mode == "market" else "central_router",
             settlement_mode=str(args.settlement_mode),
             repeat=1,
             scenario_path=str(spec.scenario_path),
             model_ref=None,
         )
+        assignment_policy = router_policy_template
 
         try:
             finished = _run_one_spec(
@@ -1279,6 +1520,13 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
                 dag_mode=str(args.dag_mode),
                 replan=bool(args.replan),
                 planner_max_tasks=int(args.planner_max_tasks),
+                assignment_policy=assignment_policy,
+                extra_run_config={
+                    "prepared_mode": prepared_mode,
+                    "router_model_ref": (
+                        None if prepared_mode != "central_router" else str(args.router_model_ref)
+                    ),
+                },
             )
             completed_run_dirs.append(finished)
             row = {
@@ -1349,7 +1597,7 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
     _write_csv(args.output_root / "model_outcomes.csv", model_outcomes)
 
     final_summary = {
-        "mode": "prepared_market_only",
+        "mode": f"prepared_{prepared_mode}_only",
         "settlement_mode": str(args.settlement_mode),
         "selected_tasks": len(prepared_specs),
         "completed_runs": len(completed_run_dirs),
@@ -1368,6 +1616,9 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
         "dag_mode": str(args.dag_mode),
         "replan": bool(args.replan),
         "planner_max_tasks": int(args.planner_max_tasks),
+        "router_model_ref": (
+            None if prepared_mode != "central_router" else str(args.router_model_ref)
+        ),
     }
     (args.output_root / "final_summary.json").write_text(
         json.dumps(final_summary, ensure_ascii=False, indent=2),
@@ -1430,6 +1681,12 @@ def main() -> None:
     parser.add_argument("--overwrite", action="store_true")
 
     parser.add_argument("--task-manifest", type=Path, default=None)
+    parser.add_argument(
+        "--prepared-mode",
+        choices=["market", "central_router"],
+        default="market",
+        help="assignment mode for prepared task-manifest runs",
+    )
     parser.add_argument("--task-offset", type=int, default=0)
     parser.add_argument("--task-limit", type=int, default=0)
     parser.add_argument("--market-only", action="store_true")
@@ -1479,6 +1736,11 @@ def main() -> None:
         default=True,
         help="isolate persisted worker state for this run mode",
     )
+    parser.add_argument(
+        "--router-model-ref",
+        default="openai:gpt-5.2-pro-2025-12-11",
+        help="central router model for prepared central_router runs",
+    )
 
     args = parser.parse_args()
     if args.replan is None:
@@ -1486,7 +1748,7 @@ def main() -> None:
     models = _norm_csv(args.models)
 
     if args.task_manifest is not None:
-        _run_prepared_market_mode(args, models)
+        _run_prepared_mode(args, models)
         return
 
     benchmarks = _norm_csv(args.benchmarks)

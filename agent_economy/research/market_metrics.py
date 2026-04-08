@@ -45,7 +45,11 @@ def summarize_market_run(*, run_dir: Path) -> dict[str, Any]:
     for event in events:
         payload = event.payload or {}
 
-        if event.type in {EventType.BID_SUBMITTED, EventType.PATCH_SUBMITTED}:
+        if event.type in {
+            EventType.BID_SUBMITTED,
+            EventType.PATCH_SUBMITTED,
+            EventType.ROUTER_DECISION,
+        }:
             worker_id = str(payload.get("worker_id") or "")
             usage = payload.get("llm_usage") if isinstance(payload.get("llm_usage"), dict) else {}
             inp = _as_int((usage or {}).get("input_tokens"), default=0)

@@ -5,11 +5,13 @@ from collections.abc import Sequence
 from typing import Any
 
 from agent_economy.engine import (
+    AssignmentDecision,
     BidResult,
     ClearinghouseEngine,
     EngineSettings,
     ExecutionOutcome,
     ReadyTask,
+    RouterSelection,
     _CachedBids,
     _InflightBid,
     _InflightExecution,
@@ -131,6 +133,36 @@ class RaisingExecutor:
     ) -> ExecutionOutcome:
         _ = worker, task, bid, round_id, discussion_history
         raise self._exc
+
+
+class StaticAssignmentPolicy:
+    def __init__(self, *, selections: Sequence[RouterSelection]) -> None:
+        self._selections = list(selections)
+
+    def choose(
+        self,
+        *,
+        round_id: int,
+        ready_tasks: Sequence[ReadyTask],
+        available_workers: Sequence[WorkerRuntime],
+        discussion_history: Sequence[Any],
+        cost_estimator: Any,
+        excluded_pairs: set[tuple[str, str]],
+    ) -> AssignmentDecision:
+        _ = (
+            round_id,
+            ready_tasks,
+            available_workers,
+            discussion_history,
+            cost_estimator,
+            excluded_pairs,
+        )
+        return AssignmentDecision(
+            selections=list(self._selections),
+            model_ref="openai:gpt-5.2-pro-2025-12-11",
+            llm_usage={"calls": 1, "input_tokens": 11, "output_tokens": 7},
+            payload={"policy": "central_router"},
+        )
 
 
 def test_engine_runs_multiple_assignments_concurrently(tmp_path) -> None:
@@ -794,6 +826,50 @@ def test_engine_emits_scoring_snapshots_for_market_and_assignment(tmp_path) -> N
     assert isinstance(assigned_snapshot, dict)
     assert market_snapshot.get("components", {}).get("score") is not None
     assert assigned_snapshot.get("components", {}).get("score") is not None
+
+
+def test_engine_assignment_policy_routes_selected_worker_only(tmp_path) -> None:
+    ledger = HashChainedLedger(tmp_path / "ledger.jsonl")
+    engine = ClearinghouseEngine(
+        ledger=ledger,
+        settings=EngineSettings(max_concurrency=1, deterministic=True),
+        assignment_policy=StaticAssignmentPolicy(
+            selections=[RouterSelection(task_id="T1", worker_id="w2")]
+        ),
+    )
+
+    tasks = [
+        TaskSpec(id="T1", title="t1", bounty=100, deps=[], acceptance=[CommandSpec(cmd="true")])
+    ]
+    workers = [
+        WorkerRuntime(worker_id="w1", reputation=1.0),
+        WorkerRuntime(worker_id="w2", reputation=1.0),
+    ]
+    engine.create_run(run_id="run-1", payment_rule=PaymentRule.ASK, workers=workers, tasks=tasks)
+
+    bidder = ScriptedBidder(
+        {
+            (0, "w1"): [Bid(task_id="T1", ask=25, self_assessed_p_success=0.7, eta_minutes=20)],
+            (0, "w2"): [Bid(task_id="T1", ask=15, self_assessed_p_success=0.9, eta_minutes=10)],
+        }
+    )
+    executor = ScriptedExecutor()
+
+    engine.step(bidder=bidder, executor=executor)
+    engine.step(bidder=bidder, executor=executor)
+
+    events = list(ledger.iter_events())
+    router_events = [event for event in events if event.type == EventType.ROUTER_DECISION]
+    bid_events = [event for event in events if event.type == EventType.BID_SUBMITTED]
+    assigned = [event for event in events if event.type == EventType.TASK_ASSIGNED]
+
+    assert len(router_events) == 1
+    assert len(bid_events) == 1
+    assert bid_events[0].payload["worker_id"] == "w2"
+    assert assigned[-1].payload["worker_id"] == "w2"
+
+    state = replay_ledger(events=events)
+    assert state.tasks["T1"].status == "DONE"
 
 
 def test_engine_posts_verification_feedback_to_discussion_on_failure(tmp_path) -> None:
