@@ -40,3 +40,50 @@ python scripts/run_phase2.py \
   --router-model-ref openai:gpt-5.2-pro-2025-12-11 \
   --output-root runs/research/phase2/<new_run_dir>
 ```
+
+## Final matched run
+
+Date: 2026-04-09
+
+The final Phase IIb comparison finished on the 50-task prepared slice with the same worker pool, the same `900` second execution limit, the same two-attempt cap, the same verifier path, and the same full task descriptions shown to both sides.
+
+The market run was completed from these roots:
+
+- `runs/research/phase2/exp2_market_matched_timeoutaligned_20260409T030344Z`
+- `runs/research/phase2/exp2_market_shard01_offset002_limit016_20260409T033114Z`
+- `runs/research/phase2/exp2_market_shard02_offset018_limit016_20260409T033114Z`
+- `runs/research/phase2/exp2_market_shard03_offset034_limit016_20260409T033114Z`
+
+The centralized-router run was completed from these roots:
+
+- `runs/research/phase2/exp2_central_router_matched_timeoutaligned_20260409T030344Z`
+- `runs/research/phase2/exp2_central_shard01_offset002_limit016_20260409T033114Z`
+- `runs/research/phase2/exp2_central_shard02_offset018_limit016_20260409T033114Z`
+- `runs/research/phase2/exp2_central_shard03_offset034_limit016_20260409T033114Z`
+
+Merged outcome:
+
+- market solved `23 / 50` tasks
+- centralized router solved `27 / 50` tasks
+- overlap table: `21` both passed, `2` market-only, `6` central-only, `21` neither
+- McNemar exact `p = 0.2890625`
+
+Merged cost and token totals:
+
+- market total tokens: `5,072,291`
+- centralized router total tokens: `3,479,510`
+- market tokens per solved task: `220,534`
+- centralized router tokens per solved task: `128,871`
+- market penalties per task: `52.60`
+- centralized router penalties per task: `53.52`
+
+Interpretation:
+
+- On this matched rerun, access to the same six-model worker pool plus a centralized chooser outperformed the market clearing rule on solved tasks.
+- The centralized router also used substantially fewer total tokens.
+- This result weakens the claim that the Phase II scaffold gain comes from the market-style routing rule itself. On the matched 50-task rerun, the non-market chooser was stronger.
+
+Saved merged artifacts:
+
+- `runs/research/phase2/exp2_market_vs_central_summary_20260409T000000Z.json`
+- `runs/research/phase2/exp2_market_vs_central_per_task_20260409T000000Z.jsonl`
