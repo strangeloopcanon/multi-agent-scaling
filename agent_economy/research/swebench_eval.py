@@ -11,6 +11,7 @@ from pathlib import Path
 
 DEFAULT_DATASET_NAME = "princeton-nlp/SWE-bench_Lite"
 DEFAULT_SPLIT = "test"
+_HARNESS_TIMEOUT_GRACE_SECONDS = 300
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,12 @@ def _runner_dir(*, work_dir: Path) -> Path:
     return runner_dir
 
 
+def _subprocess_timeout_seconds(*, timeout_sec: int) -> int:
+    if timeout_sec <= 0:
+        return _HARNESS_TIMEOUT_GRACE_SECONDS
+    return int(timeout_sec) + _HARNESS_TIMEOUT_GRACE_SECONDS
+
+
 def evaluate_with_harness(
     *,
     instance_id: str,
@@ -175,12 +182,40 @@ def evaluate_with_harness(
         "false",
     ]
 
-    proc = subprocess.run(
-        cmd,
-        cwd=_runner_dir(work_dir=work_dir),
-        text=True,
-        capture_output=True,
-    )
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=_runner_dir(work_dir=work_dir),
+            text=True,
+            capture_output=True,
+            timeout=_subprocess_timeout_seconds(timeout_sec=timeout_sec),
+        )
+    except subprocess.TimeoutExpired as exc:
+        result_path = work_dir / f"harness_{_safe_token(run_id)}.json"
+        result_path.write_text(
+            json.dumps(
+                {
+                    "cmd": cmd,
+                    "returncode": None,
+                    "stdout": exc.stdout,
+                    "stderr": exc.stderr,
+                    "timed_out": True,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        report, report_path = _load_report(work_dir=work_dir, run_id=run_id)
+        return HarnessEvalResult(
+            completed=False,
+            resolved=False,
+            report_path=None if report_path is None else str(report_path),
+            run_id=run_id,
+            returncode=2,
+            notes="harness_timeout",
+        )
 
     result_path = work_dir / f"harness_{_safe_token(run_id)}.json"
     result_path.write_text(
@@ -190,6 +225,7 @@ def evaluate_with_harness(
                 "returncode": int(proc.returncode),
                 "stdout": proc.stdout,
                 "stderr": proc.stderr,
+                "timed_out": False,
             },
             ensure_ascii=False,
             indent=2,

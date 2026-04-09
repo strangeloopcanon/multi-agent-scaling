@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -210,9 +211,10 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
 def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_path) -> None:
     calls: dict[str, object] = {}
 
-    def _fake_run(cmd, cwd, text, capture_output):
+    def _fake_run(cmd, cwd, text, capture_output, timeout):
         calls["cmd"] = cmd
         calls["cwd"] = cwd
+        calls["timeout"] = timeout
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
@@ -240,3 +242,43 @@ def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_pat
     assert isinstance(cmd, list)
     report_dir_index = cmd.index("--report_dir")
     assert cmd[report_dir_index + 1] == str(tmp_path)
+    assert calls["timeout"] == 330
+
+
+def test_evaluate_with_harness_marks_timeout(monkeypatch, tmp_path) -> None:
+    def _fake_run(*args, **kwargs):
+        raise subprocess.TimeoutExpired(
+            cmd=["python", "-m", "swebench.harness.run_evaluation"],
+            timeout=330,
+            output="partial stdout",
+            stderr="partial stderr",
+        )
+
+    monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._load_report",
+        lambda **kwargs: (None, None),
+    )
+
+    result = evaluate_with_harness(
+        instance_id="psf__requests-2317",
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+        timeout_sec=30,
+        work_dir=tmp_path,
+        run_id_prefix="ut",
+        patch_text="diff",
+        gold=False,
+    )
+
+    assert result.completed is False
+    assert result.resolved is False
+    assert result.returncode == 2
+    assert result.notes == "harness_timeout"
+
+    harness_files = list(tmp_path.glob("harness_*.json"))
+    assert len(harness_files) == 1
+    payload = json.loads(harness_files[0].read_text())
+    assert payload["timed_out"] is True
+    assert payload["stdout"] == "partial stdout"
+    assert payload["stderr"] == "partial stderr"
