@@ -166,6 +166,18 @@ def _calibration_phrase(mean_p: float, pass_rate: float) -> str:
     return f"historically underconfident by {_format_pct(abs(gap))}"
 
 
+def _clamp(value: float, lower: float, upper: float) -> float:
+    return max(float(lower), min(float(upper), float(value)))
+
+
+def _ask_floor_fraction_for_prior(prior_success: float) -> float:
+    if float(prior_success) <= 0.65:
+        return 0.50
+    if float(prior_success) <= 0.75:
+        return 0.45
+    return 0.35
+
+
 def _actual_tokens_total_from_baseline_row(
     row: dict[str, Any],
     *,
@@ -192,6 +204,7 @@ def _load_worker_calibration_context(
     workers: list[WorkerRuntime],
     task_id: str,
     pricing_by_model: dict[str, float],
+    calibration_style: str = "advisory_v1",
 ) -> dict[str, list[str]]:
     rows_raw = [
         json.loads(line)
@@ -209,7 +222,6 @@ def _load_worker_calibration_context(
             continue
         baseline_by_model.setdefault(model_ref, []).append(row)
 
-    task_family = _task_family(task_id)
     context_by_worker: dict[str, list[str]] = {}
     for worker in workers:
         model_ref = str(worker.model_ref or "").strip()
@@ -241,46 +253,72 @@ def _load_worker_calibration_context(
                 continue
             token_multipliers.append(actual_tokens / estimated_tokens)
 
-        family_rows = [
-            row
-            for row in held_out
-            if _task_family(str(row.get("task_id") or "").strip()) == task_family
-        ]
+        context_by_worker[str(worker.worker_id)] = _worker_calibration_lines(
+            held_out_count=len(held_out),
+            pass_rate=pass_rate,
+            mean_p=mean_p,
+            token_multipliers=token_multipliers,
+            calibration_style=calibration_style,
+        )
 
-        lines = [
-            "Held-out self-knowledge summary for this worker:",
-            f"- Across {len(held_out)} earlier tasks, your pass rate was {_format_pct(pass_rate)}.",
-            (
-                f"- Your mean stated success probability was {_format_pct(mean_p)}; "
-                f"you were {_calibration_phrase(mean_p, pass_rate)}."
-            ),
-        ]
-        if token_multipliers:
-            lines.append(
-                "- Your actual solve-token usage was typically "
-                f"{_format_multiplier(median(token_multipliers))} your estimate."
-            )
-        if len(family_rows) >= 5:
-            family_pass_rate = sum(
-                _safe_int(row.get("outcome"), default=0) for row in family_rows
-            ) / len(family_rows)
-            family_mean_p = sum(
-                _safe_float(row.get("p_success"), default=0.5) for row in family_rows
-            ) / len(family_rows)
-            lines.append(
-                f"- On prior {_task_family(task_id)} tasks ({len(family_rows)} held-out tasks), "
-                f"your pass rate was {_format_pct(family_pass_rate)} and your mean stated success "
-                f"probability was {_format_pct(family_mean_p)}."
-            )
+    return context_by_worker
+
+
+def _worker_calibration_lines(
+    *,
+    held_out_count: int,
+    pass_rate: float,
+    mean_p: float,
+    token_multipliers: list[float],
+    calibration_style: str,
+) -> list[str]:
+    lines = [
+        f"Across {int(held_out_count)} earlier held-out tasks:",
+        f"- Your pass rate was {_format_pct(pass_rate)}.",
+        (
+            f"- Your mean stated success probability was {_format_pct(mean_p)}; "
+            f"you were {_calibration_phrase(mean_p, pass_rate)}."
+        ),
+    ]
+    if token_multipliers:
+        lines.append(
+            "- Your actual solve-token usage was typically "
+            f"{_format_multiplier(median(token_multipliers))} your estimate."
+        )
+
+    if str(calibration_style) != "hard_prior_v1":
         lines.extend(
             [
                 "- Use this as a prior, then update from the current task evidence.",
                 "- Bid conservatively when the current task looks similar to cases where you often fail or underestimate work.",
             ]
         )
-        context_by_worker[str(worker.worker_id)] = lines
+        return lines
 
-    return context_by_worker
+    overconfidence_gap = max(0.0, float(mean_p) - float(pass_rate))
+    prior_success = _clamp(float(pass_rate) - overconfidence_gap, 0.15, 0.85)
+    ask_floor_fraction = _ask_floor_fraction_for_prior(prior_success)
+
+    lines.extend(
+        [
+            "",
+            f"For this bid, start from p_success = {prior_success:.2f}.",
+            (
+                f"Raise p_success above {prior_success:.2f} only if the task text gives direct "
+                "evidence that the task is easier than your average earlier tasks."
+            ),
+            (
+                f"If you cannot point to that evidence, keep p_success at or below {prior_success:.2f}."
+            ),
+            "If you raise p_success above that prior, state the evidence briefly in your notes.",
+            (
+                f"When p_success stays near that prior, ask must be at least "
+                f"{int(round(ask_floor_fraction * 100.0))}% of bounty."
+            ),
+            "If you cannot justify a bid under these rules, return no bid.",
+        ]
+    )
+    return lines
 
 
 def _provider(model_ref: str) -> str:
@@ -1235,6 +1273,7 @@ def _run_one_spec(
     planner_max_tasks: int,
     assignment_policy: Any | None = None,
     worker_calibration_source: Path | None = None,
+    worker_calibration_style: str = "advisory_v1",
     extra_run_config: dict[str, Any] | None = None,
 ) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -1395,12 +1434,13 @@ def _run_one_spec(
             workers=workers,
             task_id=calibration_task_id,
             pricing_by_model=pricing,
+            calibration_style=worker_calibration_style,
         )
         for worker in workers:
             context_lines = list(worker_calibration_context.get(str(worker.worker_id), []))
             if not context_lines:
                 continue
-            model_bidder.set_worker_static_prompt_context(
+            model_bidder.set_worker_calibration_prompt_context(
                 worker_id=str(worker.worker_id),
                 context_lines=context_lines,
             )
@@ -1745,6 +1785,7 @@ def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
     skipped = 0
     failed = 0
     worker_calibration_source = getattr(args, "worker_calibration_source", None)
+    worker_calibration_style = getattr(args, "worker_calibration_style", "advisory_v1")
 
     for idx, spec in enumerate(prepared_specs, start=1):
         run_name = (
@@ -1805,6 +1846,7 @@ def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
                 worker_calibration_source=(
                     None if worker_calibration_source is None else Path(worker_calibration_source)
                 ),
+                worker_calibration_style=str(worker_calibration_style),
                 extra_run_config={
                     "prepared_mode": prepared_mode,
                     "router_model_ref": (
@@ -1816,7 +1858,8 @@ def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
                         else {
                             "worker_calibration_source": str(
                                 Path(worker_calibration_source).resolve()
-                            )
+                            ),
+                            "worker_calibration_style": str(worker_calibration_style),
                         }
                     ),
                 },
@@ -2039,6 +2082,12 @@ def main() -> None:
         type=Path,
         default=None,
         help="Phase I JSONL calibration rows used to build held-out worker self-knowledge cards",
+    )
+    parser.add_argument(
+        "--worker-calibration-style",
+        choices=["advisory_v1", "hard_prior_v1"],
+        default="advisory_v1",
+        help="prompt style for worker self-knowledge cards",
     )
 
     args = parser.parse_args()

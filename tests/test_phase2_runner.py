@@ -12,9 +12,11 @@ from agent_economy.schemas import (
     SubmissionKind,
     TaskRuntime,
     TaskSpec,
+    WorkerRuntime,
 )
 from scripts.run_phase2 import (
     _all_tasks_terminal_or_exhausted,
+    _load_worker_calibration_context,
     _run_prepared_mode,
     _planner_subtasks_to_specs,
     _rewrite_task_execution_timeouts,
@@ -73,6 +75,60 @@ def test_load_prepared_task_specs_slices_offset_limit(tmp_path: Path) -> None:
     assert len(specs) == 1
     assert specs[0].instance_id == "b"
     assert specs[0].scenario_path == tmp_path / "b.yaml"
+
+
+def test_load_worker_calibration_context_hard_prior_mode(tmp_path: Path) -> None:
+    calibration = tmp_path / "baseline.jsonl"
+    rows = [
+        {
+            "task_id": "repo__one",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 1,
+            "p_success": 0.9,
+            "estimated_tokens_total": 1000,
+        },
+        {
+            "task_id": "repo__two",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 0,
+            "p_success": 0.9,
+            "estimated_tokens_total": 1000,
+        },
+        {
+            "task_id": "repo__three",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 1,
+            "p_success": 0.8,
+            "estimated_tokens_total": 1000,
+        },
+    ]
+    calibration.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    context = _load_worker_calibration_context(
+        calibration_source=calibration,
+        workers=[
+            WorkerRuntime(
+                worker_id="gemini-3-pro-preview",
+                model_ref="google:models/gemini-3-pro-preview",
+            )
+        ],
+        task_id="repo__three",
+        pricing_by_model={},
+        calibration_style="hard_prior_v1",
+    )
+
+    lines = context["gemini-3-pro-preview"]
+    joined = "\n".join(lines)
+    assert "Across 2 earlier held-out tasks:" in joined
+    assert "For this bid, start from p_success = 0.15." in joined
+    assert "ask must be at least 50% of bounty." in joined
+    assert "return no bid" in joined
 
 
 def test_rewrite_task_execution_timeouts_updates_swebench_eval_commands() -> None:

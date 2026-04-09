@@ -50,6 +50,7 @@ def bid_prompt(
     penalty_fraction: float = 0.10,
     force_bid_for_ready_tasks: bool = False,
     retry_score_penalty_fraction: float = 0.0,
+    worker_calibration_context_lines: list[str] | None = None,
     worker_market_context_lines: list[str] | None = None,
 ) -> str:
     lines: list[str] = []
@@ -102,8 +103,16 @@ def bid_prompt(
     lines.append(f"Constraints: at most {max_bids} bids this round.")
     lines.append("")
 
+    if worker_calibration_context_lines:
+        lines.append("Private Calibration Rule (only for your bidding):")
+        for item in worker_calibration_context_lines:
+            line = str(item).strip()
+            if line:
+                lines.append(line)
+        lines.append("")
+
     if worker_market_context_lines:
-        lines.append("Private Market Context (only for your bidding):")
+        lines.append("Private Cost Note (only for your bidding):")
         for item in worker_market_context_lines:
             line = str(item).strip()
             if line:

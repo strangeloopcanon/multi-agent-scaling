@@ -73,11 +73,14 @@ def test_bid_prompt_includes_force_and_exclusion_policy_context() -> None:
         penalty_fraction=0.1,
         force_bid_for_ready_tasks=True,
         retry_score_penalty_fraction=0.0,
+        worker_calibration_context_lines=["- Start from p_success = 0.70."],
         worker_market_context_lines=["- T1: expected_cost_hint≈2.10"],
     )
     assert "Do not return an empty bids array." in prompt
     assert "Workers who previously failed a task cannot bid on it again." in prompt
-    assert "Private Market Context (only for your bidding):" in prompt
+    assert "Private Calibration Rule (only for your bidding):" in prompt
+    assert "Start from p_success = 0.70." in prompt
+    assert "Private Cost Note (only for your bidding):" in prompt
     assert "expected_cost_hint≈2.10" in prompt
 
 
@@ -140,7 +143,7 @@ def test_openai_bidder_includes_worker_market_context_in_prompt() -> None:
         discussion_history=[],
     )
     assert llm.last_user is not None
-    assert "Private Market Context (only for your bidding):" in llm.last_user
+    assert "Private Cost Note (only for your bidding):" in llm.last_user
     assert "expected_cost_hint≈1.50" in llm.last_user
 
 
@@ -167,6 +170,7 @@ def test_openai_bidder_keeps_static_market_context_across_rounds() -> None:
     )
     assert llm.last_user is not None
     assert "Historical pass rate: 66.0%" in llm.last_user
+    assert "Private Calibration Rule (only for your bidding):" in llm.last_user
 
     bidder.set_worker_prompt_context(
         worker_id="gpt-5.2",
@@ -181,6 +185,7 @@ def test_openai_bidder_keeps_static_market_context_across_rounds() -> None:
     assert llm.last_user is not None
     assert "Historical pass rate: 66.0%" in llm.last_user
     assert "expected_cost_hint≈1.50" in llm.last_user
+    assert "Private Cost Note (only for your bidding):" in llm.last_user
 
 
 def test_patch_prompt_prefers_diff_for_swebench_tasks() -> None:
