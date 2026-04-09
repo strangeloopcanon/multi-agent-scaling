@@ -213,6 +213,88 @@ This points to a concrete design lesson for Phase IId:
 - Market-chosen router: add a short router-selection stage so the system chooses the coordinator from the same worker pool before routing tasks.
 - Market score ablation: try stronger overconfidence penalties, confidence clipping, or calibration adjustments on reported `p_success`.
 
+### Phase IId first-5 hard-prior slice
+
+Date: 2026-04-09
+
+We ran the first five tasks of the 50-task live slice with the new `hard_prior_v1` calibration mode.
+
+Mechanically, this changed only the private bid note. Each worker still saw the same task and the same market rules, but the bid prompt now started from a held-out prior:
+
+- `prior_success = pass_rate - overconfidence_gap`, clamped to `[0.15, 0.85]`
+- if the worker stayed near that prior, it had to respect an ask floor tied to that prior
+- the cost hint was moved into a separate private section
+
+Saved combined summary:
+
+- `runs/research/phase2/phase2d_market_hardprior_first5_summary_20260409T000000Z.json`
+
+Canonical run roots for the first-5 slice:
+
+- tasks `1-2`: `runs/research/phase2/phase2d_market_hardprior_first5_20260409T174100Z`
+- task `3`: `runs/research/phase2/phase2d_market_hardprior_task003_20260409T181200Z`
+- task `4`: `runs/research/phase2/phase2d_market_hardprior_task004_20260409T181200Z`
+- task `5`: `runs/research/phase2/phase2d_market_hardprior_task005_20260409T181200Z`
+
+Top-line result:
+
+- solved: `0 / 5`
+- Gemini round-0 wins: `1 / 5`
+- non-Gemini round-0 wins: `4 / 5`
+
+Per-task outcomes:
+
+- `astropy__astropy-14182`: round 0 winner `claude-opus-4-5`; round 1 `FAIL`; retry `claude-sonnet-4-5`; retry `INFRA`
+- `matplotlib__matplotlib-23299`: round 0 winner `claude-opus-4-5`; round 1 `FAIL`; retry `claude-sonnet-4-5`; retry `FAIL`
+- `psf__requests-2317`: round 0 winner `gemini-3-pro-preview`; round 1 `FAIL`; retry `claude-opus-4-5`; retry `FAIL`
+- `scikit-learn__scikit-learn-25747`: round 0 winner `claude-opus-4-5`; round 1 `FAIL`; retry `claude-sonnet-4-5`; retry `FAIL`
+- `django__django-11964`: round 0 winner `claude-opus-4-5`; round 1 `FAIL`; retry `claude-sonnet-4-5`; retry `FAIL`
+
+What changed in the bids:
+
+- On the same three tasks where the old matched market rerun gave Gemini `ask=20`, `p_success=0.80`, the hard-prior version moved Gemini to:
+  - `astropy__astropy-14182`: `ask=45`, `p_success=0.70`
+  - `matplotlib__matplotlib-23299`: `ask=45`, `p_success=0.70`
+  - `psf__requests-2317`: `ask=40`, `p_success=0.85`
+
+This means the hard-prior rule did the main thing it was designed to do on harder tasks. It pushed Gemini out of the first slot on `astropy` and `matplotlib`, and it also held Gemini to its prior on `scikit-learn` and `django`. Gemini still won `psf__requests-2317`, where the task text contained an explicit localized fix and Gemini argued that this was direct evidence the task was easier than average.
+
+Important harness note:
+
+- The market harness itself behaved as expected on this slice.
+- Two retry verifications (`scikit-learn__scikit-learn-25747` and `django__django-11964`) hit the old verifier-cleanup hang again.
+- The stuck `swebench_eval` children had to be killed manually.
+- Once those children were killed, the runner immediately recorded both retry attempts as `FAIL` with `rc=-9` and `no_output`.
+
+So the first-5 slice says two different things:
+
+- the hard-prior bid intervention is mechanically working and is already changing worker selection in the intended direction
+- the current live scaffold still has a verifier cleanup problem that can interfere with long retry attempts
+
+Next command for the remaining 45 tasks:
+
+```bash
+.venv/bin/python scripts/run_phase2.py \
+  --task-manifest runs/research/phase2/_prepared/codex_market50_full50_prepared_20260401T185213Z/prepared_manifest.json \
+  --prepared-mode market \
+  --task-offset 5 \
+  --task-limit 45 \
+  --execute \
+  --settlement-mode direct_penalty \
+  --workers benchmarks/workers_phase2_mixed.json \
+  --rounds 24 \
+  --concurrency 6 \
+  --bid-timeout-seconds 90 \
+  --execution-timeout-seconds 900 \
+  --require-bid-barrier \
+  --force-bids \
+  --exclude-failed-workers \
+  --dag-mode off \
+  --worker-calibration-source runs/research/phase1/self_knowledge_direct_full_20260406T221032Z/baseline_results_complete_models.jsonl \
+  --worker-calibration-style hard_prior_v1 \
+  --output-root runs/research/phase2/phase2d_market_hardprior_remaining45_<timestamp>Z
+```
+
 Saved merged artifacts:
 
 - `runs/research/phase2/exp2_market_vs_central_summary_20260409T000000Z.json`
