@@ -89,6 +89,83 @@ Suggested paper framing:
 - Use this Phase IIb rerun for the mechanism-level claim: when both sides get the same six-worker pool, the centralized chooser beat the market (`27 / 50` vs `23 / 50`).
 - The clean interpretation is that current evidence supports multi-model diversity more strongly than it supports the present market-clearing rule.
 
+## Why the market dropped in the rerun
+
+The clearest change in the rerun was Gemini.
+
+On the older observed raw market ledgers that still survive, Gemini was more conservative:
+
+- average ask: `29.7`
+- average stated `p_success`: `0.662`
+- outcomes: `12 PASS`, `12 FAIL`, `2 INFRA`
+
+On the full Phase IIb rerun, Gemini became much more aggressive:
+
+- average ask: `19.7`
+- average stated `p_success`: `0.838`
+- outcomes: `13 PASS`, `29 FAIL`, `3 INFRA`
+
+That means Gemini got many more assignments without producing many more passes.
+
+The key point is that this was not mostly verifier corruption.
+
+Gemini's rerun failures were mainly ordinary execution failures:
+
+- `14` patch apply failures
+- `8` cases with no valid patch found
+- `6` timeouts at `900s`
+- `3` `INFRA` outcomes
+
+The rerun therefore points to a bid-quality problem rather than a checker problem.
+
+The market selected Gemini more often because Gemini bid more aggressively. Gemini then converted those wins much worse than before.
+
+Retry did usually happen after Gemini failed:
+
+- `31` unique tasks had a Gemini failure
+- `30` of those got a retry by a different worker
+- only `8` were rescued on retry
+- `22` still failed after the retry
+
+So the drop is not a retry-rule bug. The market spent too many first attempts on Gemini and then could not recover most of them with a single second try.
+
+The clean interpretation is:
+
+- richer task descriptions changed Gemini's bidding behavior,
+- Gemini became easier for the market to select,
+- and the resulting first attempts converted poorly.
+
+This is why the matched centralized-router result matters. The centralized router saw the same full task descriptions and still beat the market.
+
+## Follow-on runs
+
+Use these names going forward:
+
+- Phase II: Market Scaffold vs Solo GPT-5.2
+- Phase IIb: Matched Centralized-Router Baseline
+- Phase IIc: Market Calibration Intervention
+
+### Best next run
+
+Run **Phase IIc: Market Calibration Intervention** next.
+
+Keep the market chooser and the six-worker pool exactly the same. Change only the bid prompt.
+
+Before bidding, give each worker a short held-out calibration card with:
+
+- overall pass rate
+- whether the worker tends to be overconfident or underconfident
+- typical token underestimation
+- coarse repository-level history only when there is enough held-out data
+
+This is the cleanest next run because Phase Ib showed that self-knowledge improves forecasting, and Phase IIb suggests the current market is failing because the bids are too noisy and too optimistic.
+
+### Later ablations
+
+- Router model sweep: rerun the centralized-router baseline with `gpt-5.2`, `gpt-5.2-pro`, Gemini, and Claude Opus as the coordinator.
+- Market-chosen router: add a short router-selection stage so the system chooses the coordinator from the same worker pool before routing tasks.
+- Market score ablation: try stronger overconfidence penalties, confidence clipping, or calibration adjustments on reported `p_success`.
+
 Saved merged artifacts:
 
 - `runs/research/phase2/exp2_market_vs_central_summary_20260409T000000Z.json`

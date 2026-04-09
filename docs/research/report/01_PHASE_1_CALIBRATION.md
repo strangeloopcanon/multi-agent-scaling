@@ -51,7 +51,7 @@ The model most likely to solve the task (GPT-5.2, scoring 74% externally) is und
 This sets the stage for Phase II: overcoming allocation inefficiencies and a rigid scaffold to prove the value of the market structure.
 ****
 
-## 2026-04-06 Self-Knowledge Prompt Follow-Up
+## Phase Ib: Self-Knowledge Calibration Intervention (2026-04-06)
 
 We re-ran the Phase I direct calibration prompt with a simple self-knowledge intervention. Each model saw a short held-out history card summarizing its own prior pass rate, average stated confidence, and typical token underestimation before forecasting the current task.
 
