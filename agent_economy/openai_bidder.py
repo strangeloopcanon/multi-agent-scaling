@@ -150,9 +150,20 @@ class OpenAIBidder:
         self._force_bid_for_ready_tasks = bool(force_bid_for_ready_tasks)
         self._retry_score_penalty_fraction = float(retry_score_penalty_fraction)
         self._worker_market_context: dict[str, list[str]] = {}
+        self._worker_static_market_context: dict[str, list[str]] = {}
 
     def set_worker_prompt_context(self, *, worker_id: str, context_lines: list[str]) -> None:
         self._worker_market_context[str(worker_id)] = [
+            str(line) for line in list(context_lines or []) if str(line).strip()
+        ]
+
+    def set_worker_static_prompt_context(
+        self,
+        *,
+        worker_id: str,
+        context_lines: list[str],
+    ) -> None:
+        self._worker_static_market_context[str(worker_id)] = [
             str(line) for line in list(context_lines or []) if str(line).strip()
         ]
 
@@ -170,7 +181,8 @@ class OpenAIBidder:
 
         persona = DEFAULT_PERSONAS.get(worker.worker_id)
         sys = system_prompt(worker=worker, persona=None if persona is None else persona.persona)
-        context_lines = list(self._worker_market_context.pop(worker.worker_id, []))
+        context_lines = list(self._worker_static_market_context.get(worker.worker_id, []))
+        context_lines.extend(self._worker_market_context.pop(worker.worker_id, []))
         user = bid_prompt(
             worker=worker,
             ready_tasks=ready_tasks,

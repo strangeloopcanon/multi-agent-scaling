@@ -6,6 +6,7 @@ import json
 import os
 import shlex
 import shutil
+from statistics import median
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -123,6 +124,163 @@ def _now_tag() -> str:
 
 def _norm_csv(values: str) -> list[str]:
     return [v.strip() for v in str(values).split(",") if v.strip()]
+
+
+def _safe_float(value: Any, *, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return float(default)
+
+
+def _safe_int(value: Any, *, default: int = 0) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return int(default)
+
+
+def _format_pct(value: float) -> str:
+    return f"{100.0 * value:.1f}%"
+
+
+def _format_multiplier(value: float) -> str:
+    if value >= 10.0:
+        return f"{value:.0f}x"
+    return f"{value:.1f}x"
+
+
+def _task_family(task_id: str) -> str:
+    token = str(task_id or "").strip()
+    if not token:
+        return "unknown"
+    return token.split("__", 1)[0] or "unknown"
+
+
+def _calibration_phrase(mean_p: float, pass_rate: float) -> str:
+    gap = mean_p - pass_rate
+    if abs(gap) < 0.03:
+        return "historically close to calibrated"
+    if gap > 0:
+        return f"historically overconfident by {_format_pct(abs(gap))}"
+    return f"historically underconfident by {_format_pct(abs(gap))}"
+
+
+def _actual_tokens_total_from_baseline_row(
+    row: dict[str, Any],
+    *,
+    pricing_by_model: dict[str, float],
+) -> float | None:
+    explicit = _safe_float(row.get("external_actual_tokens_total"), default=0.0)
+    if explicit > 0.0:
+        return explicit
+
+    model_ref = str(row.get("model_ref") or "")
+    blended = pricing_by_model.get(model_ref, 0.0)
+    if blended <= 0.0:
+        return None
+
+    cost = _safe_float(row.get("external_cost"), default=0.0)
+    if cost <= 0.0:
+        return None
+    return cost / blended
+
+
+def _load_worker_calibration_context(
+    *,
+    calibration_source: Path,
+    workers: list[WorkerRuntime],
+    task_id: str,
+    pricing_by_model: dict[str, float],
+) -> dict[str, list[str]]:
+    rows_raw = [
+        json.loads(line)
+        for line in calibration_source.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    baseline_by_model: dict[str, list[dict[str, Any]]] = {}
+    for row in rows_raw:
+        model_ref = str(row.get("model_ref") or "").strip()
+        if not model_ref:
+            continue
+        if str(row.get("strategy") or "direct") != "direct":
+            continue
+        if row.get("outcome") is None:
+            continue
+        baseline_by_model.setdefault(model_ref, []).append(row)
+
+    task_family = _task_family(task_id)
+    context_by_worker: dict[str, list[str]] = {}
+    for worker in workers:
+        model_ref = str(worker.model_ref or "").strip()
+        if not model_ref:
+            continue
+        held_out = [
+            row
+            for row in baseline_by_model.get(model_ref, [])
+            if str(row.get("task_id") or "").strip() != task_id
+        ]
+        if not held_out:
+            continue
+
+        pass_rate = sum(_safe_int(row.get("outcome"), default=0) for row in held_out) / len(
+            held_out
+        )
+        mean_p = sum(_safe_float(row.get("p_success"), default=0.5) for row in held_out) / len(
+            held_out
+        )
+
+        token_multipliers: list[float] = []
+        for row in held_out:
+            estimated_tokens = _safe_float(row.get("estimated_tokens_total"), default=0.0)
+            actual_tokens = _actual_tokens_total_from_baseline_row(
+                row,
+                pricing_by_model=pricing_by_model,
+            )
+            if estimated_tokens <= 0.0 or actual_tokens is None or actual_tokens <= 0.0:
+                continue
+            token_multipliers.append(actual_tokens / estimated_tokens)
+
+        family_rows = [
+            row
+            for row in held_out
+            if _task_family(str(row.get("task_id") or "").strip()) == task_family
+        ]
+
+        lines = [
+            "Held-out self-knowledge summary for this worker:",
+            f"- Across {len(held_out)} earlier tasks, your pass rate was {_format_pct(pass_rate)}.",
+            (
+                f"- Your mean stated success probability was {_format_pct(mean_p)}; "
+                f"you were {_calibration_phrase(mean_p, pass_rate)}."
+            ),
+        ]
+        if token_multipliers:
+            lines.append(
+                "- Your actual solve-token usage was typically "
+                f"{_format_multiplier(median(token_multipliers))} your estimate."
+            )
+        if len(family_rows) >= 5:
+            family_pass_rate = sum(
+                _safe_int(row.get("outcome"), default=0) for row in family_rows
+            ) / len(family_rows)
+            family_mean_p = sum(
+                _safe_float(row.get("p_success"), default=0.5) for row in family_rows
+            ) / len(family_rows)
+            lines.append(
+                f"- On prior {_task_family(task_id)} tasks ({len(family_rows)} held-out tasks), "
+                f"your pass rate was {_format_pct(family_pass_rate)} and your mean stated success "
+                f"probability was {_format_pct(family_mean_p)}."
+            )
+        lines.extend(
+            [
+                "- Use this as a prior, then update from the current task evidence.",
+                "- Bid conservatively when the current task looks similar to cases where you often fail or underestimate work.",
+            ]
+        )
+        context_by_worker[str(worker.worker_id)] = lines
+
+    return context_by_worker
 
 
 def _provider(model_ref: str) -> str:
@@ -1076,6 +1234,7 @@ def _run_one_spec(
     replan: bool,
     planner_max_tasks: int,
     assignment_policy: Any | None = None,
+    worker_calibration_source: Path | None = None,
     extra_run_config: dict[str, Any] | None = None,
 ) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -1099,6 +1258,7 @@ def _run_one_spec(
         tasks=list(scenario.tasks),
         execution_timeout_seconds=execution_timeout_seconds,
     )
+    calibration_task_id = str(tasks[0].id) if tasks else ""
     planner_meta: dict[str, Any] | None = None
     planner_context: PlannerRunContext | None = None
     if dag_mode == "planner_market":
@@ -1228,6 +1388,27 @@ def _run_one_spec(
         force_bid_for_ready_tasks=bool(force_bids),
         retry_score_penalty_fraction=float(settlement.retry_score_penalty_fraction),
     )
+    worker_calibration_context: dict[str, list[str]] = {}
+    if worker_calibration_source is not None and calibration_task_id:
+        worker_calibration_context = _load_worker_calibration_context(
+            calibration_source=worker_calibration_source,
+            workers=workers,
+            task_id=calibration_task_id,
+            pricing_by_model=pricing,
+        )
+        for worker in workers:
+            context_lines = list(worker_calibration_context.get(str(worker.worker_id), []))
+            if not context_lines:
+                continue
+            model_bidder.set_worker_static_prompt_context(
+                worker_id=str(worker.worker_id),
+                context_lines=context_lines,
+            )
+        if worker_calibration_context:
+            (run_dir / "worker_calibration_context.json").write_text(
+                json.dumps(worker_calibration_context, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
     model_executor = OpenAIExecutor(
         llm=llm,
         workspace_dir=workspace_dir,
@@ -1563,6 +1744,7 @@ def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
     task_rows: list[dict[str, Any]] = []
     skipped = 0
     failed = 0
+    worker_calibration_source = getattr(args, "worker_calibration_source", None)
 
     for idx, spec in enumerate(prepared_specs, start=1):
         run_name = (
@@ -1620,10 +1802,22 @@ def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
                 replan=bool(args.replan),
                 planner_max_tasks=int(args.planner_max_tasks),
                 assignment_policy=assignment_policy,
+                worker_calibration_source=(
+                    None if worker_calibration_source is None else Path(worker_calibration_source)
+                ),
                 extra_run_config={
                     "prepared_mode": prepared_mode,
                     "router_model_ref": (
                         None if prepared_mode != "central_router" else str(args.router_model_ref)
+                    ),
+                    **(
+                        {}
+                        if worker_calibration_source is None
+                        else {
+                            "worker_calibration_source": str(
+                                Path(worker_calibration_source).resolve()
+                            )
+                        }
                     ),
                 },
             )
@@ -1839,6 +2033,12 @@ def main() -> None:
         "--router-model-ref",
         default="openai:gpt-5.2-pro-2025-12-11",
         help="central router model for prepared central_router runs",
+    )
+    parser.add_argument(
+        "--worker-calibration-source",
+        type=Path,
+        default=None,
+        help="Phase I JSONL calibration rows used to build held-out worker self-knowledge cards",
     )
 
     args = parser.parse_args()

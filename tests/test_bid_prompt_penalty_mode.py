@@ -144,6 +144,45 @@ def test_openai_bidder_includes_worker_market_context_in_prompt() -> None:
     assert "expected_cost_hint≈1.50" in llm.last_user
 
 
+def test_openai_bidder_keeps_static_market_context_across_rounds() -> None:
+    llm = _FakeLLM()
+    bidder = OpenAIBidder(
+        llm=llm,
+        payment_rule=PaymentRule.ASK,
+        max_bids=1,
+        penalty_mode="direct_penalty",
+        penalty_fraction=0.1,
+    )
+    bidder.set_worker_static_prompt_context(
+        worker_id="gpt-5.2",
+        context_lines=["- Historical pass rate: 66.0%"],
+    )
+    worker = WorkerRuntime(worker_id="gpt-5.2", model_ref="openai:gpt-5.2")
+
+    _ = bidder.get_bids(
+        worker=worker,
+        ready_tasks=_ready_task(),
+        round_id=1,
+        discussion_history=[],
+    )
+    assert llm.last_user is not None
+    assert "Historical pass rate: 66.0%" in llm.last_user
+
+    bidder.set_worker_prompt_context(
+        worker_id="gpt-5.2",
+        context_lines=["- T1: expected_cost_hint≈1.50"],
+    )
+    _ = bidder.get_bids(
+        worker=worker,
+        ready_tasks=_ready_task(),
+        round_id=2,
+        discussion_history=[],
+    )
+    assert llm.last_user is not None
+    assert "Historical pass rate: 66.0%" in llm.last_user
+    assert "expected_cost_hint≈1.50" in llm.last_user
+
+
 def test_patch_prompt_prefers_diff_for_swebench_tasks() -> None:
     spec = TaskSpec(
         id="astropy__astropy-14995",

@@ -152,6 +152,8 @@ Run **Phase IId: Market Calibration Intervention** next.
 
 Keep the market chooser and the six-worker pool exactly the same. Change only the bid prompt.
 
+The Phase II runner now supports this through `--worker-calibration-source <phase1_baseline.jsonl>`, which injects a held-out self-knowledge note into each worker's private bidding context.
+
 Before bidding, give each worker a short held-out calibration card with:
 
 - overall pass rate
