@@ -163,6 +163,49 @@ Before bidding, give each worker a short held-out calibration card with:
 
 This is the cleanest next run because Phase Ib showed that self-knowledge improves forecasting, and Phase IIb suggests the current market is failing because the bids are too noisy and too optimistic.
 
+### Gemini prompt sensitivity probe
+
+Date: 2026-04-09
+
+We ran a small live Gemini-only bid probe on `astropy__astropy-14182` to check why the first Phase IId smoke did not move Gemini's first-round bid.
+
+Saved artifacts:
+
+- `runs/research/phase2/phase2d_gemini_prompt_probe_20260409T000000Z/gemini_prompt_probe.json`
+- `runs/research/phase2/phase2d_gemini_prompt_probe_20260409T000000Z/gemini_prompt_probe_extra.json`
+
+Important prompt detail:
+
+- `expected_cost_hint≈2.83` is not a self-knowledge statistic.
+- It is the market's rough estimate of Gemini's internal model-usage cost for attempting this task.
+- In the current bid prompt, that line sits in the same private context block as the held-out self-knowledge note.
+
+Probe result on the same task:
+
+- baseline cost hint only: `ask=20`, `p_success=0.80`
+- current Phase IId note: `ask=40`, `p_success=0.75`
+- richer stats note with Astropy-specific history: `ask=30`, `p_success=0.85`
+- forceful guardrail note: `ask=45`, `p_success=0.81`
+- hard cap `0.70`: `ask=45`, `p_success=0.70`
+- hard cap `0.65` or skip: `ask=50`, `p_success=0.65`
+
+What this says:
+
+- The current held-out note can move Gemini in the right direction on this task.
+- A richer note can make Gemini more aggressive again when the extra stats sound favorable. In this case, the small-sample Astropy history (`3 / 3` held-out passes) pushed the bid back upward.
+- A hard numeric guardrail is the first thing that stopped Gemini from winning this task under the old round-0 competitor bids.
+
+Mechanically, the threshold was:
+
+- `ask=45`, `p_success=0.70` was enough to push Gemini below Claude Sonnet on the old round-0 comparison.
+- `ask=50`, `p_success=0.65` pushed Gemini below Claude Sonnet and GPT-5.2.
+
+This points to a concrete design lesson for Phase IId:
+
+- keep the self-knowledge note separate from the cost hint,
+- avoid small-sample repo-specific success lines when they are flattering,
+- and test explicit calibration rules such as confidence caps or shrinkage toward held-out pass rate.
+
 ### Later ablations
 
 - Router model sweep: rerun the centralized-router baseline with `gpt-5.2`, `gpt-5.2-pro`, Gemini, and Claude Opus as the coordinator.
