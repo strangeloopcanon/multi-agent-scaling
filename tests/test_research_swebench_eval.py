@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import signal
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 from agent_economy.research.swebench_eval import (
     _build_run_id,
@@ -138,7 +141,7 @@ def test_evaluate_with_harness_uses_summary_fallback_resolved(monkeypatch, tmp_p
     }
 
     monkeypatch.setattr(
-        "agent_economy.research.swebench_eval.subprocess.run",
+        "agent_economy.research.swebench_eval._run_harness_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
     monkeypatch.setattr(
@@ -179,7 +182,7 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
     }
 
     monkeypatch.setattr(
-        "agent_economy.research.swebench_eval.subprocess.run",
+        "agent_economy.research.swebench_eval._run_harness_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
     monkeypatch.setattr(
@@ -211,13 +214,13 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
 def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_path) -> None:
     calls: dict[str, object] = {}
 
-    def _fake_run(cmd, cwd, text, capture_output, timeout):
+    def _fake_run(*, cmd, cwd, timeout_sec):
         calls["cmd"] = cmd
         calls["cwd"] = cwd
-        calls["timeout"] = timeout
+        calls["timeout_sec"] = timeout_sec
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
+    monkeypatch.setattr("agent_economy.research.swebench_eval._run_harness_command", _fake_run)
     monkeypatch.setattr(
         "agent_economy.research.swebench_eval._load_report",
         lambda **kwargs: ({"psf__requests-2317": {"resolved": False}}, tmp_path / "report.json"),
@@ -242,7 +245,7 @@ def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_pat
     assert isinstance(cmd, list)
     report_dir_index = cmd.index("--report_dir")
     assert cmd[report_dir_index + 1] == str(tmp_path)
-    assert calls["timeout"] == 330
+    assert calls["timeout_sec"] == 30
 
 
 def test_evaluate_with_harness_marks_timeout(monkeypatch, tmp_path) -> None:
@@ -254,7 +257,7 @@ def test_evaluate_with_harness_marks_timeout(monkeypatch, tmp_path) -> None:
             stderr="partial stderr",
         )
 
-    monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
+    monkeypatch.setattr("agent_economy.research.swebench_eval._run_harness_command", _fake_run)
     monkeypatch.setattr(
         "agent_economy.research.swebench_eval._load_report",
         lambda **kwargs: (None, None),
@@ -282,3 +285,45 @@ def test_evaluate_with_harness_marks_timeout(monkeypatch, tmp_path) -> None:
     assert payload["timed_out"] is True
     assert payload["stdout"] == "partial stdout"
     assert payload["stderr"] == "partial stderr"
+
+
+def test_run_harness_command_kills_process_group_on_timeout(monkeypatch, tmp_path) -> None:
+    events: list[tuple[str, object]] = []
+
+    class FakeProcess:
+        pid = 1234
+        returncode = None
+
+        def communicate(self, timeout=None):
+            events.append(("communicate", timeout))
+            if timeout is not None:
+                raise subprocess.TimeoutExpired(
+                    cmd=["python", "-m", "swebench.harness.run_evaluation"],
+                    timeout=timeout,
+                )
+            self.returncode = -9
+            return ("after kill stdout", "after kill stderr")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.subprocess.Popen",
+        lambda *args, **kwargs: FakeProcess(),
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.killpg",
+        lambda pid, sig: events.append(("killpg", (pid, sig))),
+    )
+
+    from agent_economy.research.swebench_eval import _run_harness_command
+
+    with pytest.raises(subprocess.TimeoutExpired) as exc_info:
+        _run_harness_command(
+            cmd=["python", "-m", "swebench.harness.run_evaluation"],
+            cwd=tmp_path,
+            timeout_sec=30,
+        )
+
+    assert events[0] == ("communicate", 330)
+    assert events[1] == ("killpg", (1234, signal.SIGKILL))
+    assert events[2] == ("communicate", None)
+    assert exc_info.value.output == "after kill stdout"
+    assert exc_info.value.stderr == "after kill stderr"

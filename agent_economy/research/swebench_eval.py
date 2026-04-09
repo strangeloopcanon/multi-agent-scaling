@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import signal
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -105,6 +107,41 @@ def _subprocess_timeout_seconds(*, timeout_sec: int) -> int:
     return int(timeout_sec) + _HARNESS_TIMEOUT_GRACE_SECONDS
 
 
+def _run_harness_command(
+    *, cmd: list[str], cwd: Path, timeout_sec: int
+) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = proc.communicate(
+            timeout=_subprocess_timeout_seconds(timeout_sec=timeout_sec)
+        )
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=int(proc.returncode or 0),
+            stdout=stdout,
+            stderr=stderr,
+        )
+    except subprocess.TimeoutExpired as exc:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        stdout, stderr = proc.communicate()
+        raise subprocess.TimeoutExpired(
+            cmd=exc.cmd,
+            timeout=exc.timeout,
+            output=stdout if stdout else exc.output,
+            stderr=stderr if stderr else exc.stderr,
+        ) from exc
+
+
 def evaluate_with_harness(
     *,
     instance_id: str,
@@ -183,12 +220,10 @@ def evaluate_with_harness(
     ]
 
     try:
-        proc = subprocess.run(
-            cmd,
+        proc = _run_harness_command(
+            cmd=cmd,
             cwd=_runner_dir(work_dir=work_dir),
-            text=True,
-            capture_output=True,
-            timeout=_subprocess_timeout_seconds(timeout_sec=timeout_sec),
+            timeout_sec=timeout_sec,
         )
     except subprocess.TimeoutExpired as exc:
         result_path = work_dir / f"harness_{_safe_token(run_id)}.json"
