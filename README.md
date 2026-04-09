@@ -172,6 +172,27 @@ Full details: [Phase I Calibration](docs/research/report/01_PHASE_1_CALIBRATION.
 ### Phase II: Market vs Solo Evaluation
 For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
 
+#### 50-task comparison ladder
+
+This is the easiest way to read the main 50-task results. It is a score-ordered map, not a pure one-variable ladder. The cleanest chooser comparison inside it is **Phase IIb centralized router vs Phase IIb market**, because those two runs keep the six-worker pool fixed and change only the chooser.
+
+```mermaid
+flowchart TD
+    A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
+    B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    D --> E["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
+    E --> F["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    F --> G["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
+```
+
+The short reading is:
+
+- stronger scaffolds still dominate the top of the table,
+- diverse model pools help on the live in-house scaffold,
+- the current market-clearing rule is weaker than a matched centralized chooser,
+- the likely bottleneck is weak self-knowledge in bids rather than lack of model diversity.
+
 A later follow-up reran the same 50-task slice through Codex with GPT-5.2 and a 30-minute task budget. That run finished at **35 / 50**, but **20 of those 35 passes** finished after the original 15-minute limit, so it should be read as a longer-budget diagnostic rather than a replacement for the published benchmark. It was also far heavier: **321.3M total tokens**, versus **4.37M** for the published solo GPT-5.2 run and **~5.82M** for the published market run.
 
 ### Phase IIa: Informed Competitive Auctions

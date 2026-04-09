@@ -143,11 +143,12 @@ Use these names going forward:
 
 - Phase II: Market Scaffold vs Solo GPT-5.2
 - Phase IIb: Matched Centralized-Router Baseline
-- Phase IIc: Market Calibration Intervention
+- Phase IIc: Codex Relaxed-Time Diagnostic
+- Phase IId: Market Calibration Intervention
 
 ### Best next run
 
-Run **Phase IIc: Market Calibration Intervention** next.
+Run **Phase IId: Market Calibration Intervention** next.
 
 Keep the market chooser and the six-worker pool exactly the same. Change only the bid prompt.
 
