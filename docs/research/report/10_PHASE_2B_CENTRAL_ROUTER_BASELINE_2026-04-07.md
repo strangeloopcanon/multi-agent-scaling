@@ -1,4 +1,4 @@
-## Phase IIb centralized-router baseline
+## Phase IIb: Matched Centralized-Router Baseline
 
 Date: 2026-04-07
 
@@ -82,6 +82,12 @@ Interpretation:
 - On this matched rerun, access to the same six-model worker pool plus a centralized chooser outperformed the market clearing rule on solved tasks.
 - The centralized router also used substantially fewer total tokens.
 - This result weakens the claim that the Phase II scaffold gain comes from the market-style routing rule itself. On the matched 50-task rerun, the non-market chooser was stronger.
+
+Suggested paper framing:
+
+- Keep the older `29 / 50` versus `24 / 50` result as a scaffold-level finding: a six-worker scaffold beat a same-scaffold solo GPT-5.2 baseline.
+- Use this Phase IIb rerun for the mechanism-level claim: when both sides get the same six-worker pool, the centralized chooser beat the market (`27 / 50` vs `23 / 50`).
+- The clean interpretation is that current evidence supports multi-model diversity more strongly than it supports the present market-clearing rule.
 
 Saved merged artifacts:
 
