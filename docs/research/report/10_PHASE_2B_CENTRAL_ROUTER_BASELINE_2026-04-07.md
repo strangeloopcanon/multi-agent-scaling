@@ -192,6 +192,7 @@ Probe result on the same task:
 What this says:
 
 - The current held-out note can move Gemini in the right direction on this task.
+- The current held-out note is also unstable. Repeating the same live call produced both `ask=25, p_success=0.80` and `ask=40, p_success=0.75`.
 - A richer note can make Gemini more aggressive again when the extra stats sound favorable. In this case, the small-sample Astropy history (`3 / 3` held-out passes) pushed the bid back upward.
 - A hard numeric guardrail is the first thing that stopped Gemini from winning this task under the old round-0 competitor bids.
 
