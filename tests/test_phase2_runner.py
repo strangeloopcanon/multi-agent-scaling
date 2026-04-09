@@ -17,6 +17,7 @@ from scripts.run_phase2 import (
     _all_tasks_terminal_or_exhausted,
     _run_prepared_mode,
     _planner_subtasks_to_specs,
+    _rewrite_task_execution_timeouts,
     _write_csv,
     build_run_matrix,
     load_prepared_task_specs,
@@ -72,6 +73,41 @@ def test_load_prepared_task_specs_slices_offset_limit(tmp_path: Path) -> None:
     assert len(specs) == 1
     assert specs[0].instance_id == "b"
     assert specs[0].scenario_path == tmp_path / "b.yaml"
+
+
+def test_rewrite_task_execution_timeouts_updates_swebench_eval_commands() -> None:
+    task = TaskSpec(
+        id="demo",
+        title="demo",
+        bounty=1,
+        deps=[],
+        acceptance=[
+            CommandSpec(
+                cmd=(
+                    "python -m agent_economy.research.swebench_eval "
+                    "--instance-id demo --timeout-sec 1800"
+                )
+            ),
+            CommandSpec(cmd="pytest -q"),
+        ],
+        hidden_acceptance=[
+            CommandSpec(
+                cmd=(
+                    "python -m agent_economy.research.swebench_eval "
+                    "--instance-id demo --timeout-sec=1800"
+                )
+            )
+        ],
+    )
+
+    rewritten = _rewrite_task_execution_timeouts(
+        tasks=[task],
+        execution_timeout_seconds=900.0,
+    )
+
+    assert rewritten[0].acceptance[0].cmd.endswith("--timeout-sec 900")
+    assert rewritten[0].acceptance[1].cmd == "pytest -q"
+    assert rewritten[0].hidden_acceptance[0].cmd.endswith("--timeout-sec=900")
 
 
 def test_planner_subtasks_to_specs_maps_planned_final_to_single_patch_task() -> None:

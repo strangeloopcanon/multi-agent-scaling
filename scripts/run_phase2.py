@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import os
+import shlex
 import shutil
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
@@ -264,6 +265,101 @@ def load_prepared_task_specs(
     if not out:
         raise ValueError("no valid prepared tasks selected")
     return out
+
+
+def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: float | None) -> str:
+    if execution_timeout_seconds is None:
+        return cmd
+
+    timeout_seconds = int(float(execution_timeout_seconds))
+    if timeout_seconds <= 0:
+        return cmd
+
+    if "agent_economy.research.swebench_eval" not in cmd:
+        return cmd
+
+    try:
+        parts = shlex.split(cmd, posix=True)
+    except ValueError:
+        return cmd
+
+    rewritten: list[str] = []
+    replaced = False
+    idx = 0
+    while idx < len(parts):
+        part = parts[idx]
+        if part == "--timeout-sec":
+            rewritten.extend(["--timeout-sec", str(timeout_seconds)])
+            replaced = True
+            idx += 2
+            continue
+        if part.startswith("--timeout-sec="):
+            rewritten.append(f"--timeout-sec={timeout_seconds}")
+            replaced = True
+            idx += 1
+            continue
+        rewritten.append(part)
+        idx += 1
+
+    if not replaced:
+        rewritten.extend(["--timeout-sec", str(timeout_seconds)])
+
+    return shlex.join(rewritten)
+
+
+def _rewrite_swebench_eval_commands(
+    *,
+    commands: list[CommandSpec],
+    execution_timeout_seconds: float | None,
+) -> list[CommandSpec]:
+    if execution_timeout_seconds is None or float(execution_timeout_seconds) <= 0:
+        return list(commands)
+
+    rewritten: list[CommandSpec] = []
+    for command in commands:
+        updated_cmd = _rewrite_swebench_eval_timeout_arg(
+            cmd=command.cmd,
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        if updated_cmd == command.cmd:
+            rewritten.append(command)
+            continue
+        rewritten.append(command.model_copy(update={"cmd": updated_cmd}))
+    return rewritten
+
+
+def _rewrite_task_execution_timeouts(
+    *,
+    tasks: list[TaskSpec],
+    execution_timeout_seconds: float | None,
+) -> list[TaskSpec]:
+    if execution_timeout_seconds is None or float(execution_timeout_seconds) <= 0:
+        return list(tasks)
+
+    rewritten: list[TaskSpec] = []
+    for task in tasks:
+        acceptance = _rewrite_swebench_eval_commands(
+            commands=list(task.acceptance),
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        hidden_acceptance = _rewrite_swebench_eval_commands(
+            commands=list(task.hidden_acceptance),
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        if acceptance == list(task.acceptance) and hidden_acceptance == list(
+            task.hidden_acceptance
+        ):
+            rewritten.append(task)
+            continue
+        rewritten.append(
+            task.model_copy(
+                update={
+                    "acceptance": acceptance,
+                    "hidden_acceptance": hidden_acceptance,
+                }
+            )
+        )
+    return rewritten
 
 
 def _select_workers(*, spec: RunSpec, workers_path: Path):
@@ -999,7 +1095,10 @@ def _run_one_spec(
     persisted_state = load_state(default_state_path())
     estimator = ExpectedCostEstimator(state=persisted_state, pricing=pricing)
 
-    tasks = list(scenario.tasks)
+    tasks = _rewrite_task_execution_timeouts(
+        tasks=list(scenario.tasks),
+        execution_timeout_seconds=execution_timeout_seconds,
+    )
     planner_meta: dict[str, Any] | None = None
     planner_context: PlannerRunContext | None = None
     if dag_mode == "planner_market":
