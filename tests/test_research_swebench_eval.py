@@ -10,6 +10,7 @@ import pytest
 
 from agent_economy.research.swebench_eval import (
     _build_run_id,
+    _forward_signal_to_active_harness,
     _load_report,
     _load_summary,
     evaluate_with_harness,
@@ -327,3 +328,22 @@ def test_run_harness_command_kills_process_group_on_timeout(monkeypatch, tmp_pat
     assert events[2] == ("communicate", None)
     assert exc_info.value.output == "after kill stdout"
     assert exc_info.value.stderr == "after kill stderr"
+
+
+def test_forward_signal_kills_active_harness_group(monkeypatch) -> None:
+    events: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._ACTIVE_HARNESS_PGID",
+        9876,
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.killpg",
+        lambda pid, sig: events.append(("killpg", (pid, sig))),
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        _forward_signal_to_active_harness(signal.SIGTERM, None)
+
+    assert exc_info.value.code == 143
+    assert events == [("killpg", (9876, signal.SIGKILL))]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -61,6 +62,52 @@ def _base_env(*, scrub_secrets: bool) -> dict[str, str]:
     return env
 
 
+def _run_command(
+    *,
+    cmd: str,
+    cwd: Path,
+    env: dict[str, str],
+    timeout_sec: float | None,
+) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout_sec)
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=int(proc.returncode or 0),
+            stdout=stdout,
+            stderr=stderr,
+        )
+    except subprocess.TimeoutExpired as exc:
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
+            stdout, stderr = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            stdout, stderr = proc.communicate()
+        raise subprocess.TimeoutExpired(
+            cmd=exc.cmd,
+            timeout=exc.timeout,
+            output=stdout if stdout else exc.output,
+            stderr=stderr if stderr else exc.stderr,
+        ) from exc
+
+
 def run_commands(
     *,
     commands: list[CommandSpec],
@@ -75,15 +122,11 @@ def run_commands(
 
         start = time.time()
         try:
-            proc = subprocess.run(
-                spec.cmd,
+            proc = _run_command(
+                cmd=spec.cmd,
                 cwd=cwd,
                 env=env,
-                shell=True,
-                text=True,
-                capture_output=True,
-                timeout=spec.timeout_sec,
-                check=False,
+                timeout_sec=spec.timeout_sec,
             )
             results.append(
                 CommandResult(

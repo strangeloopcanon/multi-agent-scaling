@@ -259,6 +259,70 @@ What changed in the bids:
 
 This means the hard-prior rule did the main thing it was designed to do on harder tasks. It pushed Gemini out of the first slot on `astropy` and `matplotlib`, and it also held Gemini to its prior on `scikit-learn` and `django`. Gemini still won `psf__requests-2317`, where the task text contained an explicit localized fix and Gemini argued that this was direct evidence the task was easier than average.
 
+### Phase IId targeted 5 after verifier cleanup fix
+
+Date: 2026-04-09
+
+The first hard-prior slice exposed a separate execution bug. The engine was marking worker attempts as timed out after `900` seconds, but the acceptance command could keep running in the background. The missing cleanup path had two layers:
+
+- the outer verifier needed a real command timeout and process-group cleanup,
+- and `swebench_eval` needed to forward termination to its own `run_evaluation` child process.
+
+The code now does both:
+
+- `verify.py` sends `SIGTERM`, waits briefly, then sends `SIGKILL` if the command still has not exited,
+- `swebench_eval.py` tracks its active harness child and kills that child group when it receives a termination signal,
+- `run_phase2.py` now rewrites SWE-bench acceptance commands so they get an outer timeout (`execution_timeout_seconds - 30`) instead of running without any command-level timeout.
+
+Verification completed before the rerun:
+
+- `.venv/bin/python -m pytest -q tests/test_phase2_runner.py tests/test_verify.py tests/test_research_swebench_eval.py`
+- `make check`
+
+We then reran a targeted five-task slice that was deliberately chosen from tasks where the older published market run had wins but the later rerun had losses:
+
+- `matplotlib__matplotlib-24970`
+- `pylint-dev__pylint-7080`
+- `scikit-learn__scikit-learn-13142`
+- `sympy__sympy-16792`
+- `django__django-11964`
+
+Saved run root:
+
+- `runs/research/phase2/phase2d_targeted5_hardprior_20260409T201000Z`
+
+Top-line result:
+
+- solved: `0 / 5`
+- failed runs: `0`
+- stray verifier processes after completion: `0`
+
+What changed mechanically:
+
+- Gemini won `0 / 5` opening rounds.
+- Gemini's bids stayed high and cautious across the slice:
+  - `matplotlib__matplotlib-24970`: round 0 `ask=45`, `p_success=0.68`
+  - `pylint-dev__pylint-7080`: round 0 `ask=41`, `p_success=0.70`
+  - `scikit-learn__scikit-learn-13142`: round 0 `ask=45`, `p_success=0.85`
+  - `sympy__sympy-16792`: round 0 `ask=45`, `p_success=0.68`
+  - `django__django-11964`: round 0 `ask=45`, `p_success=0.68`
+- The market routed the first attempt to Claude workers on all five tasks.
+
+Per-task outcomes:
+
+- `matplotlib__matplotlib-24970`: round 0 `claude-sonnet-4-5` `INFRA`; retry `claude-opus-4-5` `INFRA`
+- `pylint-dev__pylint-7080`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `FAIL`
+- `scikit-learn__scikit-learn-13142`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
+- `sympy__sympy-16792`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
+- `django__django-11964`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
+
+Interpretation:
+
+- The verifier cleanup bug is fixed for this path. The targeted rerun completed fully and left no lingering `swebench_eval` or `run_evaluation` processes behind.
+- The hard-prior bidding rule did suppress Gemini's over-selection on this slice.
+- The market still did not recover solves on these tasks because the replacement winners were mostly Claude attempts that ended in `INFRA`.
+- So this rerun fixed a real harness bug and improved bid discipline, but it did not yet improve end-to-end task completion on this targeted regression slice.
+
 Important harness note:
 
 - The market harness itself behaved as expected on this slice.

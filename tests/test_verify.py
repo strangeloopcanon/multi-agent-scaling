@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import signal
+import subprocess
 
 import pytest
 
@@ -92,3 +94,47 @@ def test_classify_command_status_timeout_precedence_over_infra() -> None:
 def test_command_spec_rejects_overlapping_expect_and_infra_exit_codes() -> None:
     with pytest.raises(ValueError):
         CommandSpec(cmd="run", expect_exit_codes=[2], infra_exit_codes=[2])
+
+
+def test_run_command_kills_process_group_on_timeout(tmp_path, monkeypatch) -> None:
+    events: list[tuple[str, object]] = []
+
+    class FakeProcess:
+        pid = 4321
+        returncode = None
+        calls = 0
+
+        def communicate(self, timeout=None):
+            events.append(("communicate", timeout))
+            self.calls += 1
+            if timeout is not None and self.calls <= 2:
+                raise subprocess.TimeoutExpired(cmd="sleep 60", timeout=timeout)
+            self.returncode = -9
+            return ("after kill stdout", "after kill stderr")
+
+    monkeypatch.setattr(
+        verify.subprocess,
+        "Popen",
+        lambda *args, **kwargs: FakeProcess(),
+    )
+    monkeypatch.setattr(
+        verify.os,
+        "killpg",
+        lambda pid, sig: events.append(("killpg", (pid, sig))),
+    )
+
+    with pytest.raises(subprocess.TimeoutExpired) as exc_info:
+        verify._run_command(
+            cmd="sleep 60",
+            cwd=tmp_path,
+            env={"PATH": os.environ.get("PATH", "")},
+            timeout_sec=30,
+        )
+
+    assert events[0] == ("communicate", 30)
+    assert events[1] == ("killpg", (4321, signal.SIGTERM))
+    assert events[2] == ("communicate", 5)
+    assert events[3] == ("killpg", (4321, signal.SIGKILL))
+    assert events[4] == ("communicate", None)
+    assert exc_info.value.output == "after kill stdout"
+    assert exc_info.value.stderr == "after kill stderr"

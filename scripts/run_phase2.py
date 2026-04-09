@@ -467,7 +467,9 @@ def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: f
     if execution_timeout_seconds is None:
         return cmd
 
-    timeout_seconds = int(float(execution_timeout_seconds))
+    timeout_seconds = _swebench_outer_timeout_seconds(
+        execution_timeout_seconds=execution_timeout_seconds
+    )
     if timeout_seconds <= 0:
         return cmd
 
@@ -503,6 +505,17 @@ def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: f
     return shlex.join(rewritten)
 
 
+def _swebench_outer_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
+    if execution_timeout_seconds is None:
+        return 0
+
+    timeout_seconds = int(float(execution_timeout_seconds))
+    if timeout_seconds <= 0:
+        return 0
+
+    return max(1, timeout_seconds - 30)
+
+
 def _rewrite_swebench_eval_commands(
     *,
     commands: list[CommandSpec],
@@ -513,14 +526,27 @@ def _rewrite_swebench_eval_commands(
 
     rewritten: list[CommandSpec] = []
     for command in commands:
+        timeout_seconds = _swebench_outer_timeout_seconds(
+            execution_timeout_seconds=execution_timeout_seconds
+        )
         updated_cmd = _rewrite_swebench_eval_timeout_arg(
             cmd=command.cmd,
             execution_timeout_seconds=execution_timeout_seconds,
         )
-        if updated_cmd == command.cmd:
+        if "agent_economy.research.swebench_eval" not in command.cmd:
             rewritten.append(command)
             continue
-        rewritten.append(command.model_copy(update={"cmd": updated_cmd}))
+        if updated_cmd == command.cmd and command.timeout_sec == timeout_seconds:
+            rewritten.append(command)
+            continue
+        rewritten.append(
+            command.model_copy(
+                update={
+                    "cmd": updated_cmd,
+                    "timeout_sec": timeout_seconds,
+                }
+            )
+        )
     return rewritten
 
 

@@ -161,9 +161,12 @@ def test_rewrite_task_execution_timeouts_updates_swebench_eval_commands() -> Non
         execution_timeout_seconds=900.0,
     )
 
-    assert rewritten[0].acceptance[0].cmd.endswith("--timeout-sec 900")
+    assert rewritten[0].acceptance[0].cmd.endswith("--timeout-sec 870")
+    assert rewritten[0].acceptance[0].timeout_sec == 870
     assert rewritten[0].acceptance[1].cmd == "pytest -q"
-    assert rewritten[0].hidden_acceptance[0].cmd.endswith("--timeout-sec=900")
+    assert rewritten[0].acceptance[1].timeout_sec is None
+    assert rewritten[0].hidden_acceptance[0].cmd.endswith("--timeout-sec=870")
+    assert rewritten[0].hidden_acceptance[0].timeout_sec == 870
 
 
 def test_planner_subtasks_to_specs_maps_planned_final_to_single_patch_task() -> None:

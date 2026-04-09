@@ -14,6 +14,7 @@ from pathlib import Path
 DEFAULT_DATASET_NAME = "princeton-nlp/SWE-bench_Lite"
 DEFAULT_SPLIT = "test"
 _HARNESS_TIMEOUT_GRACE_SECONDS = 300
+_ACTIVE_HARNESS_PGID: int | None = None
 
 
 @dataclass(frozen=True)
@@ -107,9 +108,26 @@ def _subprocess_timeout_seconds(*, timeout_sec: int) -> int:
     return int(timeout_sec) + _HARNESS_TIMEOUT_GRACE_SECONDS
 
 
+def _kill_active_harness_process_group() -> None:
+    global _ACTIVE_HARNESS_PGID
+    if _ACTIVE_HARNESS_PGID is None:
+        return
+    try:
+        os.killpg(_ACTIVE_HARNESS_PGID, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    _ACTIVE_HARNESS_PGID = None
+
+
+def _forward_signal_to_active_harness(signum: int, _frame: object) -> None:
+    _kill_active_harness_process_group()
+    raise SystemExit(128 + int(signum))
+
+
 def _run_harness_command(
     *, cmd: list[str], cwd: Path, timeout_sec: int
 ) -> subprocess.CompletedProcess[str]:
+    global _ACTIVE_HARNESS_PGID
     proc = subprocess.Popen(
         cmd,
         cwd=cwd,
@@ -118,6 +136,11 @@ def _run_harness_command(
         stderr=subprocess.PIPE,
         start_new_session=True,
     )
+    previous_sigterm = signal.getsignal(signal.SIGTERM)
+    previous_sigint = signal.getsignal(signal.SIGINT)
+    _ACTIVE_HARNESS_PGID = proc.pid
+    signal.signal(signal.SIGTERM, _forward_signal_to_active_harness)
+    signal.signal(signal.SIGINT, _forward_signal_to_active_harness)
     try:
         stdout, stderr = proc.communicate(
             timeout=_subprocess_timeout_seconds(timeout_sec=timeout_sec)
@@ -140,6 +163,10 @@ def _run_harness_command(
             output=stdout if stdout else exc.output,
             stderr=stderr if stderr else exc.stderr,
         ) from exc
+    finally:
+        _ACTIVE_HARNESS_PGID = None
+        signal.signal(signal.SIGTERM, previous_sigterm)
+        signal.signal(signal.SIGINT, previous_sigint)
 
 
 def evaluate_with_harness(
