@@ -1,9 +1,32 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-04-02
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, Phase IIa auction mechanism experiments (3 experiments, 3 models), and a later Codex follow-up diagnostic
+**Last updated:** 2026-04-09
+**Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, and Phase IIc Codex relaxed-time diagnostic
 
-Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer: yes, but the bottleneck isn't the auction mechanism, it's how well models know their own capabilities.
+Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, but the current market-clearing rule is bottlenecked by weak self-knowledge and does not beat a matched centralized router on the same worker pool.
+
+---
+
+## 50-Task Comparison Map
+
+This is a score-ordered map of the main 50-task results. It is not a pure one-variable ladder. The cleanest mechanism comparison inside it is **Phase IIb centralized router vs. Phase IIb market**, because those two runs hold the six-worker pool fixed and change only the chooser.
+
+```mermaid
+flowchart TD
+    A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
+    B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    D --> E["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
+    E --> F["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    F --> G["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
+```
+
+The picture to keep in mind is simple:
+
+- the best numbers still come from stronger scaffolds or stronger information,
+- the live in-house scaffold family clusters in the mid-20s,
+- model diversity helps,
+- the current market-clearing rule is weaker than a matched centralized chooser.
 
 ---
 
@@ -13,9 +36,21 @@ Phase I evaluated 6 frontier models on 93 SWE-bench Lite tasks to establish the 
 
 The oracle ceiling (best possible model for each task) is **84%** on the 50-task subset. But self-assessed confidence turned out to be noise: most models had near-zero or negative Brier skill scores, with only Claude Sonnet 4.5 (+0.07) beating a naive base-rate predictor. Overconfident models consistently stole assignments from more capable ones.
 
-This established the core challenge for Phase II: the market mechanism works, but allocation quality is bottlenecked by calibration, not by the auction design.
+This established the core challenge for later live routing runs: diverse workers can help, but allocation quality is bottlenecked by calibration rather than by a lack of auction machinery.
 
 For details, see [Phase I Calibration](01_PHASE_1_CALIBRATION.md).
+
+## Phase Ib: Self-Knowledge Calibration Intervention (2026-04-06)
+
+We later reran the direct calibration prompt with a simple held-out self-knowledge card shown before forecasting. Each model saw a short summary of its own prior pass rate, typical confidence level, and token underestimation tendency.
+
+This improved calibration on the full six-model, 93-task rerun:
+
+- Brier score improved from `0.1835` to `0.1693`
+- ECE improved from `0.1065` to `0.0616`
+- token forecasts became less severely underestimated
+
+The downstream auction effect was smaller than the calibration effect. The reserve-auction oracle gap narrowed slightly, but mean realized profit stayed roughly flat. This supports a narrow claim: models can use simple self-history to forecast themselves better, but current bid quality is still not strong enough to fully repair allocation.
 
 ---
 
@@ -60,7 +95,22 @@ While the market outperforms single models, it currently sits below the theoreti
 
 On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. The remaining bottlenecks are allocation quality and scaffold limitations.
 
-## Later Follow-Up: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
+## Phase IIb: Matched Centralized-Router Baseline (2026-04-09)
+
+Phase IIb reran the same 50-task slice with the same six workers, the same two-attempt cap, the same `900` second limit, and the same verifier. The only intended change was the chooser: the market rule on one side and a centralized router on the other.
+
+Headline result:
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Centralized router | 54.0% | 27 / 50 |
+| Market (matched rerun) | 46.0% | 23 / 50 |
+
+This is the cleanest mechanism test we have. It weakens the claim that the current market-clearing rule itself is the main reason the earlier market scaffold beat the solo baseline. The stronger reading now is that model diversity helps, but the present bidding signal is still too noisy for decentralized bidding to beat a strong centralized chooser.
+
+The clearest driver of the market drop in the rerun was Gemini. Gemini became much more aggressive, won more first attempts, and then converted those wins much worse. Most of those extra losses were ordinary task failures such as malformed patches, patch-apply failures, or `900` second timeouts rather than checker corruption.
+
+## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 
 We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.
 
