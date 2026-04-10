@@ -261,7 +261,7 @@ This means the hard-prior rule did the main thing it was designed to do on harde
 
 ### Phase IId targeted 5 after verifier cleanup fix
 
-Date: 2026-04-09
+Date: 2026-04-10
 
 The first hard-prior slice exposed a separate execution bug. The engine was marking worker attempts as timed out after `900` seconds, but the acceptance command could keep running in the background. The missing cleanup path had two layers:
 
@@ -289,11 +289,19 @@ We then reran a targeted five-task slice that was deliberately chosen from tasks
 
 Saved run root:
 
+- valid rerun: `runs/research/phase2/phase2d_targeted5_hardprior_20260410T003800Z`
+
+Discarded invalid roots:
+
+- `runs/research/phase2/phase2d_targeted5_hardprior_20260409T191000Z`
+- `runs/research/phase2/phase2d_targeted5_hardprior_20260409T194800Z`
 - `runs/research/phase2/phase2d_targeted5_hardprior_20260409T201000Z`
+
+The three `2026-04-09` roots were scrubbed because the Docker service disappeared mid-run. Those results are not valid solver evidence.
 
 Top-line result:
 
-- solved: `0 / 5`
+- solved: `4 / 5`
 - failed runs: `0`
 - stray verifier processes after completion: `0`
 
@@ -304,36 +312,31 @@ What changed mechanically:
   - `matplotlib__matplotlib-24970`: round 0 `ask=45`, `p_success=0.68`
   - `pylint-dev__pylint-7080`: round 0 `ask=41`, `p_success=0.70`
   - `scikit-learn__scikit-learn-13142`: round 0 `ask=45`, `p_success=0.85`
-  - `sympy__sympy-16792`: round 0 `ask=45`, `p_success=0.68`
-  - `django__django-11964`: round 0 `ask=45`, `p_success=0.68`
+- `sympy__sympy-16792`: round 0 `ask=45`, `p_success=0.68`
+- `django__django-11964`: round 0 `ask=45`, `p_success=0.68`
 - The market routed the first attempt to Claude workers on all five tasks.
 
 Per-task outcomes:
 
-- `matplotlib__matplotlib-24970`: round 0 `claude-sonnet-4-5` `INFRA`; retry `claude-opus-4-5` `INFRA`
-- `pylint-dev__pylint-7080`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `FAIL`
-- `scikit-learn__scikit-learn-13142`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
-- `sympy__sympy-16792`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
-- `django__django-11964`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `INFRA`
+- `matplotlib__matplotlib-24970`: round 0 `claude-sonnet-4-5` `FAIL`; retry `gpt-5.2` `PASS`
+- `pylint-dev__pylint-7080`: round 0 `claude-opus-4-5` `INFRA`; retry `claude-sonnet-4-5` `PASS`
+- `scikit-learn__scikit-learn-13142`: round 0 `claude-opus-4-5` `FAIL`; retry `claude-sonnet-4-5` `FAIL`
+- `sympy__sympy-16792`: round 0 `claude-opus-4-5` `PASS`
+- `django__django-11964`: round 0 `claude-opus-4-5` `PASS`
 
 Interpretation:
 
 - The verifier cleanup bug is fixed for this path. The targeted rerun completed fully and left no lingering `swebench_eval` or `run_evaluation` processes behind.
 - The hard-prior bidding rule did suppress Gemini's over-selection on this slice.
-- The market still did not recover solves on these tasks because the replacement winners were mostly Claude attempts that ended in `INFRA`.
-- So this rerun fixed a real harness bug and improved bid discipline, but it did not yet improve end-to-end task completion on this targeted regression slice.
+- On a valid rerun of this regression-style slice, the market recovered to `4 / 5`.
+- That is back in line with the older live evidence on these tasks. The older published market run solved `4 / 5` on the same slice, and the older solo GPT-5.2 run solved `3 / 5`.
+- The one remaining miss was `scikit-learn__scikit-learn-13142`, where both attempts failed cleanly.
 
-Important harness note:
+What this says:
 
-- The market harness itself behaved as expected on this slice.
-- Two retry verifications (`scikit-learn__scikit-learn-25747` and `django__django-11964`) hit the old verifier-cleanup hang again.
-- The stuck `swebench_eval` children had to be killed manually.
-- Once those children were killed, the runner immediately recorded both retry attempts as `FAIL` with `rc=-9` and `no_output`.
-
-So the first-5 slice says two different things:
-
-- the hard-prior bid intervention is mechanically working and is already changing worker selection in the intended direction
-- the current live scaffold still has a verifier cleanup problem that can interfere with long retry attempts
+- the cleanup fix was necessary and correct,
+- the earlier `0 / 5` on this second slice was a broken harness result, not a meaningful market result,
+- and the hard-prior market can perform well on this slice once the Docker-backed evaluation path stays healthy.
 
 Next command for the remaining 45 tasks:
 
