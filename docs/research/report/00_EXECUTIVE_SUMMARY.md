@@ -1,7 +1,7 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-04-09
-**Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, and Phase IIc Codex relaxed-time diagnostic
+**Last updated:** 2026-04-10
+**Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, Phase IIc Codex relaxed-time diagnostic, and Phase IId market calibration intervention
 
 Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, but the current market-clearing rule is bottlenecked by weak self-knowledge and does not beat a matched centralized router on the same worker pool.
 
@@ -109,6 +109,22 @@ Headline result:
 This is the cleanest mechanism test we have. It weakens the claim that the current market-clearing rule itself is the main reason the earlier market scaffold beat the solo baseline. The stronger reading now is that model diversity helps, but the present bidding signal is still too noisy for decentralized bidding to beat a strong centralized chooser.
 
 The clearest driver of the market drop in the rerun was Gemini. Gemini became much more aggressive, won more first attempts, and then converted those wins much worse. Most of those extra losses were ordinary task failures such as malformed patches, patch-apply failures, or `900` second timeouts rather than checker corruption.
+
+## Phase IId: Market Calibration Intervention (2026-04-10)
+
+Phase IId keeps the same six-worker market scaffold as Phase IIb and changes only the private bidding context. Each worker gets a held-out calibration prior before bidding, and the cost hint is separated from that note.
+
+The important clean rerun so far is a targeted five-task slice chosen from cases where the older market had wins but the matched rerun had losses. After fixing the verifier cleanup path, that hard-prior rerun solved **4 / 5** tasks.
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Older published market on this slice | 80.0% | 4 / 5 |
+| Older published solo GPT-5.2 on this slice | 60.0% | 3 / 5 |
+| Phase IIb matched market rerun | 20.0% | 1 / 5 |
+| Phase IIb centralized router | 40.0% | 2 / 5 |
+| **Phase IId hard-prior market rerun** | **80.0%** | **4 / 5** |
+
+This is still a small slice, so it is not the full answer yet. But it changes the state of the evidence in an important way. The hard-prior market is now back in line with the older live result on this regression-style subset, and the earlier `0 / 5` run is no longer part of the evidence because Docker disappeared mid-run and those roots were scrubbed.
 
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 

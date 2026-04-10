@@ -193,6 +193,8 @@ The short reading is:
 - the current market-clearing rule is weaker than a matched centralized chooser,
 - the likely bottleneck is weak self-knowledge in bids rather than lack of model diversity.
 
+The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. On a clean targeted five-task rerun chosen from earlier market-regression cases, it solved **4 / 5** after the verifier cleanup fix. That puts the detailed note in the same place as the other Phase II follow-ups: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
+
 A later follow-up reran the same 50-task slice through Codex with GPT-5.2 and a 30-minute task budget. That run finished at **35 / 50**, but **20 of those 35 passes** finished after the original 15-minute limit, so it should be read as a longer-budget diagnostic rather than a replacement for the published benchmark. It was also far heavier: **321.3M total tokens**, versus **4.37M** for the published solo GPT-5.2 run and **~5.82M** for the published market run.
 
 ### Phase IIa: Informed Competitive Auctions
