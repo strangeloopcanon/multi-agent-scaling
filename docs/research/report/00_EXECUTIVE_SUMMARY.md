@@ -114,17 +114,17 @@ The clearest driver of the market drop in the rerun was Gemini. Gemini became mu
 
 Phase IId keeps the same six-worker market scaffold as Phase IIb and changes only the private bidding context. Each worker gets a held-out calibration prior before bidding, and the cost hint is separated from that note.
 
-The important clean rerun so far is a targeted five-task slice chosen from cases where the older market had wins but the matched rerun had losses. After fixing the verifier cleanup path, that hard-prior rerun solved **4 / 5** tasks.
+The early clean rerun was a targeted five-task slice chosen from cases where the older market had wins but the matched rerun had losses. After fixing the verifier cleanup path, that hard-prior rerun solved **4 / 5** tasks. We then completed the full 50-task Phase IId result by combining that validated slice with a 41-task clean continuation and a clean 4-task tail rerun.
 
 | Execution Paradigm | Pass Rate | Absolute Passes |
 | :--- | :--- | :--- |
-| Older published market on this slice | 80.0% | 4 / 5 |
-| Older published solo GPT-5.2 on this slice | 60.0% | 3 / 5 |
-| Phase IIb matched market rerun | 20.0% | 1 / 5 |
-| Phase IIb centralized router | 40.0% | 2 / 5 |
-| **Phase IId hard-prior market rerun** | **80.0%** | **4 / 5** |
+| Phase II published market scaffold | 58.0% | 29 / 50 |
+| Phase IIb matched centralized router | 54.0% | 27 / 50 |
+| Solo GPT-5.2 on our 900s scaffold | 48.0% | 24 / 50 |
+| **Phase IId full hard-prior market rerun** | **48.0%** | **24 / 50** |
+| Phase IIb matched market rerun | 46.0% | 23 / 50 |
 
-This is still a small slice, so it is not the full answer yet. But it changes the state of the evidence in an important way. The hard-prior market is now back in line with the older live result on this regression-style subset, and the earlier `0 / 5` run is no longer part of the evidence because Docker disappeared mid-run and those roots were scrubbed.
+The full Phase IId result is mixed in a clear way. The bid intervention helped on the targeted regression slice, where it recovered the older `4 / 5` behavior and suppressed Gemini over-selection. But on the full 50-task total it only moved the matched market from `23 / 50` to `24 / 50`. That means the hard-prior note is directionally helpful, but it is not enough on its own to make the current market rule competitive with the centralized router or with the older published `29 / 50` market scaffold result.
 
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 

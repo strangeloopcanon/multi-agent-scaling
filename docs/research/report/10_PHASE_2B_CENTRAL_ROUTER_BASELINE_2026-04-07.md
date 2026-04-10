@@ -338,31 +338,32 @@ What this says:
 - the earlier `0 / 5` on this second slice was a broken harness result, not a meaningful market result,
 - and the hard-prior market can perform well on this slice once the Docker-backed evaluation path stays healthy.
 
-Next command for the remaining 45 tasks:
+### Phase IId full 50-task combined result
 
-```bash
-.venv/bin/python scripts/run_phase2.py \
-  --task-manifest runs/research/phase2/_prepared/codex_market50_full50_prepared_20260401T185213Z/prepared_manifest.json \
-  --prepared-mode market \
-  --task-offset 5 \
-  --task-limit 45 \
-  --execute \
-  --settlement-mode direct_penalty \
-  --workers benchmarks/workers_phase2_mixed.json \
-  --rounds 24 \
-  --concurrency 6 \
-  --bid-timeout-seconds 90 \
-  --execution-timeout-seconds 900 \
-  --require-bid-barrier \
-  --force-bids \
-  --exclude-failed-workers \
-  --dag-mode off \
-  --worker-calibration-source runs/research/phase1/self_knowledge_direct_full_20260406T221032Z/baseline_results_complete_models.jsonl \
-  --worker-calibration-style hard_prior_v1 \
-  --output-root runs/research/phase2/phase2d_market_hardprior_remaining45_<timestamp>Z
-```
+Date: 2026-04-10
 
-Saved merged artifacts:
+We then completed the full Phase IId result in three clean pieces:
 
-- `runs/research/phase2/exp2_market_vs_central_summary_20260409T000000Z.json`
-- `runs/research/phase2/exp2_market_vs_central_per_task_20260409T000000Z.jsonl`
+- the validated targeted slice: `runs/research/phase2/phase2d_targeted5_hardprior_20260410T003800Z`
+- the large continuation run that completed `41` tasks before the outer session stopped: `runs/research/phase2/phase2d_remaining45_hardprior_20260410T045117Z`
+- the clean tail rerun for the final four tasks: `runs/research/phase2/phase2d_tail4_hardprior_20260410T142400Z`
+
+Saved combined artifacts:
+
+- `runs/research/phase2/phase2d_full50_combined_20260410T171500Z.json`
+- `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_task_outcomes.csv`
+- `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_model_outcomes.csv`
+
+Top-line result:
+
+- solved: `24 / 50`
+- pass rate: `48.0%`
+- total tokens: `5,760,326`
+- tokens per pass: `240,014`
+
+How to read it:
+
+- The hard-prior intervention clearly helped on the regression slice. That is the `4 / 5` targeted rerun above.
+- On the full 50-task total, the gain was small. The matched market moved from `23 / 50` in Phase IIb to `24 / 50` in Phase IId.
+- So the intervention improved some bad allocation cases, but it did not repair the broader mechanism enough to beat the centralized router (`27 / 50`) or recover the older published market scaffold result (`29 / 50`).
+- The cleanest interpretation now is still the same: model diversity helps, but the current decentralized bidding signal remains too weak and too unstable for this market rule to realize the full benefit of that diversity.
