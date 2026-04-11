@@ -82,6 +82,9 @@ DEFAULT_SCENARIOS = {
     "synthesis": Path("scenarios/synthesis_reasoning_pilot.yaml"),
 }
 
+_SWEBENCH_HARNESS_GRACE_SECONDS = 300
+_SWEBENCH_OUTER_TIMEOUT_BUFFER_SECONDS = 30
+
 
 @dataclass(frozen=True)
 class RunSpec:
@@ -467,7 +470,7 @@ def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: f
     if execution_timeout_seconds is None:
         return cmd
 
-    timeout_seconds = _swebench_outer_timeout_seconds(
+    timeout_seconds = _swebench_inner_timeout_seconds(
         execution_timeout_seconds=execution_timeout_seconds
     )
     if timeout_seconds <= 0:
@@ -505,7 +508,7 @@ def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: f
     return shlex.join(rewritten)
 
 
-def _swebench_outer_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
+def _swebench_inner_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
     if execution_timeout_seconds is None:
         return 0
 
@@ -513,7 +516,21 @@ def _swebench_outer_timeout_seconds(*, execution_timeout_seconds: float | None) 
     if timeout_seconds <= 0:
         return 0
 
-    return max(1, timeout_seconds - 30)
+    return timeout_seconds
+
+
+def _swebench_outer_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
+    inner_timeout_seconds = _swebench_inner_timeout_seconds(
+        execution_timeout_seconds=execution_timeout_seconds
+    )
+    if inner_timeout_seconds <= 0:
+        return 0
+
+    return (
+        inner_timeout_seconds
+        + _SWEBENCH_HARNESS_GRACE_SECONDS
+        + _SWEBENCH_OUTER_TIMEOUT_BUFFER_SECONDS
+    )
 
 
 def _rewrite_swebench_eval_commands(

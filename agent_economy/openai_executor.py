@@ -50,10 +50,35 @@ from agent_economy.verify import (
 from agent_economy.worker_refs import resolve_worker_refs
 from agent_economy.worker_specs import CommandWorkerSpec
 
+_MAX_HINT_FILES = 24
+_MAX_HINT_FILE_CHARS = 12000
+_MAX_HINT_TOTAL_CHARS = 48000
+
+
+def _is_swebench_task(task: TaskSpec) -> bool:
+    return any(
+        "agent_economy.research.swebench_eval" in cmd.cmd or "swebench" in cmd.cmd.lower()
+        for cmd in task.acceptance
+    )
+
+
+def _truncate_hint_text(*, text: str, limit: int) -> str:
+    if limit <= 0:
+        return "<omitted: prompt budget exhausted>"
+    if len(text) <= limit:
+        return text
+    marker = f"\n... <truncated for prompt budget: {len(text) - limit} chars omitted>\n"
+    keep = max(0, limit - len(marker))
+    return text[:keep] + marker
+
 
 def _read_hint_files(*, root: Path, rel_paths: list[str]) -> dict[str, str]:
     files: dict[str, str] = {}
-    for rel_path in rel_paths:
+    remaining_total = _MAX_HINT_TOTAL_CHARS
+    for index, rel_path in enumerate(rel_paths):
+        if index >= _MAX_HINT_FILES:
+            files[rel_path] = "<omitted: too many hint files>"
+            continue
         name = Path(rel_path).name
         if name == ".env" or name.startswith(".env."):
             files[rel_path] = "<redacted>"
@@ -62,9 +87,13 @@ def _read_hint_files(*, root: Path, rel_paths: list[str]) -> dict[str, str]:
         if p.exists():
             if p.is_file():
                 try:
-                    files[rel_path] = p.read_text(encoding="utf-8")
+                    text = p.read_text(encoding="utf-8")
                 except Exception:
-                    files[rel_path] = "<unreadable>"
+                    text = "<unreadable>"
+                budget = min(_MAX_HINT_FILE_CHARS, remaining_total)
+                clipped = _truncate_hint_text(text=text, limit=budget)
+                files[rel_path] = clipped
+                remaining_total = max(0, remaining_total - len(clipped))
             elif p.is_dir():
                 children = [
                     str(child.relative_to(root))
@@ -74,7 +103,10 @@ def _read_hint_files(*, root: Path, rel_paths: list[str]) -> dict[str, str]:
                 preview = "\n".join(children[:50])
                 if len(children) > 50:
                     preview += f"\n... ({len(children) - 50} more files)"
-                files[rel_path] = f"<directory>\n{preview}\n"
+                text = f"<directory>\n{preview}\n"
+                clipped = _truncate_hint_text(text=text, limit=remaining_total)
+                files[rel_path] = clipped
+                remaining_total = max(0, remaining_total - len(clipped))
             else:
                 files[rel_path] = "<not a regular file>"
         else:
@@ -89,6 +121,18 @@ def _strip_markdown_fences(text: str) -> str:
     raw = re.sub(r"^\s*```[^\n]*\n", "", raw)
     raw = re.sub(r"\n```+\s*$", "", raw)
     return raw.strip()
+
+
+def _strip_patch_wrappers(text: str) -> str:
+    raw = _strip_markdown_fences(text)
+    if not raw:
+        return raw
+    lines = raw.splitlines()
+    while lines and re.fullmatch(r"\s*<patch>\s*", lines[0]):
+        lines.pop(0)
+    while lines and re.fullmatch(r"\s*</patch>\s*", lines[-1]):
+        lines.pop()
+    return "\n".join(lines).strip()
 
 
 def _looks_like_unified_diff(text: str) -> bool:
@@ -120,10 +164,17 @@ def _synthesize_git_headers_from_unified_diff(text: str) -> str:
 
 def _extract_patch_text(raw_output: str) -> str | None:
     raw = str(raw_output or "")
+    stripped = _strip_patch_wrappers(raw)
     if "diff --git " in raw:
         return extract_git_diff(raw)
+    if "diff --git " in stripped:
+        return extract_git_diff(stripped)
 
     cleaned = _strip_markdown_fences(raw)
+    if "diff --git " in cleaned:
+        return extract_git_diff(cleaned)
+
+    cleaned = _strip_patch_wrappers(cleaned)
     if "diff --git " in cleaned:
         return extract_git_diff(cleaned)
 
@@ -608,6 +659,9 @@ class OpenAIExecutor:
         if outcome.status != VerifyStatus.PASS:
             return outcome
         if task.submission_kind != SubmissionKind.PATCH:
+            return outcome
+        if _is_swebench_task(task):
+            # SWE-bench tasks are independent. Keep the shared workspace pristine.
             return outcome
 
         by_name = {a.name: a for a in list(outcome.patch_artifacts)}

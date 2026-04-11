@@ -11,6 +11,7 @@ import pytest
 from agent_economy.research.swebench_eval import (
     _build_run_id,
     _forward_signal_to_active_harness,
+    _prepare_harness_env,
     _load_report,
     _load_summary,
     evaluate_with_harness,
@@ -171,6 +172,24 @@ def test_evaluate_with_harness_uses_summary_fallback_resolved(monkeypatch, tmp_p
     assert result.report_path == str(summary_path)
 
 
+def test_load_summary_runner_dir_path(tmp_path) -> None:
+    run_id = _build_run_id(prefix="ut", instance_id="django__django-333", patch_text="diff", gold=False)
+    runner_dir = tmp_path / ".ae_harness_runner"
+    runner_dir.mkdir(parents=True)
+    payload = {
+        "resolved_ids": [],
+        "unresolved_ids": [],
+        "error_ids": ["django__django-333"],
+        "incomplete_ids": [],
+    }
+    path = runner_dir / f"agent-economy-market.{run_id}.json"
+    path.write_text(json.dumps(payload))
+
+    summary, summary_path = _load_summary(work_dir=tmp_path, run_id=run_id)
+    assert summary == payload
+    assert summary_path == path
+
+
 def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path) -> None:
     instance_id = "django__django-222"
     run_id = _build_run_id(prefix="ut", instance_id=instance_id, patch_text="diff", gold=False)
@@ -193,6 +212,48 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
     monkeypatch.setattr(
         "agent_economy.research.swebench_eval._load_summary",
         lambda **kwargs: (summary, summary_path),
+    )
+
+    result = evaluate_with_harness(
+        instance_id=instance_id,
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+        timeout_sec=30,
+        work_dir=tmp_path,
+        run_id_prefix="ut",
+        patch_text="diff",
+        gold=False,
+    )
+    assert result.completed is False
+    assert result.resolved is False
+    assert result.returncode == 2
+    assert result.notes == "evaluation_error"
+    assert result.report_path == str(summary_path)
+
+
+def test_evaluate_with_harness_uses_runner_dir_summary_when_report_missing(
+    monkeypatch, tmp_path
+) -> None:
+    instance_id = "django__django-444"
+    run_id = _build_run_id(prefix="ut", instance_id=instance_id, patch_text="diff", gold=False)
+    runner_dir = tmp_path / ".ae_harness_runner"
+    runner_dir.mkdir(parents=True)
+    summary_path = runner_dir / f"agent-economy-market.{run_id}.json"
+    summary = {
+        "resolved_ids": [],
+        "unresolved_ids": [],
+        "error_ids": [instance_id],
+        "incomplete_ids": [],
+    }
+    summary_path.write_text(json.dumps(summary))
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._run_harness_command",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._load_report",
+        lambda **kwargs: (None, None),
     )
 
     result = evaluate_with_harness(
@@ -328,6 +389,71 @@ def test_run_harness_command_kills_process_group_on_timeout(monkeypatch, tmp_pat
     assert events[2] == ("communicate", None)
     assert exc_info.value.output == "after kill stdout"
     assert exc_info.value.stderr == "after kill stderr"
+
+
+def test_prepare_harness_env_adds_docker_helper_dir(monkeypatch, tmp_path) -> None:
+    helper_dir = tmp_path / "Docker.app" / "Contents" / "Resources" / "bin"
+    helper_dir.mkdir(parents=True)
+    helper_path = helper_dir / "docker-credential-desktop"
+    helper_path.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    docker_config_dir = tmp_path / "docker-config"
+    docker_config_dir.mkdir()
+    config_path = docker_config_dir / "config.json"
+    config_path.write_text(json.dumps({"credsStore": "desktop"}), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._docker_config_path",
+        lambda env=None: config_path,
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._candidate_docker_helper_dirs",
+        lambda: [helper_dir],
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.environ",
+        {"PATH": "/usr/bin", "DOCKER_CONFIG": str(docker_config_dir)},
+    )
+
+    env = _prepare_harness_env()
+
+    assert str(helper_dir) in env["PATH"].split(":")
+
+
+def test_run_harness_command_passes_prepared_env(monkeypatch, tmp_path) -> None:
+    calls: dict[str, object] = {}
+
+    class FakeProcess:
+        pid = 1234
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            return ("ok", "")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._prepare_harness_env",
+        lambda: {"PATH": "/custom/bin"},
+    )
+
+    def _fake_popen(*args, **kwargs):
+        calls["env"] = kwargs.get("env")
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.subprocess.Popen",
+        _fake_popen,
+    )
+
+    from agent_economy.research.swebench_eval import _run_harness_command
+
+    result = _run_harness_command(
+        cmd=["python", "-m", "swebench.harness.run_evaluation"],
+        cwd=tmp_path,
+        timeout_sec=30,
+    )
+
+    assert result.returncode == 0
+    assert calls["env"] == {"PATH": "/custom/bin"}
 
 
 def test_forward_signal_kills_active_harness_group(monkeypatch) -> None:

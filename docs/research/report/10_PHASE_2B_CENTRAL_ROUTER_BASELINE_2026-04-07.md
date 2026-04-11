@@ -379,30 +379,46 @@ Reconciliation against the older published `29 / 50`:
 
 ### Why the seven old-only tasks dropped
 
-We traced all seven old-only tasks through the surviving raw ledgers.
+We traced all seven old-only tasks through the original Phase IId ledgers, then reran that seven-task slice under the repaired harness path.
 
-The split is:
+The starting point was the raw `24 / 50` Phase IId rerun, where all seven of these tasks were losses:
 
-- `astropy__astropy-12907` and `matplotlib__matplotlib-23314` are the two old `source="inferred"` rows from the lost middle batch. We cannot inspect their original raw market ledgers.
-- `scikit-learn__scikit-learn-13142` is a real old raw pass, but it had already dropped out by the final Phase IIb matched market rerun before the hard-prior change.
-- The remaining four tasks are the cleanest true Phase IId regressions relative to the final Phase IIb market: `django__django-12308`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`.
+- `astropy__astropy-12907`
+- `django__django-12308`
+- `matplotlib__matplotlib-23314`
+- `pytest-dev__pytest-7432`
+- `scikit-learn__scikit-learn-13142`
+- `scikit-learn__scikit-learn-13496`
+- `sympy__sympy-15345`
 
-What changed on those four:
+The repaired reruns were:
 
-| Task | Final Phase IIb market path | Phase IId hard-prior path | Most likely reason |
-| --- | --- | --- | --- |
-| `django__django-12308` | Gemini won at `ask=30`, `p_success=0.80` and passed on the first attempt. | Gemini moved to `ask=45`, `p_success=0.68`, lost the auction, then Claude Opus produced a malformed patch and Claude Sonnet ended with `missing_report`. | The hard-prior priced out a worker that had just solved the task, and the replacements died on format and verifier issues. |
-| `pytest-dev__pytest-7432` | Gemini won at `ask=30`, `p_success=0.80` and passed on the first attempt. | Gemini moved to `ask=45`, `p_success=0.68`, lost the auction, then Claude Sonnet failed cleanly and GPT-5.2 ended with `missing_report`. | The hard-prior priced out the winning worker and changed the retry path. |
-| `scikit-learn__scikit-learn-13496` | Gemini opened and hit `INFRA`; GPT-5.2 then rescued the task at `ask=28`, `p_success=0.78`. | Gemini moved to `ask=45`, `p_success=0.75`, never got the first slot, and the task went to Claude Opus then Claude Sonnet. Both retries ended in `harness_failed`. | The intervention changed the rescue path away from the GPT-5.2 path that had worked. |
-| `sympy__sympy-15345` | Gemini opened and failed; GPT-5.2 then rescued the task at `ask=18`, `p_success=0.72`. | Gemini moved to `ask=45`, `p_success=0.68`, never got the first slot, Claude Sonnet failed, and Claude Opus also failed. | The intervention changed the retry winner from GPT-5.2 to Claude Opus, and the new patches missed the real fix. |
+- `runs/research/phase2/phase2d_repair7_hardprior_valid2_20260410T214500Z`
+- `runs/research/phase2/phase2d_repair5_hardprior_1800_20260411T031545Z`
+- `runs/research/phase2/phase2d_repair1_astropy_hardprior_1800_20260411T004900Z`
 
-Two details matter here.
+Consolidated repaired result on that seven-task slice:
 
-- On these four regression tasks, Gemini's bid moved from `15` to `30` dollars in the matched Phase IIb market to `45` dollars in Phase IId. That was enough to change both first-attempt assignment and downstream retry order.
-- The Phase IId failures were not all clean model misses. Across the seven old-only tasks, Phase IId made `14` attempts. `9` of those `14` never reached a clean solved-versus-not-solved judgment: `4` patch-apply failures, `2` `missing_report` verifier failures, `2` `harness_failed` verifier exits, and `1` prompt-too-long API error. Only `5` attempts were clean judged misses.
+- solved: `4 / 7`
+- recovered tasks: `astropy__astropy-12907`, `django__django-12308`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13142`
+- remaining misses: `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
 
-So the `29 -> 24` drop is not one single story. It is a mixture of:
+Per-task repaired outcomes:
 
-- two old wins that survive only as canonical inferred rows,
-- one old raw win that had already stopped replicating by Phase IIb,
-- and four real Phase IId regressions caused by the calibration prior changing who got the first try and who got the rescue try.
+| Task | Old published market | Initial Phase IId full rerun | Repaired slice result | What changed |
+| --- | --- | --- | --- | --- |
+| `astropy__astropy-12907` | PASS (`source="inferred"`) | FAIL | PASS | The earlier repair path still carried a short-budget timeout on the first attempt. When rerun cleanly at `1800` seconds, Claude Opus passed on the first attempt. |
+| `django__django-12308` | PASS | FAIL | PASS | This recovered once the verifier path was repaired. Claude Opus passed on the first attempt. |
+| `matplotlib__matplotlib-23314` | PASS (`source="inferred"`) | FAIL | FAIL | The short-budget timeout artifact disappeared, but the task still failed cleanly under the repaired path. |
+| `pytest-dev__pytest-7432` | PASS | FAIL | PASS | Gemini failed the first attempt, then Claude Sonnet passed on retry under the repaired path. |
+| `scikit-learn__scikit-learn-13142` | PASS | FAIL | PASS | This recovered directly under the repaired path, with Gemini passing on the first attempt. |
+| `scikit-learn__scikit-learn-13496` | PASS | FAIL | FAIL | Both repaired attempts ended as clean judged fails. |
+| `sympy__sympy-15345` | PASS | FAIL | FAIL | Both repaired attempts ended as clean judged fails. |
+
+What this means mechanically:
+
+- The saved full Phase IId run is still `24 / 50`. That remains the only uniform full-run number.
+- But four of the seven tasks that created the old `29 -> 24` gap were not stable losses. They recovered once the harness cleanup and longer worker budget were in place.
+- The three tasks that still failed under repair are better evidence of genuine routing or model weakness, because they ended as clean judged fails rather than verifier or timeout artifacts.
+
+So the `29 -> 24` drop is no longer a single mechanism story. Part of it came from the hard-prior changing who got the first try and who got the rescue try. Part of it came from verifier and timeout problems in the earlier reruns. The clean repaired seven-task slice now says `4 / 7`, which means the observed `24 / 50` Phase IId total should be read as a lower bound until the full 50-task run is repeated under the repaired path.

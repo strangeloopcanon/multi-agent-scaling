@@ -572,6 +572,11 @@ def extract_git_diff(text: str) -> str:
 
     if patch.endswith("```"):
         patch = patch[: patch.rfind("```")].rstrip()
+    patch_lines = patch.splitlines()
+    while patch_lines and re.fullmatch(r"\s*</patch>\s*", patch_lines[-1]):
+        patch_lines.pop()
+    if patch_lines:
+        patch = "\n".join(patch_lines)
 
     if "\n" not in patch and "\\n" in patch:
         try:
