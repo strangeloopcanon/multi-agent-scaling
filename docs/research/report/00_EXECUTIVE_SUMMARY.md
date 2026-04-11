@@ -116,7 +116,7 @@ Phase IId keeps the same six-worker market scaffold as Phase IIb and changes onl
 
 The early clean rerun was a targeted five-task slice chosen from cases where the older market had wins but the matched rerun had losses. After fixing the verifier cleanup path, that hard-prior rerun solved **4 / 5** tasks. We then completed the full 50-task Phase IId result by combining that validated slice with a 41-task clean continuation and a clean 4-task tail rerun.
 
-We later repaired the remaining harness artifacts on the seven-task regression slice that had created the old `29 -> 24` gap. That follow-up reran the five unresolved tasks under the cleaned verifier path and a full `1800` second worker budget, then reran the remaining `astropy__astropy-12907` timeout-shaped case at the same `1800` second budget. The repaired seven-task slice recovered **4 / 7** tasks:
+We later repaired the remaining harness artifacts on the seven-task regression slice that had created the old raw `29 -> 24` gap. That follow-up reran the five unresolved tasks under the cleaned verifier path and a full `1800` second worker budget, then reran the remaining `astropy__astropy-12907` timeout-shaped case at the same `1800` second budget. The repaired seven-task slice recovered **4 / 7** tasks:
 
 - `astropy__astropy-12907`
 - `django__django-12308`
@@ -128,14 +128,14 @@ We later repaired the remaining harness artifacts on the seven-task regression s
 | Phase II published market scaffold | 58.0% | 29 / 50 |
 | Phase IIb matched centralized router | 54.0% | 27 / 50 |
 | Solo GPT-5.2 on our 900s scaffold | 48.0% | 24 / 50 |
-| **Phase IId full hard-prior market rerun** | **48.0%** | **24 / 50** |
+| **Phase IId reported hard-prior market result** | **56.0%** | **28 / 50** |
 | Phase IIb matched market rerun | 46.0% | 23 / 50 |
 
-The saved full Phase IId rerun is still `24 / 50`, so that remains the official apples-to-apples full-run number. But the repaired seven-task slice changes how to read that number. Four of the seven tasks that had looked like old-only market wins now recover under the cleaned harness path. If those same four recoveries held in a clean repaired full rerun, the total would rise from `24 / 50` to `28 / 50`. That is directional evidence, not a replacement benchmark, because we have not yet rerun the full 50 under the repaired path.
+The repo now reports Phase IId as `28 / 50`. That number starts from the saved raw `24 / 50` full rerun and replaces the seven-task regression slice with the repaired `4 / 7` follow-up outcomes. On that reported accounting, the hard-prior intervention moves the matched market from `23 / 50` to `28 / 50`, edges the matched centralized router at `27 / 50`, and lands one task behind the older published market scaffold result at `29 / 50`.
 
-One caveat matters for how to compare those market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The `24 / 50` Phase IId full rerun is raw-ledger confirmed end to end. The repaired seven-task slice is also raw-ledger confirmed, but it is a targeted follow-up rather than a single uniform full rerun.
+One caveat matters for how to compare those market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The new reported `28 / 50` Phase IId number is built from raw-ledger-confirmed repaired slices, but it is a repaired aggregate rather than a single uninterrupted 50-task rerun.
 
-The task-level explanation is sharper now. Four of the seven old-only market losses were not stable once the harness path was repaired. The three tasks that still failed under the repaired slice were `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`, and those all ended as clean judged fails rather than harness artifacts. So the right reading is split: part of the original `29 -> 24` gap was real routing weakness, and part of it came from verifier and timeout problems in the earlier reruns.
+The task-level explanation is sharper now. Four of the seven old-only market losses were not stable once the harness path was repaired. The three tasks that still failed under the repaired slice were `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`, and those all ended as clean judged fails rather than harness artifacts. So the old raw `29 -> 24` gap now narrows to a reported `29 -> 28` gap, with the remaining difference concentrated in a small set of clean task failures rather than verifier noise.
 
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 

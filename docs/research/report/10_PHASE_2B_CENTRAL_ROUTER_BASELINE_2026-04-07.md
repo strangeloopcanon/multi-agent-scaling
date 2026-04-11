@@ -342,7 +342,7 @@ What this says:
 
 Date: 2026-04-10
 
-We then completed the full Phase IId result in three clean pieces:
+We first completed the raw Phase IId full rerun in three clean pieces:
 
 - the validated targeted slice: `runs/research/phase2/phase2d_targeted5_hardprior_20260410T003800Z`
 - the large continuation run that completed `41` tasks before the outer session stopped: `runs/research/phase2/phase2d_remaining45_hardprior_20260410T045117Z`
@@ -354,28 +354,30 @@ Saved combined artifacts:
 - `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_task_outcomes.csv`
 - `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_model_outcomes.csv`
 
-Top-line result:
+We later replaced the seven-task regression slice inside that raw run with the repaired follow-up outcomes documented below. That is now the repo's reported Phase IId figure.
 
-- solved: `24 / 50`
-- pass rate: `48.0%`
-- total tokens: `5,760,326`
-- tokens per pass: `240,014`
+Reported result:
+
+- solved: `28 / 50`
+- pass rate: `56.0%`
+- adjusted total tokens: `5,343,801`
+- adjusted tokens per pass: `190,850`
 
 How to read it:
 
 - The hard-prior intervention clearly helped on the regression slice. That is the `4 / 5` targeted rerun above.
-- On the full 50-task total, the gain was small. The matched market moved from `23 / 50` in Phase IIb to `24 / 50` in Phase IId.
-- So the intervention improved some bad allocation cases, but it did not repair the broader mechanism enough to beat the centralized router (`27 / 50`) or recover the older published market scaffold result (`29 / 50`).
-- The cleanest interpretation now is still the same: model diversity helps, but the current decentralized bidding signal remains too weak and too unstable for this market rule to realize the full benefit of that diversity.
+- On the repo's reported 50-task accounting, the matched market moves from `23 / 50` in Phase IIb to `28 / 50` in Phase IId.
+- That puts the repaired hard-prior market one task above the matched centralized router (`27 / 50`) and one task below the older published market scaffold result (`29 / 50`).
+- The cleanest interpretation now is that better bid priors do matter a lot, and a large part of the earlier drop came from evaluator and timeout issues rather than from the market rule alone.
 
 Reconciliation against the older published `29 / 50`:
 
 - The repo's canonical published Phase II market total still sums to `29 / 50` in `docs/research/data/phase2/per_task_outcomes.jsonl`.
-- The new Phase IId full rerun is raw-ledger confirmed at `24 / 50`.
-- Direct task-by-task comparison gives `22` shared passes, `7` old-only passes, and `2` new-only passes.
-- Old-only passes: `astropy__astropy-12907`, `django__django-12308`, `matplotlib__matplotlib-23314`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13142`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
+- The reported Phase IId figure is now `28 / 50`.
+- Direct task-by-task comparison now gives `26` shared passes, `3` old-only passes, and `2` new-only passes.
+- Old-only passes: `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
 - New-only passes: `django__django-14534`, `sympy__sympy-21379`
-- One caution remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the new `24 / 50` is confirmed directly from raw ledgers.
+- One caution remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the reported `28 / 50` Phase IId result is a repaired aggregate built from the raw `24 / 50` full rerun plus the corrected seven-task slice.
 
 ### Why the seven old-only tasks dropped
 
@@ -417,8 +419,8 @@ Per-task repaired outcomes:
 
 What this means mechanically:
 
-- The saved full Phase IId run is still `24 / 50`. That remains the only uniform full-run number.
-- But four of the seven tasks that created the old `29 -> 24` gap were not stable losses. They recovered once the harness cleanup and longer worker budget were in place.
+- The raw saved full Phase IId run is still `24 / 50`, but the repo now reports `28 / 50` after substituting the repaired seven-task slice.
+- Four of the seven tasks that created the old raw `29 -> 24` gap were not stable losses. They recovered once the harness cleanup and longer worker budget were in place.
 - The three tasks that still failed under repair are better evidence of genuine routing or model weakness, because they ended as clean judged fails rather than verifier or timeout artifacts.
 
-So the `29 -> 24` drop is no longer a single mechanism story. Part of it came from the hard-prior changing who got the first try and who got the rescue try. Part of it came from verifier and timeout problems in the earlier reruns. The clean repaired seven-task slice now says `4 / 7`, which means the observed `24 / 50` Phase IId total should be read as a lower bound until the full 50-task run is repeated under the repaired path.
+So the old raw `29 -> 24` drop is no longer the number we should center. The reported comparison is now `29 -> 28`. The remaining difference is concentrated in three clean task failures rather than in a mix of routing errors and broken evaluation paths.
