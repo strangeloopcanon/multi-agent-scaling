@@ -126,6 +126,8 @@ The early clean rerun was a targeted five-task slice chosen from cases where the
 
 The full Phase IId result is mixed in a clear way. The bid intervention helped on the targeted regression slice, where it recovered the older `4 / 5` behavior and suppressed Gemini over-selection. But on the full 50-task total it only moved the matched market from `23 / 50` to `24 / 50`. That means the hard-prior note is directionally helpful, but it is not enough on its own to make the current market rule competitive with the centralized router or with the older published `29 / 50` market scaffold result.
 
+One caveat matters for how to compare those two market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The new `24 / 50` Phase IId result is raw-ledger confirmed end to end. Even with that caveat, the directional conclusion is the same: the intervention did not recover the old published market margin.
+
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 
 We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.

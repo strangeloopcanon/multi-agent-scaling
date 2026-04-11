@@ -367,3 +367,12 @@ How to read it:
 - On the full 50-task total, the gain was small. The matched market moved from `23 / 50` in Phase IIb to `24 / 50` in Phase IId.
 - So the intervention improved some bad allocation cases, but it did not repair the broader mechanism enough to beat the centralized router (`27 / 50`) or recover the older published market scaffold result (`29 / 50`).
 - The cleanest interpretation now is still the same: model diversity helps, but the current decentralized bidding signal remains too weak and too unstable for this market rule to realize the full benefit of that diversity.
+
+Reconciliation against the older published `29 / 50`:
+
+- The repo's canonical published Phase II market total still sums to `29 / 50` in `docs/research/data/phase2/per_task_outcomes.jsonl`.
+- The new Phase IId full rerun is raw-ledger confirmed at `24 / 50`.
+- Direct task-by-task comparison gives `22` shared passes, `7` old-only passes, and `2` new-only passes.
+- Old-only passes: `astropy__astropy-12907`, `django__django-12308`, `matplotlib__matplotlib-23314`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13142`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
+- New-only passes: `django__django-14534`, `sympy__sympy-21379`
+- One caution remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the new `24 / 50` is confirmed directly from raw ledgers.
