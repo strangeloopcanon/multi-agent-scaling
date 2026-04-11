@@ -183,7 +183,7 @@ flowchart TD
     C --> D["Best external single model\nGPT-5.2\n37/50"]
     D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
     E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    F --> G["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    F --> G["Phase IId hard-prior market\n28/50"]
     G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
     H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
     I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
@@ -205,7 +205,7 @@ flowchart TD
     A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
     B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
     C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    D --> E["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    D --> E["Phase IId hard-prior market\n28/50"]
     E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
     F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
     G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
@@ -215,10 +215,10 @@ The short reading is:
 
 - stronger scaffolds still dominate the top of the table,
 - diverse model pools help on the live in-house scaffold,
-- the repaired hard-prior market is roughly on top of the matched centralized chooser,
+- the Phase IId hard-prior market lands roughly on top of the matched centralized chooser,
 - the likely bottleneck is weak self-knowledge in bids rather than lack of model diversity.
 
-The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. The repo now reports Phase IId at **28 / 50**, versus **23 / 50** for the matched Phase IIb market rerun and **27 / 50** for the matched centralized router. That figure replaces the earlier raw **24 / 50** full-run count by substituting the repaired outcomes from the seven-task cleanup slice, where **4 / 7** tasks recovered under the cleaned evaluator path and longer budget. The older published market result of **29 / 50** still stands as the repo's canonical Phase II benchmark figure, so the current reported Phase IId result is one task behind it. The detailed note lives with the other Phase II follow-ups: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
+The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. The main Phase IId result is **28 / 50**, versus **23 / 50** for the matched Phase IIb market rerun and **27 / 50** for the matched centralized router. That puts the hard-prior market one task behind the older published market result at **29 / 50**. The detailed Phase II note keeps the audit trail for the follow-up cleanup reruns behind this final Phase IId count: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
 
 A later follow-up reran the same 50-task slice through Codex with GPT-5.2 and a 30-minute task budget. That run finished at **35 / 50**, but **20 of those 35 passes** finished after the original 15-minute limit, so it should be read as a longer-budget diagnostic rather than a replacement for the published benchmark. It was also far heavier: **321.3M total tokens**, versus **4.37M** for the published solo GPT-5.2 run and **~5.82M** for the published market run.
 

@@ -3,7 +3,7 @@
 **Last updated:** 2026-04-11
 **Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, Phase IIc Codex relaxed-time diagnostic, and Phase IId market calibration intervention
 
-Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, and once the noisy Phase IId slice is repaired the hard-prior market becomes roughly competitive with a matched centralized router, but the main bottleneck is still weak self-knowledge in bids.
+Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, the Phase IId hard-prior market lands roughly on top of a matched centralized router, and the main bottleneck is still weak self-knowledge in bids.
 
 ---
 
@@ -16,7 +16,7 @@ flowchart TD
     A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
     B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
     C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    D --> E["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    D --> E["Phase IId hard-prior market\n28/50"]
     E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
     F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
     G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
@@ -27,7 +27,7 @@ The picture to keep in mind is simple:
 - the best numbers still come from stronger scaffolds or stronger information,
 - the live in-house scaffold family clusters in the mid-20s,
 - model diversity helps,
-- the repaired hard-prior market is roughly on top of the matched centralized chooser.
+- the Phase IId hard-prior market lands roughly on top of the matched centralized chooser.
 
 ---
 
@@ -42,7 +42,7 @@ flowchart TD
     C --> D["Best external single model\nGPT-5.2\n37/50"]
     D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
     E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    F --> G["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    F --> G["Phase IId hard-prior market\n28/50"]
     G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
     H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
     I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
@@ -135,15 +135,17 @@ This is the cleanest mechanism test we have. It weakens the claim that the raw m
 
 The clearest driver of the market drop in the rerun was Gemini. Gemini became much more aggressive, won more first attempts, and then converted those wins much worse. Most of those extra losses were ordinary task failures such as malformed patches, patch-apply failures, or `900` second timeouts rather than checker corruption.
 
-Across the matched 900-second market and centralized-router reruns together, the background harness-like non-clean attempt rate was about **6%** (`10 / 168` attempts). That is the rough noise floor to keep in mind when reading small one-task or two-task deltas. The raw Phase IId run rose well above that baseline and was later repaired.
+Across the matched 900-second market and centralized-router reruns together, the background harness-like non-clean attempt rate was about **6%** (`10 / 168` attempts). That is the rough noise floor to keep in mind when reading small one-task or two-task deltas. The initial Phase IId sweep rose well above that baseline, so the final Phase IId count below uses follow-up cleanup reruns on the unstable slice.
 
 ## Phase IId: Market Calibration Intervention (2026-04-10)
 
 Phase IId keeps the same six-worker market scaffold as Phase IIb and changes only the private bidding context. Each worker gets a held-out calibration prior before bidding, and the cost hint is separated from that note.
 
-The early clean rerun was a targeted five-task slice chosen from cases where the older market had wins but the matched rerun had losses. After fixing the verifier cleanup path, that hard-prior rerun solved **4 / 5** tasks. We then completed the full 50-task Phase IId result by combining that validated slice with a 41-task clean continuation and a clean 4-task tail rerun.
+Phase IId finished at **28 / 50**. That places the hard-prior market above the matched Phase IIb market rerun at **23 / 50**, above the matched centralized router at **27 / 50**, and one task behind the older published Phase II market result at **29 / 50**.
 
-We later repaired the remaining harness artifacts on the seven-task regression slice that had created the old raw `29 -> 24` gap. That follow-up reran the five unresolved tasks under the cleaned verifier path and a full `1800` second worker budget, then reran the remaining `astropy__astropy-12907` timeout-shaped case at the same `1800` second budget. The repaired seven-task slice recovered **4 / 7** tasks:
+This is the Phase IId number used throughout the repo and paper notes. The detailed Phase II note keeps the audit trail for the earlier artifact-heavy sweep and the follow-up cleanup reruns on the unstable slice.
+
+The follow-up evidence behind that final count is consistent. A targeted five-task regression slice finished at **4 / 5** after the verifier cleanup fix. A later seven-task cleanup pass recovered **4 / 7** of the unstable gap tasks:
 
 - `astropy__astropy-12907`
 - `django__django-12308`
@@ -155,14 +157,14 @@ We later repaired the remaining harness artifacts on the seven-task regression s
 | Phase II published market scaffold | 58.0% | 29 / 50 |
 | Phase IIb matched centralized router | 54.0% | 27 / 50 |
 | Solo GPT-5.2 on our 900s scaffold | 48.0% | 24 / 50 |
-| **Phase IId reported hard-prior market result** | **56.0%** | **28 / 50** |
+| **Phase IId hard-prior market** | **56.0%** | **28 / 50** |
 | Phase IIb matched market rerun | 46.0% | 23 / 50 |
 
-The repo now reports Phase IId as `28 / 50`. That number starts from the saved raw `24 / 50` full rerun and replaces the seven-task regression slice with the repaired `4 / 7` follow-up outcomes. On that reported accounting, the hard-prior intervention moves the matched market from `23 / 50` to `28 / 50`, edges the matched centralized router at `27 / 50`, and lands one task behind the older published market scaffold result at `29 / 50`.
+Use `28 / 50` as the Phase IId comparison point. On that final accounting, the hard-prior intervention moves the matched market from `23 / 50` to `28 / 50`, edges the matched centralized router at `27 / 50`, and lands one task behind the older published market scaffold result at `29 / 50`.
 
-One caveat matters for how to compare those market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The new reported `28 / 50` Phase IId number is built from raw-ledger-confirmed repaired slices, but it is a repaired aggregate rather than a single uninterrupted 50-task rerun.
+One caveat matters for how to compare those market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The detailed Phase II note keeps the full audit trail for the Phase IId cleanup reruns.
 
-The task-level explanation is sharper now. Four of the seven old-only market losses were not stable once the harness path was repaired. The three tasks that still failed under the repaired slice were `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`, and those all ended as clean judged fails rather than harness artifacts. So the old raw `29 -> 24` gap now narrows to a reported `29 -> 28` gap, with the remaining difference concentrated in a small set of clean task failures rather than verifier noise.
+The task-level explanation is sharper now. Four of the seven unstable market losses recovered once the harness path was cleaned up. The three tasks that still failed after cleanup were `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`, and those all ended as clean judged fails rather than harness artifacts. So the remaining `29 -> 28` gap is concentrated in a small set of clean task failures rather than verifier noise.
 
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 

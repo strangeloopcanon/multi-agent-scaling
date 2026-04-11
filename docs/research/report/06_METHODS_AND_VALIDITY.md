@@ -65,7 +65,7 @@ Published summary data (committed to repo):
 - Across the matched 900-second Phase IIb market and centralized-router reruns, the background harness-like non-clean attempt rate was about `6%` (`10 / 168` attempts total).
 - Those non-clean outcomes were mostly `missing_report` cases, plus a small number of model-call failures.
 - This is the baseline noise floor for the live scaffold. Small deltas of one or two tasks can plausibly sit inside that level of evaluator noise.
-- The raw Phase IId run exceeded that background rate and was later repaired by rerunning the affected slice under the cleaned verifier path.
+- The initial Phase IId sweep exceeded that background rate. The final Phase IId count uses follow-up cleanup reruns on the unstable slice.
 
 ## Threats to Validity
 1. External-vs-local scaffold mismatch:

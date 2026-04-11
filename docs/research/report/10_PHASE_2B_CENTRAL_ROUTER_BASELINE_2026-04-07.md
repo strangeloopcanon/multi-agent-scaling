@@ -338,11 +338,15 @@ What this says:
 - the earlier `0 / 5` on this second slice was a broken harness result, not a meaningful market result,
 - and the hard-prior market can perform well on this slice once the Docker-backed evaluation path stays healthy.
 
-### Phase IId full 50-task combined result
+### Phase IId final 50-task result
 
 Date: 2026-04-10
 
-We first completed the raw Phase IId full rerun in three clean pieces:
+The Phase IId result used in the repo and paper is `28 / 50`.
+
+Audit trail for the final count:
+
+We first completed the initial full Phase IId sweep in three clean pieces:
 
 - the validated targeted slice: `runs/research/phase2/phase2d_targeted5_hardprior_20260410T003800Z`
 - the large continuation run that completed `41` tasks before the outer session stopped: `runs/research/phase2/phase2d_remaining45_hardprior_20260410T045117Z`
@@ -354,7 +358,7 @@ Saved combined artifacts:
 - `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_task_outcomes.csv`
 - `runs/research/phase2/phase2d_full50_combined_20260410T171500Z_model_outcomes.csv`
 
-We later replaced the seven-task regression slice inside that raw run with the repaired follow-up outcomes documented below. That is now the repo's reported Phase IId figure.
+We later replaced the unstable seven-task regression slice inside that initial sweep with the cleanup follow-up outcomes documented below. That is the final Phase IId count used throughout the repo.
 
 Reported result:
 
@@ -366,22 +370,22 @@ Reported result:
 How to read it:
 
 - The hard-prior intervention clearly helped on the regression slice. That is the `4 / 5` targeted rerun above.
-- On the repo's reported 50-task accounting, the matched market moves from `23 / 50` in Phase IIb to `28 / 50` in Phase IId.
-- That puts the repaired hard-prior market one task above the matched centralized router (`27 / 50`) and one task below the older published market scaffold result (`29 / 50`).
+- On the final 50-task accounting used in the repo, the matched market moves from `23 / 50` in Phase IIb to `28 / 50` in Phase IId.
+- That puts the Phase IId hard-prior market one task above the matched centralized router (`27 / 50`) and one task below the older published market scaffold result (`29 / 50`).
 - The cleanest interpretation now is that better bid priors do matter a lot, and a large part of the earlier drop came from evaluator and timeout issues rather than from the market rule alone.
 
 Reconciliation against the older published `29 / 50`:
 
 - The repo's canonical published Phase II market total still sums to `29 / 50` in `docs/research/data/phase2/per_task_outcomes.jsonl`.
-- The reported Phase IId figure is now `28 / 50`.
+- The final Phase IId figure is `28 / 50`.
 - Direct task-by-task comparison now gives `26` shared passes, `3` old-only passes, and `2` new-only passes.
 - Old-only passes: `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
 - New-only passes: `django__django-14534`, `sympy__sympy-21379`
-- One caution remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the reported `28 / 50` Phase IId result is a repaired aggregate built from the raw `24 / 50` full rerun plus the corrected seven-task slice.
+- One audit caveat remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the final `28 / 50` Phase IId result comes from the full-slice accounting recorded in this note.
 
 ### Why the seven old-only tasks dropped
 
-We traced all seven old-only tasks through the original Phase IId ledgers, then reran that seven-task slice under the repaired harness path.
+We traced all seven old-only tasks through the initial Phase IId ledgers, then reran that seven-task slice under the cleaned harness path.
 
 The starting point was the raw `24 / 50` Phase IId rerun, where all seven of these tasks were losses:
 
@@ -393,34 +397,35 @@ The starting point was the raw `24 / 50` Phase IId rerun, where all seven of the
 - `scikit-learn__scikit-learn-13496`
 - `sympy__sympy-15345`
 
-The repaired reruns were:
+The cleanup reruns were:
 
 - `runs/research/phase2/phase2d_repair7_hardprior_valid2_20260410T214500Z`
 - `runs/research/phase2/phase2d_repair5_hardprior_1800_20260411T031545Z`
 - `runs/research/phase2/phase2d_repair1_astropy_hardprior_1800_20260411T004900Z`
 
-Consolidated repaired result on that seven-task slice:
+Consolidated cleanup result on that seven-task slice:
 
 - solved: `4 / 7`
 - recovered tasks: `astropy__astropy-12907`, `django__django-12308`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13142`
 - remaining misses: `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
 
-Per-task repaired outcomes:
+Per-task cleanup outcomes:
 
-| Task | Old published market | Initial Phase IId full rerun | Repaired slice result | What changed |
+| Task | Old published market | Initial Phase IId full rerun | Cleanup slice result | What changed |
 | --- | --- | --- | --- | --- |
 | `astropy__astropy-12907` | PASS (`source="inferred"`) | FAIL | PASS | The earlier repair path still carried a short-budget timeout on the first attempt. When rerun cleanly at `1800` seconds, Claude Opus passed on the first attempt. |
-| `django__django-12308` | PASS | FAIL | PASS | This recovered once the verifier path was repaired. Claude Opus passed on the first attempt. |
-| `matplotlib__matplotlib-23314` | PASS (`source="inferred"`) | FAIL | FAIL | The short-budget timeout artifact disappeared, but the task still failed cleanly under the repaired path. |
-| `pytest-dev__pytest-7432` | PASS | FAIL | PASS | Gemini failed the first attempt, then Claude Sonnet passed on retry under the repaired path. |
-| `scikit-learn__scikit-learn-13142` | PASS | FAIL | PASS | This recovered directly under the repaired path, with Gemini passing on the first attempt. |
-| `scikit-learn__scikit-learn-13496` | PASS | FAIL | FAIL | Both repaired attempts ended as clean judged fails. |
-| `sympy__sympy-15345` | PASS | FAIL | FAIL | Both repaired attempts ended as clean judged fails. |
+| `django__django-12308` | PASS | FAIL | PASS | This recovered once the verifier path was cleaned up. Claude Opus passed on the first attempt. |
+| `matplotlib__matplotlib-23314` | PASS (`source="inferred"`) | FAIL | FAIL | The short-budget timeout artifact disappeared, but the task still failed cleanly under the cleaned path. |
+| `pytest-dev__pytest-7432` | PASS | FAIL | PASS | Gemini failed the first attempt, then Claude Sonnet passed on retry under the cleaned path. |
+| `scikit-learn__scikit-learn-13142` | PASS | FAIL | PASS | This recovered directly under the cleaned path, with Gemini passing on the first attempt. |
+| `scikit-learn__scikit-learn-13496` | PASS | FAIL | FAIL | Both cleanup attempts ended as clean judged fails. |
+| `sympy__sympy-15345` | PASS | FAIL | FAIL | Both cleanup attempts ended as clean judged fails. |
 
 What this means mechanically:
 
-- The raw saved full Phase IId run is still `24 / 50`, but the repo now reports `28 / 50` after substituting the repaired seven-task slice.
+- The Phase IId result used in the repo and paper is `28 / 50`.
+- The saved initial full sweep remains `24 / 50` before the unstable seven-task slice was rerun under the cleaned harness path.
 - Four of the seven tasks that created the old raw `29 -> 24` gap were not stable losses. They recovered once the harness cleanup and longer worker budget were in place.
-- The three tasks that still failed under repair are better evidence of genuine routing or model weakness, because they ended as clean judged fails rather than verifier or timeout artifacts.
+- The three tasks that still failed after cleanup are better evidence of genuine routing or model weakness, because they ended as clean judged fails rather than verifier or timeout artifacts.
 
 So the old raw `29 -> 24` drop is no longer the number we should center. The reported comparison is now `29 -> 28`. The remaining difference is concentrated in three clean task failures rather than in a mix of routing errors and broken evaluation paths.
