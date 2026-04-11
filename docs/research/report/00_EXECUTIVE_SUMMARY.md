@@ -1,9 +1,9 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-04-10
+**Last updated:** 2026-04-11
 **Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, Phase IIc Codex relaxed-time diagnostic, and Phase IId market calibration intervention
 
-Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, but the current market-clearing rule is bottlenecked by weak self-knowledge and does not beat a matched centralized router on the same worker pool.
+Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, and once the noisy Phase IId slice is repaired the hard-prior market becomes roughly competitive with a matched centralized router, but the main bottleneck is still weak self-knowledge in bids.
 
 ---
 
@@ -16,9 +16,10 @@ flowchart TD
     A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
     B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
     C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    D --> E["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
-    E --> F["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
-    F --> G["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
+    D --> E["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
+    F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
 ```
 
 The picture to keep in mind is simple:
@@ -26,7 +27,31 @@ The picture to keep in mind is simple:
 - the best numbers still come from stronger scaffolds or stronger information,
 - the live in-house scaffold family clusters in the mid-20s,
 - model diversity helps,
-- the current market-clearing rule is weaker than a matched centralized chooser.
+- the repaired hard-prior market is roughly on top of the matched centralized chooser.
+
+---
+
+## Phase I to Phase II Funnel
+
+This is the simplest top-down path through the results.
+
+```mermaid
+flowchart TD
+    A["Phase I calibration\n93 tasks x 6 models\nDirect self-forecasting\nBrier 0.1835"] --> B["Phase Ib calibration follow-up\nSame 93-task set\nSelf-knowledge card\nBrier 0.1693"]
+    B --> C["Phase II live slice\nCommon 50-task subset\nExternal oracle ceiling\n42/50"]
+    C --> D["Best external single model\nGPT-5.2\n37/50"]
+    D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    F --> G["Phase IId reported hard-prior market\nRepaired accounting\n28/50"]
+    G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
+    H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
+```
+
+The funnel makes two points at once:
+
+- the calibration story starts on the broader 93-task set and improves before live routing improves,
+- once we move to the common 50-task live slice, performance falls as the setup becomes more constrained and more realistic.
 
 ---
 
@@ -106,9 +131,11 @@ Headline result:
 | Centralized router | 54.0% | 27 / 50 |
 | Market (matched rerun) | 46.0% | 23 / 50 |
 
-This is the cleanest mechanism test we have. It weakens the claim that the current market-clearing rule itself is the main reason the earlier market scaffold beat the solo baseline. The stronger reading now is that model diversity helps, but the present bidding signal is still too noisy for decentralized bidding to beat a strong centralized chooser.
+This is the cleanest mechanism test we have. It weakens the claim that the raw market-clearing rule by itself is the main reason the earlier market scaffold beat the solo baseline. The stronger reading now is that model diversity helps, and that better bid priors can move the market back toward parity with or slightly above a centralized chooser.
 
 The clearest driver of the market drop in the rerun was Gemini. Gemini became much more aggressive, won more first attempts, and then converted those wins much worse. Most of those extra losses were ordinary task failures such as malformed patches, patch-apply failures, or `900` second timeouts rather than checker corruption.
+
+Across the matched 900-second market and centralized-router reruns together, the background harness-like non-clean attempt rate was about **6%** (`10 / 168` attempts). That is the rough noise floor to keep in mind when reading small one-task or two-task deltas. The raw Phase IId run rose well above that baseline and was later repaired.
 
 ## Phase IId: Market Calibration Intervention (2026-04-10)
 
