@@ -376,3 +376,33 @@ Reconciliation against the older published `29 / 50`:
 - Old-only passes: `astropy__astropy-12907`, `django__django-12308`, `matplotlib__matplotlib-23314`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13142`, `scikit-learn__scikit-learn-13496`, `sympy__sympy-15345`
 - New-only passes: `django__django-14534`, `sympy__sympy-21379`
 - One caution remains: some rows in the older published market table are marked `source=\"inferred\"` because one middle raw market batch was lost earlier in the project. So the older `29 / 50` is confirmed from the saved canonical published artifacts, while the new `24 / 50` is confirmed directly from raw ledgers.
+
+### Why the seven old-only tasks dropped
+
+We traced all seven old-only tasks through the surviving raw ledgers.
+
+The split is:
+
+- `astropy__astropy-12907` and `matplotlib__matplotlib-23314` are the two old `source="inferred"` rows from the lost middle batch. We cannot inspect their original raw market ledgers.
+- `scikit-learn__scikit-learn-13142` is a real old raw pass, but it had already dropped out by the final Phase IIb matched market rerun before the hard-prior change.
+- The remaining four tasks are the cleanest true Phase IId regressions relative to the final Phase IIb market: `django__django-12308`, `pytest-dev__pytest-7432`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`.
+
+What changed on those four:
+
+| Task | Final Phase IIb market path | Phase IId hard-prior path | Most likely reason |
+| --- | --- | --- | --- |
+| `django__django-12308` | Gemini won at `ask=30`, `p_success=0.80` and passed on the first attempt. | Gemini moved to `ask=45`, `p_success=0.68`, lost the auction, then Claude Opus produced a malformed patch and Claude Sonnet ended with `missing_report`. | The hard-prior priced out a worker that had just solved the task, and the replacements died on format and verifier issues. |
+| `pytest-dev__pytest-7432` | Gemini won at `ask=30`, `p_success=0.80` and passed on the first attempt. | Gemini moved to `ask=45`, `p_success=0.68`, lost the auction, then Claude Sonnet failed cleanly and GPT-5.2 ended with `missing_report`. | The hard-prior priced out the winning worker and changed the retry path. |
+| `scikit-learn__scikit-learn-13496` | Gemini opened and hit `INFRA`; GPT-5.2 then rescued the task at `ask=28`, `p_success=0.78`. | Gemini moved to `ask=45`, `p_success=0.75`, never got the first slot, and the task went to Claude Opus then Claude Sonnet. Both retries ended in `harness_failed`. | The intervention changed the rescue path away from the GPT-5.2 path that had worked. |
+| `sympy__sympy-15345` | Gemini opened and failed; GPT-5.2 then rescued the task at `ask=18`, `p_success=0.72`. | Gemini moved to `ask=45`, `p_success=0.68`, never got the first slot, Claude Sonnet failed, and Claude Opus also failed. | The intervention changed the retry winner from GPT-5.2 to Claude Opus, and the new patches missed the real fix. |
+
+Two details matter here.
+
+- On these four regression tasks, Gemini's bid moved from `15` to `30` dollars in the matched Phase IIb market to `45` dollars in Phase IId. That was enough to change both first-attempt assignment and downstream retry order.
+- The Phase IId failures were not all clean model misses. Across the seven old-only tasks, Phase IId made `14` attempts. `9` of those `14` never reached a clean solved-versus-not-solved judgment: `4` patch-apply failures, `2` `missing_report` verifier failures, `2` `harness_failed` verifier exits, and `1` prompt-too-long API error. Only `5` attempts were clean judged misses.
+
+So the `29 -> 24` drop is not one single story. It is a mixture of:
+
+- two old wins that survive only as canonical inferred rows,
+- one old raw win that had already stopped replicating by Phase IIb,
+- and four real Phase IId regressions caused by the calibration prior changing who got the first try and who got the rescue try.

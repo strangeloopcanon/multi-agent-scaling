@@ -128,6 +128,8 @@ The full Phase IId result is mixed in a clear way. The bid intervention helped o
 
 One caveat matters for how to compare those two market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The new `24 / 50` Phase IId result is raw-ledger confirmed end to end. Even with that caveat, the directional conclusion is the same: the intervention did not recover the old published market margin.
 
+The task-level explanation is sharper than the top-line score. Of the seven tasks that were old-only market passes, two are inferred rows from the lost middle batch, one had already dropped out by the matched Phase IIb market rerun, and the remaining four are true Phase IId regressions. On those four, the hard-prior changed both the first-attempt winner and the retry winner. Gemini's asks on those tasks moved from `15-30` in the matched market to `45` in Phase IId, which priced Gemini out of tasks it had previously solved or previously opened before a successful GPT-5.2 rescue. Across the seven old-only tasks, `9` of the `14` Phase IId attempts ended in patch-format, prompt-size, or harness failures rather than clean judged misses.
+
 ## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 
 We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.
