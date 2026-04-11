@@ -4,11 +4,22 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+from agent_economy.llm_router import LLMRouter
 from agent_economy.planner import PlannedTask
-from agent_economy.schemas import CommandSpec, EventType, SubmissionKind, TaskRuntime, TaskSpec
+from agent_economy.schemas import (
+    CommandSpec,
+    EventType,
+    SubmissionKind,
+    TaskRuntime,
+    TaskSpec,
+    WorkerRuntime,
+)
 from scripts.run_phase2 import (
     _all_tasks_terminal_or_exhausted,
+    _load_worker_calibration_context,
+    _run_prepared_mode,
     _planner_subtasks_to_specs,
+    _rewrite_task_execution_timeouts,
     _write_csv,
     build_run_matrix,
     load_prepared_task_specs,
@@ -64,6 +75,98 @@ def test_load_prepared_task_specs_slices_offset_limit(tmp_path: Path) -> None:
     assert len(specs) == 1
     assert specs[0].instance_id == "b"
     assert specs[0].scenario_path == tmp_path / "b.yaml"
+
+
+def test_load_worker_calibration_context_hard_prior_mode(tmp_path: Path) -> None:
+    calibration = tmp_path / "baseline.jsonl"
+    rows = [
+        {
+            "task_id": "repo__one",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 1,
+            "p_success": 0.9,
+            "estimated_tokens_total": 1000,
+        },
+        {
+            "task_id": "repo__two",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 0,
+            "p_success": 0.9,
+            "estimated_tokens_total": 1000,
+        },
+        {
+            "task_id": "repo__three",
+            "model_ref": "google:models/gemini-3-pro-preview",
+            "strategy": "direct",
+            "outcome": 1,
+            "p_success": 0.8,
+            "estimated_tokens_total": 1000,
+        },
+    ]
+    calibration.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    context = _load_worker_calibration_context(
+        calibration_source=calibration,
+        workers=[
+            WorkerRuntime(
+                worker_id="gemini-3-pro-preview",
+                model_ref="google:models/gemini-3-pro-preview",
+            )
+        ],
+        task_id="repo__three",
+        pricing_by_model={},
+        calibration_style="hard_prior_v1",
+    )
+
+    lines = context["gemini-3-pro-preview"]
+    joined = "\n".join(lines)
+    assert "Across 2 earlier held-out tasks:" in joined
+    assert "For this bid, start from p_success = 0.15." in joined
+    assert "ask must be at least 50% of bounty." in joined
+    assert "return no bid" in joined
+
+
+def test_rewrite_task_execution_timeouts_updates_swebench_eval_commands() -> None:
+    task = TaskSpec(
+        id="demo",
+        title="demo",
+        bounty=1,
+        deps=[],
+        acceptance=[
+            CommandSpec(
+                cmd=(
+                    "python -m agent_economy.research.swebench_eval "
+                    "--instance-id demo --timeout-sec 1800"
+                )
+            ),
+            CommandSpec(cmd="pytest -q"),
+        ],
+        hidden_acceptance=[
+            CommandSpec(
+                cmd=(
+                    "python -m agent_economy.research.swebench_eval "
+                    "--instance-id demo --timeout-sec=1800"
+                )
+            )
+        ],
+    )
+
+    rewritten = _rewrite_task_execution_timeouts(
+        tasks=[task],
+        execution_timeout_seconds=900.0,
+    )
+
+    assert rewritten[0].acceptance[0].cmd.endswith("--timeout-sec 900")
+    assert rewritten[0].acceptance[0].timeout_sec == 1230
+    assert rewritten[0].acceptance[1].cmd == "pytest -q"
+    assert rewritten[0].acceptance[1].timeout_sec is None
+    assert rewritten[0].hidden_acceptance[0].cmd.endswith("--timeout-sec=900")
+    assert rewritten[0].hidden_acceptance[0].timeout_sec == 1230
 
 
 def test_planner_subtasks_to_specs_maps_planned_final_to_single_patch_task() -> None:
@@ -190,3 +293,113 @@ def test_all_tasks_terminal_or_exhausted_counts_infra_attempts() -> None:
         ),
     ]
     assert _all_tasks_terminal_or_exhausted(state=state, task_specs=task_specs, events=two_infra)
+
+
+def test_run_prepared_mode_supports_central_router(tmp_path: Path, monkeypatch) -> None:
+    manifest = tmp_path / "prepared_manifest.json"
+    scenario = tmp_path / "scenario.yaml"
+    scenario.write_text("name: demo\n", encoding="utf-8")
+    manifest.write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {"instance_id": "demo-1", "scenario_path": str(scenario)},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    workers_path = tmp_path / "workers.json"
+    workers_path.write_text(
+        json.dumps(
+            [
+                {
+                    "worker_id": "gpt-5.2",
+                    "model_ref": "openai:gpt-5.2-2025-12-11",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    captured: dict[str, object] = {}
+
+    def fake_require_credentials(models: list[str]) -> None:
+        captured["credential_models"] = list(models)
+
+    def fake_llm_router_for_workers(*, settings, workers):
+        _ = settings, workers
+        return LLMRouter()
+
+    def fake_run_one_spec(**kwargs):
+        captured["spec_mode"] = kwargs["spec"].mode
+        captured["assignment_policy_type"] = type(kwargs["assignment_policy"]).__name__
+        captured["extra_run_config"] = dict(kwargs["extra_run_config"])
+        run_dir = Path(kwargs["run_dir"])
+        run_dir.mkdir(parents=True, exist_ok=False)
+        (run_dir / "run_config.json").write_text("{}", encoding="utf-8")
+        return run_dir
+
+    def fake_summaries(*, run_dirs):
+        return [
+            {
+                "run_dir": str(run_dirs[0]),
+                "pass_rate": 1.0,
+                "tasks_done": 1,
+                "tasks_total": 1,
+                "tokens": {"total": 123},
+                "penalties": {"total": 4.0},
+                "workers": [],
+            }
+        ]
+
+    monkeypatch.setattr("scripts.run_phase2._require_credentials", fake_require_credentials)
+    monkeypatch.setattr("scripts.run_phase2._llm_router_for_workers", fake_llm_router_for_workers)
+    monkeypatch.setattr("scripts.run_phase2._run_one_spec", fake_run_one_spec)
+    monkeypatch.setattr("scripts.run_phase2.summarize_market_runs", fake_summaries)
+
+    args = SimpleNamespace(
+        task_manifest=manifest,
+        prepared_mode="central_router",
+        task_offset=0,
+        task_limit=0,
+        isolate_state=True,
+        output_root=tmp_path / "out",
+        execute=True,
+        workers=workers_path,
+        settlement_mode="direct_penalty",
+        rounds=2,
+        concurrency=1,
+        bid_timeout_seconds=30.0,
+        execution_timeout_seconds=60.0,
+        require_bid_barrier=True,
+        dag_mode="off",
+        force_bids=False,
+        retry_score_penalty_fraction=0.0,
+        exclude_failed_workers=True,
+        replan=False,
+        planner_max_tasks=8,
+        resume=False,
+        overwrite=False,
+        continue_on_error=False,
+        check_every=25,
+        router_model_ref="openai:gpt-5.2-pro-2025-12-11",
+    )
+
+    _run_prepared_mode(args, models=["openai:gpt-5.2-2025-12-11"])
+
+    final_summary = json.loads(
+        (args.output_root / "final_summary.json").read_text(encoding="utf-8")
+    )
+    assert captured["spec_mode"] == "central_router"
+    assert captured["assignment_policy_type"] == "CentralRouterPolicy"
+    assert captured["extra_run_config"] == {
+        "prepared_mode": "central_router",
+        "router_model_ref": "openai:gpt-5.2-pro-2025-12-11",
+    }
+    assert captured["credential_models"] == [
+        "openai:gpt-5.2-2025-12-11",
+        "openai:gpt-5.2-pro-2025-12-11",
+    ]
+    assert final_summary["mode"] == "prepared_central_router_only"

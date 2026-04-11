@@ -1,9 +1,57 @@
 # Executive Summary: Agent Economy Research
 
-**Last updated:** 2026-04-02
-**Scope:** SWE-bench Lite evaluation (50+ tasks) across Phase I calibration, Phase II market execution, Phase IIa auction mechanism experiments (3 experiments, 3 models), and a later Codex follow-up diagnostic
+**Last updated:** 2026-04-11
+**Scope:** SWE-bench Lite evaluation on the common 50-task slice across Phase I calibration, Phase Ib self-knowledge follow-up, Phase II live scaffold runs, Phase IIa auction mechanism experiments, Phase IIb matched centralized-router baseline, Phase IIc Codex relaxed-time diagnostic, and Phase IId market calibration intervention
 
-Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer: yes, but the bottleneck isn't the auction mechanism, it's how well models know their own capabilities.
+Can a competitive market of LLMs outperform any single model? We tested this on SWE-bench Lite -- real software engineering tasks with verifiable patches. The short answer is now more precise: diverse model pools help, the Phase IId hard-prior market lands roughly on top of a matched centralized router, and the main bottleneck is still weak self-knowledge in bids.
+
+---
+
+## 50-Task Comparison Map
+
+This is a score-ordered map of the main 50-task results. It is not a pure one-variable ladder. The cleanest mechanism comparison inside it is **Phase IIb centralized router vs. Phase IIb market**, because those two runs hold the six-worker pool fixed and change only the chooser.
+
+```mermaid
+flowchart TD
+    A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
+    B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    D --> E["Phase IId hard-prior market\n28/50"]
+    E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
+    F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
+```
+
+The picture to keep in mind is simple:
+
+- the best numbers still come from stronger scaffolds or stronger information,
+- the live in-house scaffold family clusters in the mid-20s,
+- model diversity helps,
+- the Phase IId hard-prior market lands roughly on top of the matched centralized chooser.
+
+---
+
+## Phase I to Phase II Funnel
+
+This is the simplest top-down path through the results.
+
+```mermaid
+flowchart TD
+    A["Phase I calibration\n93 tasks x 6 models\nDirect self-forecasting\nBrier 0.1835"] --> B["Phase Ib calibration follow-up\nSame 93-task set\nSelf-knowledge card\nBrier 0.1693"]
+    B --> C["Phase II live slice\nCommon 50-task subset\nExternal oracle ceiling\n42/50"]
+    C --> D["Best external single model\nGPT-5.2\n37/50"]
+    D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    F --> G["Phase IId hard-prior market\n28/50"]
+    G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
+    H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
+```
+
+The funnel makes two points at once:
+
+- the calibration story starts on the broader 93-task set and improves before live routing improves,
+- once we move to the common 50-task live slice, performance falls as the setup becomes more constrained and more realistic.
 
 ---
 
@@ -13,9 +61,21 @@ Phase I evaluated 6 frontier models on 93 SWE-bench Lite tasks to establish the 
 
 The oracle ceiling (best possible model for each task) is **84%** on the 50-task subset. But self-assessed confidence turned out to be noise: most models had near-zero or negative Brier skill scores, with only Claude Sonnet 4.5 (+0.07) beating a naive base-rate predictor. Overconfident models consistently stole assignments from more capable ones.
 
-This established the core challenge for Phase II: the market mechanism works, but allocation quality is bottlenecked by calibration, not by the auction design.
+This established the core challenge for later live routing runs: diverse workers can help, but allocation quality is bottlenecked by calibration rather than by a lack of auction machinery.
 
 For details, see [Phase I Calibration](01_PHASE_1_CALIBRATION.md).
+
+## Phase Ib: Self-Knowledge Calibration Intervention (2026-04-06)
+
+We later reran the direct calibration prompt with a simple held-out self-knowledge card shown before forecasting. Each model saw a short summary of its own prior pass rate, typical confidence level, and token underestimation tendency.
+
+This improved calibration on the full six-model, 93-task rerun:
+
+- Brier score improved from `0.1835` to `0.1693`
+- ECE improved from `0.1065` to `0.0616`
+- token forecasts became less severely underestimated
+
+The downstream auction effect was smaller than the calibration effect. The reserve-auction oracle gap narrowed slightly, but mean realized profit stayed roughly flat. This supports a narrow claim: models can use simple self-history to forecast themselves better, but current bid quality is still not strong enough to fully repair allocation.
 
 ---
 
@@ -60,7 +120,53 @@ While the market outperforms single models, it currently sits below the theoreti
 
 On this 50-task sample, the market shows a practical gain over the strongest same-scaffold solo baseline. The remaining bottlenecks are allocation quality and scaffold limitations.
 
-## Later Follow-Up: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
+## Phase IIb: Matched Centralized-Router Baseline (2026-04-09)
+
+Phase IIb reran the same 50-task slice with the same six workers, the same two-attempt cap, the same `900` second limit, and the same verifier. The only intended change was the chooser: the market rule on one side and a centralized router on the other.
+
+Headline result:
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Centralized router | 54.0% | 27 / 50 |
+| Market (matched rerun) | 46.0% | 23 / 50 |
+
+This is the cleanest mechanism test we have. It weakens the claim that the raw market-clearing rule by itself is the main reason the earlier market scaffold beat the solo baseline. The stronger reading now is that model diversity helps, and that better bid priors can move the market back toward parity with or slightly above a centralized chooser.
+
+The clearest driver of the market drop in the rerun was Gemini. Gemini became much more aggressive, won more first attempts, and then converted those wins much worse. Most of those extra losses were ordinary task failures such as malformed patches, patch-apply failures, or `900` second timeouts rather than checker corruption.
+
+Across the matched 900-second market and centralized-router reruns together, the background harness-like non-clean attempt rate was about **6%** (`10 / 168` attempts). That is the rough noise floor to keep in mind when reading small one-task or two-task deltas. The initial Phase IId sweep rose well above that baseline, so the final Phase IId count below uses follow-up cleanup reruns on the unstable slice.
+
+## Phase IId: Market Calibration Intervention (2026-04-10)
+
+Phase IId keeps the same six-worker market scaffold as Phase IIb and changes only the private bidding context. Each worker gets a held-out calibration prior before bidding, and the cost hint is separated from that note.
+
+Phase IId finished at **28 / 50**. That places the hard-prior market above the matched Phase IIb market rerun at **23 / 50**, above the matched centralized router at **27 / 50**, and one task behind the older published Phase II market result at **29 / 50**.
+
+This is the Phase IId number used throughout the repo and paper notes. The detailed Phase II note keeps the audit trail for the earlier artifact-heavy sweep and the follow-up cleanup reruns on the unstable slice.
+
+The follow-up evidence behind that final count is consistent. A targeted five-task regression slice finished at **4 / 5** after the verifier cleanup fix. A later seven-task cleanup pass recovered **4 / 7** of the unstable gap tasks:
+
+- `astropy__astropy-12907`
+- `django__django-12308`
+- `pytest-dev__pytest-7432`
+- `scikit-learn__scikit-learn-13142`
+
+| Execution Paradigm | Pass Rate | Absolute Passes |
+| :--- | :--- | :--- |
+| Phase II published market scaffold | 58.0% | 29 / 50 |
+| Phase IIb matched centralized router | 54.0% | 27 / 50 |
+| Solo GPT-5.2 on our 900s scaffold | 48.0% | 24 / 50 |
+| **Phase IId hard-prior market** | **56.0%** | **28 / 50** |
+| Phase IIb matched market rerun | 46.0% | 23 / 50 |
+
+Use `28 / 50` as the Phase IId comparison point. On that final accounting, the hard-prior intervention moves the matched market from `23 / 50` to `28 / 50`, edges the matched centralized router at `27 / 50`, and lands one task behind the older published market scaffold result at `29 / 50`.
+
+One caveat matters for how to compare those market numbers. The older `29 / 50` remains the repo's canonical published Phase II figure from `docs/research/data/phase2/`, but one middle raw market batch was lost earlier in the project, so that older total is preserved through the saved published per-task table rather than by rebuilding every original raw ledger. The detailed Phase II note keeps the full audit trail for the Phase IId cleanup reruns.
+
+The task-level explanation is sharper now. Four of the seven unstable market losses recovered once the harness path was cleaned up. The three tasks that still failed after cleanup were `matplotlib__matplotlib-23314`, `scikit-learn__scikit-learn-13496`, and `sympy__sympy-15345`, and those all ended as clean judged fails rather than harness artifacts. So the remaining `29 -> 28` gap is concentrated in a small set of clean task failures rather than verifier noise.
+
+## Phase IIc: Codex + GPT-5.2 With a Longer Budget (2026-04-02)
 
 We later reran the same 50-task slice through the Codex worker path with the underlying model fixed to **GPT-5.2**, but doubled the per-task execution budget from **900 seconds** to **1800 seconds**.
 

@@ -172,6 +172,54 @@ Full details: [Phase I Calibration](docs/research/report/01_PHASE_1_CALIBRATION.
 ### Phase II: Market vs Solo Evaluation
 For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
 
+#### Phase I to Phase II funnel
+
+This is the easiest way to read the whole research program from top to bottom.
+
+```mermaid
+flowchart TD
+    A["Phase I calibration\n93 tasks x 6 models\nDirect self-forecasting\nBrier 0.1835"] --> B["Phase Ib calibration follow-up\nSame 93-task set\nSelf-knowledge card\nBrier 0.1693"]
+    B --> C["Phase II live slice\nCommon 50-task subset\nExternal oracle ceiling\n42/50"]
+    C --> D["Best external single model\nGPT-5.2\n37/50"]
+    D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    F --> G["Phase IId hard-prior market\n28/50"]
+    G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
+    H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
+```
+
+The shape of the funnel is the point:
+
+- calibration gets better before live allocation gets better,
+- stronger information and stronger scaffolds sit at the top,
+- the live six-worker market family lands in the high 20s,
+- the current market rule is still close to the centralized router rather than clearly above it.
+
+#### 50-task comparison ladder
+
+This is the easiest way to read the main 50-task results. It is a score-ordered map, not a pure one-variable ladder. The cleanest chooser comparison inside it is **Phase IIb centralized router vs Phase IIb market**, because those two runs keep the six-worker pool fixed and change only the chooser.
+
+```mermaid
+flowchart TD
+    A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
+    B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
+    C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
+    D --> E["Phase IId hard-prior market\n28/50"]
+    E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
+    F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
+    G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
+```
+
+The short reading is:
+
+- stronger scaffolds still dominate the top of the table,
+- diverse model pools help on the live in-house scaffold,
+- the Phase IId hard-prior market lands roughly on top of the matched centralized chooser,
+- the likely bottleneck is weak self-knowledge in bids rather than lack of model diversity.
+
+The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. The main Phase IId result is **28 / 50**, versus **23 / 50** for the matched Phase IIb market rerun and **27 / 50** for the matched centralized router. That puts the hard-prior market one task behind the older published market result at **29 / 50**. The detailed Phase II note keeps the audit trail for the follow-up cleanup reruns behind this final Phase IId count: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
+
 A later follow-up reran the same 50-task slice through Codex with GPT-5.2 and a 30-minute task budget. That run finished at **35 / 50**, but **20 of those 35 passes** finished after the original 15-minute limit, so it should be read as a longer-budget diagnostic rather than a replacement for the published benchmark. It was also far heavier: **321.3M total tokens**, versus **4.37M** for the published solo GPT-5.2 run and **~5.82M** for the published market run.
 
 ### Phase IIa: Informed Competitive Auctions

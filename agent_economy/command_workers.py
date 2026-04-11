@@ -53,6 +53,13 @@ from agent_economy.worker_refs import resolve_worker_refs
 _HOST_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+def _is_swebench_task(task: TaskSpec) -> bool:
+    return any(
+        "agent_economy.research.swebench_eval" in cmd.cmd or "swebench" in cmd.cmd.lower()
+        for cmd in task.acceptance
+    )
+
+
 class BidEnvelope(BaseModel):
     bids: list[Bid] = Field(default_factory=list)
 
@@ -674,10 +681,13 @@ class CommandExecutor:
         round_id: int,
         outcome: ExecutionOutcome,
     ) -> ExecutionOutcome:
-        _ = worker, task, bid, round_id
+        _ = worker, bid, round_id
         if outcome.status != VerifyStatus.PASS:
             return outcome
         if task.submission_kind != SubmissionKind.PATCH:
+            return outcome
+        if _is_swebench_task(task):
+            # SWE-bench tasks are independent. Keep the shared workspace pristine.
             return outcome
 
         by_name = {a.name: a for a in list(outcome.patch_artifacts)}

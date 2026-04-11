@@ -4,18 +4,27 @@ import argparse
 import csv
 import json
 import os
+import shlex
 import shutil
+from statistics import median
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 from agent_economy.clearing import BidSubmission, choose_assignments, score_bid
 from agent_economy.command_workers import CommandBidder, CommandExecutor, CommandExecutorSettings
 from agent_economy.config import load_settings
 from agent_economy.cost_estimator import ExpectedCostEstimator
 from agent_economy.costing import load_pricing_from_env
-from agent_economy.engine import ClearinghouseEngine, ReadyTask
+from agent_economy.engine import (
+    AssignmentDecision,
+    ClearinghouseEngine,
+    ReadyTask,
+    RouterSelection,
+)
 from agent_economy.finalize import release_judges_holdbacks
 from agent_economy.ledger import HashChainedLedger
 from agent_economy.main import (
@@ -73,11 +82,14 @@ DEFAULT_SCENARIOS = {
     "synthesis": Path("scenarios/synthesis_reasoning_pilot.yaml"),
 }
 
+_SWEBENCH_HARNESS_GRACE_SECONDS = 300
+_SWEBENCH_OUTER_TIMEOUT_BUFFER_SECONDS = 30
+
 
 @dataclass(frozen=True)
 class RunSpec:
     benchmark: str
-    mode: str  # solo|market
+    mode: str  # solo|market|central_router
     settlement_mode: str  # reputation|direct_penalty
     repeat: int
     scenario_path: str
@@ -98,12 +110,218 @@ class PlannerRunContext:
     allowed_paths: list[str]
 
 
+class RouterAssignmentChoice(BaseModel):
+    task_id: str
+    worker_id: str
+    notes: str | None = None
+
+
+class RouterAssignmentEnvelope(BaseModel):
+    assignments: list[RouterAssignmentChoice] = Field(default_factory=list)
+    discussion: str | None = None
+
+
 def _now_tag() -> str:
     return datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _norm_csv(values: str) -> list[str]:
     return [v.strip() for v in str(values).split(",") if v.strip()]
+
+
+def _safe_float(value: Any, *, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return float(default)
+
+
+def _safe_int(value: Any, *, default: int = 0) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return int(default)
+
+
+def _format_pct(value: float) -> str:
+    return f"{100.0 * value:.1f}%"
+
+
+def _format_multiplier(value: float) -> str:
+    if value >= 10.0:
+        return f"{value:.0f}x"
+    return f"{value:.1f}x"
+
+
+def _task_family(task_id: str) -> str:
+    token = str(task_id or "").strip()
+    if not token:
+        return "unknown"
+    return token.split("__", 1)[0] or "unknown"
+
+
+def _calibration_phrase(mean_p: float, pass_rate: float) -> str:
+    gap = mean_p - pass_rate
+    if abs(gap) < 0.03:
+        return "historically close to calibrated"
+    if gap > 0:
+        return f"historically overconfident by {_format_pct(abs(gap))}"
+    return f"historically underconfident by {_format_pct(abs(gap))}"
+
+
+def _clamp(value: float, lower: float, upper: float) -> float:
+    return max(float(lower), min(float(upper), float(value)))
+
+
+def _ask_floor_fraction_for_prior(prior_success: float) -> float:
+    if float(prior_success) <= 0.65:
+        return 0.50
+    if float(prior_success) <= 0.75:
+        return 0.45
+    return 0.35
+
+
+def _actual_tokens_total_from_baseline_row(
+    row: dict[str, Any],
+    *,
+    pricing_by_model: dict[str, float],
+) -> float | None:
+    explicit = _safe_float(row.get("external_actual_tokens_total"), default=0.0)
+    if explicit > 0.0:
+        return explicit
+
+    model_ref = str(row.get("model_ref") or "")
+    blended = pricing_by_model.get(model_ref, 0.0)
+    if blended <= 0.0:
+        return None
+
+    cost = _safe_float(row.get("external_cost"), default=0.0)
+    if cost <= 0.0:
+        return None
+    return cost / blended
+
+
+def _load_worker_calibration_context(
+    *,
+    calibration_source: Path,
+    workers: list[WorkerRuntime],
+    task_id: str,
+    pricing_by_model: dict[str, float],
+    calibration_style: str = "advisory_v1",
+) -> dict[str, list[str]]:
+    rows_raw = [
+        json.loads(line)
+        for line in calibration_source.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    baseline_by_model: dict[str, list[dict[str, Any]]] = {}
+    for row in rows_raw:
+        model_ref = str(row.get("model_ref") or "").strip()
+        if not model_ref:
+            continue
+        if str(row.get("strategy") or "direct") != "direct":
+            continue
+        if row.get("outcome") is None:
+            continue
+        baseline_by_model.setdefault(model_ref, []).append(row)
+
+    context_by_worker: dict[str, list[str]] = {}
+    for worker in workers:
+        model_ref = str(worker.model_ref or "").strip()
+        if not model_ref:
+            continue
+        held_out = [
+            row
+            for row in baseline_by_model.get(model_ref, [])
+            if str(row.get("task_id") or "").strip() != task_id
+        ]
+        if not held_out:
+            continue
+
+        pass_rate = sum(_safe_int(row.get("outcome"), default=0) for row in held_out) / len(
+            held_out
+        )
+        mean_p = sum(_safe_float(row.get("p_success"), default=0.5) for row in held_out) / len(
+            held_out
+        )
+
+        token_multipliers: list[float] = []
+        for row in held_out:
+            estimated_tokens = _safe_float(row.get("estimated_tokens_total"), default=0.0)
+            actual_tokens = _actual_tokens_total_from_baseline_row(
+                row,
+                pricing_by_model=pricing_by_model,
+            )
+            if estimated_tokens <= 0.0 or actual_tokens is None or actual_tokens <= 0.0:
+                continue
+            token_multipliers.append(actual_tokens / estimated_tokens)
+
+        context_by_worker[str(worker.worker_id)] = _worker_calibration_lines(
+            held_out_count=len(held_out),
+            pass_rate=pass_rate,
+            mean_p=mean_p,
+            token_multipliers=token_multipliers,
+            calibration_style=calibration_style,
+        )
+
+    return context_by_worker
+
+
+def _worker_calibration_lines(
+    *,
+    held_out_count: int,
+    pass_rate: float,
+    mean_p: float,
+    token_multipliers: list[float],
+    calibration_style: str,
+) -> list[str]:
+    lines = [
+        f"Across {int(held_out_count)} earlier held-out tasks:",
+        f"- Your pass rate was {_format_pct(pass_rate)}.",
+        (
+            f"- Your mean stated success probability was {_format_pct(mean_p)}; "
+            f"you were {_calibration_phrase(mean_p, pass_rate)}."
+        ),
+    ]
+    if token_multipliers:
+        lines.append(
+            "- Your actual solve-token usage was typically "
+            f"{_format_multiplier(median(token_multipliers))} your estimate."
+        )
+
+    if str(calibration_style) != "hard_prior_v1":
+        lines.extend(
+            [
+                "- Use this as a prior, then update from the current task evidence.",
+                "- Bid conservatively when the current task looks similar to cases where you often fail or underestimate work.",
+            ]
+        )
+        return lines
+
+    overconfidence_gap = max(0.0, float(mean_p) - float(pass_rate))
+    prior_success = _clamp(float(pass_rate) - overconfidence_gap, 0.15, 0.85)
+    ask_floor_fraction = _ask_floor_fraction_for_prior(prior_success)
+
+    lines.extend(
+        [
+            "",
+            f"For this bid, start from p_success = {prior_success:.2f}.",
+            (
+                f"Raise p_success above {prior_success:.2f} only if the task text gives direct "
+                "evidence that the task is easier than your average earlier tasks."
+            ),
+            (
+                f"If you cannot point to that evidence, keep p_success at or below {prior_success:.2f}."
+            ),
+            "If you raise p_success above that prior, state the evidence briefly in your notes.",
+            (
+                f"When p_success stays near that prior, ask must be at least "
+                f"{int(round(ask_floor_fraction * 100.0))}% of bounty."
+            ),
+            "If you cannot justify a bid under these rules, return no bid.",
+        ]
+    )
+    return lines
 
 
 def _provider(model_ref: str) -> str:
@@ -246,6 +464,141 @@ def load_prepared_task_specs(
     if not out:
         raise ValueError("no valid prepared tasks selected")
     return out
+
+
+def _rewrite_swebench_eval_timeout_arg(*, cmd: str, execution_timeout_seconds: float | None) -> str:
+    if execution_timeout_seconds is None:
+        return cmd
+
+    timeout_seconds = _swebench_inner_timeout_seconds(
+        execution_timeout_seconds=execution_timeout_seconds
+    )
+    if timeout_seconds <= 0:
+        return cmd
+
+    if "agent_economy.research.swebench_eval" not in cmd:
+        return cmd
+
+    try:
+        parts = shlex.split(cmd, posix=True)
+    except ValueError:
+        return cmd
+
+    rewritten: list[str] = []
+    replaced = False
+    idx = 0
+    while idx < len(parts):
+        part = parts[idx]
+        if part == "--timeout-sec":
+            rewritten.extend(["--timeout-sec", str(timeout_seconds)])
+            replaced = True
+            idx += 2
+            continue
+        if part.startswith("--timeout-sec="):
+            rewritten.append(f"--timeout-sec={timeout_seconds}")
+            replaced = True
+            idx += 1
+            continue
+        rewritten.append(part)
+        idx += 1
+
+    if not replaced:
+        rewritten.extend(["--timeout-sec", str(timeout_seconds)])
+
+    return shlex.join(rewritten)
+
+
+def _swebench_inner_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
+    if execution_timeout_seconds is None:
+        return 0
+
+    timeout_seconds = int(float(execution_timeout_seconds))
+    if timeout_seconds <= 0:
+        return 0
+
+    return timeout_seconds
+
+
+def _swebench_outer_timeout_seconds(*, execution_timeout_seconds: float | None) -> int:
+    inner_timeout_seconds = _swebench_inner_timeout_seconds(
+        execution_timeout_seconds=execution_timeout_seconds
+    )
+    if inner_timeout_seconds <= 0:
+        return 0
+
+    return (
+        inner_timeout_seconds
+        + _SWEBENCH_HARNESS_GRACE_SECONDS
+        + _SWEBENCH_OUTER_TIMEOUT_BUFFER_SECONDS
+    )
+
+
+def _rewrite_swebench_eval_commands(
+    *,
+    commands: list[CommandSpec],
+    execution_timeout_seconds: float | None,
+) -> list[CommandSpec]:
+    if execution_timeout_seconds is None or float(execution_timeout_seconds) <= 0:
+        return list(commands)
+
+    rewritten: list[CommandSpec] = []
+    for command in commands:
+        timeout_seconds = _swebench_outer_timeout_seconds(
+            execution_timeout_seconds=execution_timeout_seconds
+        )
+        updated_cmd = _rewrite_swebench_eval_timeout_arg(
+            cmd=command.cmd,
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        if "agent_economy.research.swebench_eval" not in command.cmd:
+            rewritten.append(command)
+            continue
+        if updated_cmd == command.cmd and command.timeout_sec == timeout_seconds:
+            rewritten.append(command)
+            continue
+        rewritten.append(
+            command.model_copy(
+                update={
+                    "cmd": updated_cmd,
+                    "timeout_sec": timeout_seconds,
+                }
+            )
+        )
+    return rewritten
+
+
+def _rewrite_task_execution_timeouts(
+    *,
+    tasks: list[TaskSpec],
+    execution_timeout_seconds: float | None,
+) -> list[TaskSpec]:
+    if execution_timeout_seconds is None or float(execution_timeout_seconds) <= 0:
+        return list(tasks)
+
+    rewritten: list[TaskSpec] = []
+    for task in tasks:
+        acceptance = _rewrite_swebench_eval_commands(
+            commands=list(task.acceptance),
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        hidden_acceptance = _rewrite_swebench_eval_commands(
+            commands=list(task.hidden_acceptance),
+            execution_timeout_seconds=execution_timeout_seconds,
+        )
+        if acceptance == list(task.acceptance) and hidden_acceptance == list(
+            task.hidden_acceptance
+        ):
+            rewritten.append(task)
+            continue
+        rewritten.append(
+            task.model_copy(
+                update={
+                    "acceptance": acceptance,
+                    "hidden_acceptance": hidden_acceptance,
+                }
+            )
+        )
+    return rewritten
 
 
 def _select_workers(*, spec: RunSpec, workers_path: Path):
@@ -406,6 +759,186 @@ def _planner_candidates(
             if spec is not None and spec.plan_cmd:
                 candidates.append(worker)
     return candidates
+
+
+def _router_hint_bid(*, task_id: str, bounty: int) -> Bid:
+    return Bid(
+        task_id=str(task_id),
+        ask=max(1, int(round(float(bounty) * 0.40))),
+        self_assessed_p_success=0.50,
+        eta_minutes=90,
+        notes="router_expected_cost_hint",
+    )
+
+
+def _router_prompt(
+    *,
+    ready_tasks: list[ReadyTask],
+    available_workers: list[WorkerRuntime],
+    discussion_history: list[Any],
+    round_id: int,
+    cost_estimator: ExpectedCostEstimator | None,
+    excluded_pairs: set[tuple[str, str]],
+) -> str:
+    lines: list[str] = []
+    lines.append("Choose workers for the current ready tasks.")
+    lines.append("Pick the workers most likely to pass verification on this round.")
+    lines.append("Use each worker at most once.")
+    lines.append("Use each task at most once.")
+    lines.append("Return an empty assignments list when nothing looks worth assigning.")
+    lines.append("")
+    lines.append(f"Round: {int(round_id)}")
+    lines.append("")
+
+    if discussion_history:
+        lines.append("Recent discussion:")
+        for message in list(discussion_history)[-10:]:
+            sender = str(getattr(message, "sender", "")).strip()
+            text = str(getattr(message, "message", "")).strip()
+            if sender and text:
+                lines.append(f"- {sender}: {text}")
+        lines.append("")
+
+    lines.append("Ready tasks:")
+    for ready in ready_tasks:
+        task_id = str(ready.spec.id)
+        spec = ready.spec
+        runtime = ready.runtime
+        lines.append(
+            f"- {task_id}: title={spec.title!r} bounty={int(runtime.bounty_current)} "
+            f"fail_count={int(runtime.fail_count)}"
+        )
+        if str(spec.description or "").strip():
+            lines.append(f"  description: {str(spec.description).strip()}")
+        if spec.acceptance:
+            lines.append("  public_acceptance:")
+            for command in spec.acceptance:
+                lines.append(f"    - {command.cmd}")
+        blocked_workers = sorted(
+            worker_id
+            for blocked_task_id, worker_id in excluded_pairs
+            if str(blocked_task_id) == task_id
+        )
+        if blocked_workers:
+            lines.append(f"  excluded_workers: {', '.join(blocked_workers)}")
+    lines.append("")
+
+    lines.append("Available workers:")
+    for worker in available_workers:
+        lines.append(
+            f"- {worker.worker_id}: model_ref={worker.model_ref} reputation={float(worker.reputation):.2f}"
+        )
+        for ready in ready_tasks:
+            task_id = str(ready.spec.id)
+            if (task_id, worker.worker_id) in excluded_pairs:
+                continue
+            expected_cost_hint = 0.0
+            if cost_estimator is not None:
+                try:
+                    expected_cost_hint = float(
+                        cost_estimator.expected_cost(
+                            worker=worker,
+                            task=ready.spec,
+                            bid=_router_hint_bid(
+                                task_id=task_id,
+                                bounty=int(ready.runtime.bounty_current),
+                            ),
+                            round_id=int(round_id),
+                        )
+                    )
+                except Exception:
+                    expected_cost_hint = 0.0
+            lines.append(f"  - task={task_id} expected_cost_hint≈{expected_cost_hint:.2f}")
+    lines.append("")
+    lines.append(
+        """Return JSON:
+{
+  "assignments": [
+    {"task_id":"T1","worker_id":"gpt-5.2-pro","notes":"optional"}
+  ],
+  "discussion": "optional short public message"
+}"""
+    )
+    return "\n".join(lines)
+
+
+class CentralRouterPolicy:
+    def __init__(
+        self,
+        *,
+        llm: Any,
+        model_ref: str,
+    ) -> None:
+        self._llm = llm
+        self._model_ref = str(model_ref)
+
+    def choose(
+        self,
+        *,
+        round_id: int,
+        ready_tasks: list[ReadyTask],
+        available_workers: list[WorkerRuntime],
+        discussion_history: list[Any],
+        cost_estimator: ExpectedCostEstimator | None,
+        excluded_pairs: set[tuple[str, str]],
+    ) -> AssignmentDecision:
+        system = "\n".join(
+            [
+                "You are a centralized task router for a software engineering benchmark.",
+                "Choose the worker-task assignments most likely to pass verification.",
+                "Use only the information in the prompt.",
+                "Return valid JSON only.",
+            ]
+        )
+        user = _router_prompt(
+            ready_tasks=ready_tasks,
+            available_workers=available_workers,
+            discussion_history=discussion_history,
+            round_id=round_id,
+            cost_estimator=cost_estimator,
+            excluded_pairs=excluded_pairs,
+        )
+        response, usage, _raw = self._llm.call_json(
+            model_ref=self._model_ref,
+            system=system,
+            user=user,
+            schema=RouterAssignmentEnvelope,
+            max_output_tokens=1200,
+        )
+        envelope = (
+            response
+            if isinstance(response, RouterAssignmentEnvelope)
+            else RouterAssignmentEnvelope.model_validate(response)
+        )
+        selections = [
+            RouterSelection(
+                task_id=str(choice.task_id),
+                worker_id=str(choice.worker_id),
+                notes=choice.notes,
+            )
+            for choice in list(envelope.assignments or [])
+        ]
+        return AssignmentDecision(
+            selections=selections,
+            model_ref=self._model_ref,
+            llm_usage={
+                "calls": int(getattr(usage, "calls", 0) or 0),
+                "input_tokens": int(getattr(usage, "input_tokens", 0) or 0),
+                "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),
+            },
+            payload={
+                "policy": "central_router",
+                "discussion": envelope.discussion,
+                "assignments": [
+                    {
+                        "task_id": choice.task_id,
+                        "worker_id": choice.worker_id,
+                        "notes": choice.notes,
+                    }
+                    for choice in list(envelope.assignments or [])
+                ],
+            },
+        )
 
 
 def _select_planner_via_market(
@@ -781,6 +1314,10 @@ def _run_one_spec(
     dag_mode: str,
     replan: bool,
     planner_max_tasks: int,
+    assignment_policy: Any | None = None,
+    worker_calibration_source: Path | None = None,
+    worker_calibration_style: str = "advisory_v1",
+    extra_run_config: dict[str, Any] | None = None,
 ) -> Path:
     run_dir.mkdir(parents=True, exist_ok=False)
 
@@ -799,7 +1336,11 @@ def _run_one_spec(
     persisted_state = load_state(default_state_path())
     estimator = ExpectedCostEstimator(state=persisted_state, pricing=pricing)
 
-    tasks = list(scenario.tasks)
+    tasks = _rewrite_task_execution_timeouts(
+        tasks=list(scenario.tasks),
+        execution_timeout_seconds=execution_timeout_seconds,
+    )
+    calibration_task_id = str(tasks[0].id) if tasks else ""
     planner_meta: dict[str, Any] | None = None
     planner_context: PlannerRunContext | None = None
     if dag_mode == "planner_market":
@@ -912,6 +1453,7 @@ def _run_one_spec(
         ledger=ledger,
         settings=engine_settings,
         settlement=settlement,
+        assignment_policy=assignment_policy,
     )
     run_id = run_dir.name
     engine.create_run(run_id=run_id, workers=workers, tasks=tasks)
@@ -928,6 +1470,28 @@ def _run_one_spec(
         force_bid_for_ready_tasks=bool(force_bids),
         retry_score_penalty_fraction=float(settlement.retry_score_penalty_fraction),
     )
+    worker_calibration_context: dict[str, list[str]] = {}
+    if worker_calibration_source is not None and calibration_task_id:
+        worker_calibration_context = _load_worker_calibration_context(
+            calibration_source=worker_calibration_source,
+            workers=workers,
+            task_id=calibration_task_id,
+            pricing_by_model=pricing,
+            calibration_style=worker_calibration_style,
+        )
+        for worker in workers:
+            context_lines = list(worker_calibration_context.get(str(worker.worker_id), []))
+            if not context_lines:
+                continue
+            model_bidder.set_worker_calibration_prompt_context(
+                worker_id=str(worker.worker_id),
+                context_lines=context_lines,
+            )
+        if worker_calibration_context:
+            (run_dir / "worker_calibration_context.json").write_text(
+                json.dumps(worker_calibration_context, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
     model_executor = OpenAIExecutor(
         llm=llm,
         workspace_dir=workspace_dir,
@@ -1131,6 +1695,8 @@ def _run_one_spec(
             "retry_score_penalty_fraction": float(settlement.retry_score_penalty_fraction),
         },
     }
+    if extra_run_config:
+        run_config.update(dict(extra_run_config))
     (run_dir / "run_config.json").write_text(json.dumps(run_config, indent=2), encoding="utf-8")
 
     return run_dir
@@ -1186,12 +1752,15 @@ def _aggregate_model_outcomes(*, summaries: list[dict[str, Any]]) -> list[dict[s
     return rows
 
 
-def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> None:
+def _run_prepared_mode(args: argparse.Namespace, models: list[str]) -> None:
     prepared_specs = load_prepared_task_specs(
         prepared_manifest=Path(args.task_manifest),
         task_offset=int(args.task_offset),
         task_limit=int(args.task_limit),
     )
+    prepared_mode = str(getattr(args, "prepared_mode", "market") or "market").strip()
+    if prepared_mode not in {"market", "central_router"}:
+        raise ValueError(f"unsupported prepared mode: {prepared_mode}")
 
     if bool(args.isolate_state):
         os.environ["AE_WORKER_STATE_ISOLATION"] = "1"
@@ -1221,15 +1790,51 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
         print(f"run_matrix={args.output_root / 'run_matrix.json'}")
         return
 
-    _require_credentials(models)
+    credential_models = list(models)
+    if prepared_mode == "central_router" and str(args.router_model_ref) not in credential_models:
+        credential_models.append(str(args.router_model_ref))
+    _require_credentials(credential_models)
+
+    router_policy_template = None
+    if prepared_mode == "central_router":
+        router_workers, _ = _select_workers(
+            spec=RunSpec(
+                benchmark="swebench",
+                mode="market",
+                settlement_mode=str(args.settlement_mode),
+                repeat=1,
+                scenario_path=str(prepared_specs[0].scenario_path),
+                model_ref=None,
+            ),
+            workers_path=Path(args.workers),
+        )
+        router_provider = _provider(str(args.router_model_ref))
+        if router_provider not in {_provider(worker.model_ref or "") for worker in router_workers}:
+            router_workers = [
+                *router_workers,
+                WorkerRuntime(
+                    worker_id="central-router",
+                    worker_type=WorkerType.MODEL_AGENT,
+                    model_ref=str(args.router_model_ref),
+                ),
+            ]
+        router_policy_template = CentralRouterPolicy(
+            llm=_llm_router_for_workers(settings=load_settings(), workers=router_workers),
+            model_ref=str(args.router_model_ref),
+        )
 
     completed_run_dirs: list[Path] = []
     task_rows: list[dict[str, Any]] = []
     skipped = 0
     failed = 0
+    worker_calibration_source = getattr(args, "worker_calibration_source", None)
+    worker_calibration_style = getattr(args, "worker_calibration_style", "advisory_v1")
 
     for idx, spec in enumerate(prepared_specs, start=1):
-        run_name = f"swebench_market_{_safe_token(args.settlement_mode)}_{idx:03d}_{_safe_token(spec.instance_id)}"
+        run_name = (
+            f"swebench_{_safe_token(prepared_mode)}_{_safe_token(args.settlement_mode)}_"
+            f"{idx:03d}_{_safe_token(spec.instance_id)}"
+        )
         run_dir = args.output_root / run_name
 
         if run_dir.exists():
@@ -1249,12 +1854,13 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
 
         run_spec = RunSpec(
             benchmark="swebench",
-            mode="market",
+            mode="market" if prepared_mode == "market" else "central_router",
             settlement_mode=str(args.settlement_mode),
             repeat=1,
             scenario_path=str(spec.scenario_path),
             model_ref=None,
         )
+        assignment_policy = router_policy_template
 
         try:
             finished = _run_one_spec(
@@ -1279,6 +1885,27 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
                 dag_mode=str(args.dag_mode),
                 replan=bool(args.replan),
                 planner_max_tasks=int(args.planner_max_tasks),
+                assignment_policy=assignment_policy,
+                worker_calibration_source=(
+                    None if worker_calibration_source is None else Path(worker_calibration_source)
+                ),
+                worker_calibration_style=str(worker_calibration_style),
+                extra_run_config={
+                    "prepared_mode": prepared_mode,
+                    "router_model_ref": (
+                        None if prepared_mode != "central_router" else str(args.router_model_ref)
+                    ),
+                    **(
+                        {}
+                        if worker_calibration_source is None
+                        else {
+                            "worker_calibration_source": str(
+                                Path(worker_calibration_source).resolve()
+                            ),
+                            "worker_calibration_style": str(worker_calibration_style),
+                        }
+                    ),
+                },
             )
             completed_run_dirs.append(finished)
             row = {
@@ -1349,7 +1976,7 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
     _write_csv(args.output_root / "model_outcomes.csv", model_outcomes)
 
     final_summary = {
-        "mode": "prepared_market_only",
+        "mode": f"prepared_{prepared_mode}_only",
         "settlement_mode": str(args.settlement_mode),
         "selected_tasks": len(prepared_specs),
         "completed_runs": len(completed_run_dirs),
@@ -1368,6 +1995,9 @@ def _run_prepared_market_mode(args: argparse.Namespace, models: list[str]) -> No
         "dag_mode": str(args.dag_mode),
         "replan": bool(args.replan),
         "planner_max_tasks": int(args.planner_max_tasks),
+        "router_model_ref": (
+            None if prepared_mode != "central_router" else str(args.router_model_ref)
+        ),
     }
     (args.output_root / "final_summary.json").write_text(
         json.dumps(final_summary, ensure_ascii=False, indent=2),
@@ -1430,6 +2060,12 @@ def main() -> None:
     parser.add_argument("--overwrite", action="store_true")
 
     parser.add_argument("--task-manifest", type=Path, default=None)
+    parser.add_argument(
+        "--prepared-mode",
+        choices=["market", "central_router"],
+        default="market",
+        help="assignment mode for prepared task-manifest runs",
+    )
     parser.add_argument("--task-offset", type=int, default=0)
     parser.add_argument("--task-limit", type=int, default=0)
     parser.add_argument("--market-only", action="store_true")
@@ -1479,6 +2115,23 @@ def main() -> None:
         default=True,
         help="isolate persisted worker state for this run mode",
     )
+    parser.add_argument(
+        "--router-model-ref",
+        default="openai:gpt-5.2-pro-2025-12-11",
+        help="central router model for prepared central_router runs",
+    )
+    parser.add_argument(
+        "--worker-calibration-source",
+        type=Path,
+        default=None,
+        help="Phase I JSONL calibration rows used to build held-out worker self-knowledge cards",
+    )
+    parser.add_argument(
+        "--worker-calibration-style",
+        choices=["advisory_v1", "hard_prior_v1"],
+        default="advisory_v1",
+        help="prompt style for worker self-knowledge cards",
+    )
 
     args = parser.parse_args()
     if args.replan is None:
@@ -1486,7 +2139,7 @@ def main() -> None:
     models = _norm_csv(args.models)
 
     if args.task_manifest is not None:
-        _run_prepared_market_mode(args, models)
+        _run_prepared_mode(args, models)
         return
 
     benchmarks = _norm_csv(args.benchmarks)

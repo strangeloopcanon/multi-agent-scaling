@@ -150,11 +150,33 @@ class OpenAIBidder:
         self._force_bid_for_ready_tasks = bool(force_bid_for_ready_tasks)
         self._retry_score_penalty_fraction = float(retry_score_penalty_fraction)
         self._worker_market_context: dict[str, list[str]] = {}
+        self._worker_calibration_context: dict[str, list[str]] = {}
 
     def set_worker_prompt_context(self, *, worker_id: str, context_lines: list[str]) -> None:
         self._worker_market_context[str(worker_id)] = [
             str(line) for line in list(context_lines or []) if str(line).strip()
         ]
+
+    def set_worker_calibration_prompt_context(
+        self,
+        *,
+        worker_id: str,
+        context_lines: list[str],
+    ) -> None:
+        self._worker_calibration_context[str(worker_id)] = [
+            str(line) for line in list(context_lines or []) if str(line).strip()
+        ]
+
+    def set_worker_static_prompt_context(
+        self,
+        *,
+        worker_id: str,
+        context_lines: list[str],
+    ) -> None:
+        self.set_worker_calibration_prompt_context(
+            worker_id=worker_id,
+            context_lines=context_lines,
+        )
 
     def get_bids(
         self,
@@ -170,7 +192,8 @@ class OpenAIBidder:
 
         persona = DEFAULT_PERSONAS.get(worker.worker_id)
         sys = system_prompt(worker=worker, persona=None if persona is None else persona.persona)
-        context_lines = list(self._worker_market_context.pop(worker.worker_id, []))
+        calibration_lines = list(self._worker_calibration_context.get(worker.worker_id, []))
+        market_lines = list(self._worker_market_context.pop(worker.worker_id, []))
         user = bid_prompt(
             worker=worker,
             ready_tasks=ready_tasks,
@@ -181,7 +204,8 @@ class OpenAIBidder:
             penalty_fraction=self._penalty_fraction,
             force_bid_for_ready_tasks=self._force_bid_for_ready_tasks,
             retry_score_penalty_fraction=self._retry_score_penalty_fraction,
-            worker_market_context_lines=context_lines,
+            worker_calibration_context_lines=calibration_lines,
+            worker_market_context_lines=market_lines,
         )
         resp, usage, _raw = self._llm.call_json(
             model_ref=worker.model_ref,

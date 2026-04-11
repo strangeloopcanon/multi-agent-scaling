@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import signal
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from agent_economy.research.swebench_eval import (
     _build_run_id,
+    _forward_signal_to_active_harness,
+    _prepare_harness_env,
     _load_report,
     _load_summary,
     evaluate_with_harness,
@@ -137,7 +143,7 @@ def test_evaluate_with_harness_uses_summary_fallback_resolved(monkeypatch, tmp_p
     }
 
     monkeypatch.setattr(
-        "agent_economy.research.swebench_eval.subprocess.run",
+        "agent_economy.research.swebench_eval._run_harness_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
     monkeypatch.setattr(
@@ -166,6 +172,24 @@ def test_evaluate_with_harness_uses_summary_fallback_resolved(monkeypatch, tmp_p
     assert result.report_path == str(summary_path)
 
 
+def test_load_summary_runner_dir_path(tmp_path) -> None:
+    run_id = _build_run_id(prefix="ut", instance_id="django__django-333", patch_text="diff", gold=False)
+    runner_dir = tmp_path / ".ae_harness_runner"
+    runner_dir.mkdir(parents=True)
+    payload = {
+        "resolved_ids": [],
+        "unresolved_ids": [],
+        "error_ids": ["django__django-333"],
+        "incomplete_ids": [],
+    }
+    path = runner_dir / f"agent-economy-market.{run_id}.json"
+    path.write_text(json.dumps(payload))
+
+    summary, summary_path = _load_summary(work_dir=tmp_path, run_id=run_id)
+    assert summary == payload
+    assert summary_path == path
+
+
 def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path) -> None:
     instance_id = "django__django-222"
     run_id = _build_run_id(prefix="ut", instance_id=instance_id, patch_text="diff", gold=False)
@@ -178,7 +202,7 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
     }
 
     monkeypatch.setattr(
-        "agent_economy.research.swebench_eval.subprocess.run",
+        "agent_economy.research.swebench_eval._run_harness_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
     monkeypatch.setattr(
@@ -207,15 +231,58 @@ def test_evaluate_with_harness_uses_summary_fallback_error(monkeypatch, tmp_path
     assert result.report_path == str(summary_path)
 
 
+def test_evaluate_with_harness_uses_runner_dir_summary_when_report_missing(
+    monkeypatch, tmp_path
+) -> None:
+    instance_id = "django__django-444"
+    run_id = _build_run_id(prefix="ut", instance_id=instance_id, patch_text="diff", gold=False)
+    runner_dir = tmp_path / ".ae_harness_runner"
+    runner_dir.mkdir(parents=True)
+    summary_path = runner_dir / f"agent-economy-market.{run_id}.json"
+    summary = {
+        "resolved_ids": [],
+        "unresolved_ids": [],
+        "error_ids": [instance_id],
+        "incomplete_ids": [],
+    }
+    summary_path.write_text(json.dumps(summary))
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._run_harness_command",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._load_report",
+        lambda **kwargs: (None, None),
+    )
+
+    result = evaluate_with_harness(
+        instance_id=instance_id,
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+        timeout_sec=30,
+        work_dir=tmp_path,
+        run_id_prefix="ut",
+        patch_text="diff",
+        gold=False,
+    )
+    assert result.completed is False
+    assert result.resolved is False
+    assert result.returncode == 2
+    assert result.notes == "evaluation_error"
+    assert result.report_path == str(summary_path)
+
+
 def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_path) -> None:
     calls: dict[str, object] = {}
 
-    def _fake_run(cmd, cwd, text, capture_output):
+    def _fake_run(*, cmd, cwd, timeout_sec):
         calls["cmd"] = cmd
         calls["cwd"] = cwd
+        calls["timeout_sec"] = timeout_sec
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr("agent_economy.research.swebench_eval.subprocess.run", _fake_run)
+    monkeypatch.setattr("agent_economy.research.swebench_eval._run_harness_command", _fake_run)
     monkeypatch.setattr(
         "agent_economy.research.swebench_eval._load_report",
         lambda **kwargs: ({"psf__requests-2317": {"resolved": False}}, tmp_path / "report.json"),
@@ -240,3 +307,169 @@ def test_evaluate_with_harness_runs_from_neutral_runner_dir(monkeypatch, tmp_pat
     assert isinstance(cmd, list)
     report_dir_index = cmd.index("--report_dir")
     assert cmd[report_dir_index + 1] == str(tmp_path)
+    assert calls["timeout_sec"] == 30
+
+
+def test_evaluate_with_harness_marks_timeout(monkeypatch, tmp_path) -> None:
+    def _fake_run(*args, **kwargs):
+        raise subprocess.TimeoutExpired(
+            cmd=["python", "-m", "swebench.harness.run_evaluation"],
+            timeout=330,
+            output="partial stdout",
+            stderr="partial stderr",
+        )
+
+    monkeypatch.setattr("agent_economy.research.swebench_eval._run_harness_command", _fake_run)
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._load_report",
+        lambda **kwargs: (None, None),
+    )
+
+    result = evaluate_with_harness(
+        instance_id="psf__requests-2317",
+        dataset_name="princeton-nlp/SWE-bench_Lite",
+        split="test",
+        timeout_sec=30,
+        work_dir=tmp_path,
+        run_id_prefix="ut",
+        patch_text="diff",
+        gold=False,
+    )
+
+    assert result.completed is False
+    assert result.resolved is False
+    assert result.returncode == 2
+    assert result.notes == "harness_timeout"
+
+    harness_files = list(tmp_path.glob("harness_*.json"))
+    assert len(harness_files) == 1
+    payload = json.loads(harness_files[0].read_text())
+    assert payload["timed_out"] is True
+    assert payload["stdout"] == "partial stdout"
+    assert payload["stderr"] == "partial stderr"
+
+
+def test_run_harness_command_kills_process_group_on_timeout(monkeypatch, tmp_path) -> None:
+    events: list[tuple[str, object]] = []
+
+    class FakeProcess:
+        pid = 1234
+        returncode = None
+
+        def communicate(self, timeout=None):
+            events.append(("communicate", timeout))
+            if timeout is not None:
+                raise subprocess.TimeoutExpired(
+                    cmd=["python", "-m", "swebench.harness.run_evaluation"],
+                    timeout=timeout,
+                )
+            self.returncode = -9
+            return ("after kill stdout", "after kill stderr")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.subprocess.Popen",
+        lambda *args, **kwargs: FakeProcess(),
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.killpg",
+        lambda pid, sig: events.append(("killpg", (pid, sig))),
+    )
+
+    from agent_economy.research.swebench_eval import _run_harness_command
+
+    with pytest.raises(subprocess.TimeoutExpired) as exc_info:
+        _run_harness_command(
+            cmd=["python", "-m", "swebench.harness.run_evaluation"],
+            cwd=tmp_path,
+            timeout_sec=30,
+        )
+
+    assert events[0] == ("communicate", 330)
+    assert events[1] == ("killpg", (1234, signal.SIGKILL))
+    assert events[2] == ("communicate", None)
+    assert exc_info.value.output == "after kill stdout"
+    assert exc_info.value.stderr == "after kill stderr"
+
+
+def test_prepare_harness_env_adds_docker_helper_dir(monkeypatch, tmp_path) -> None:
+    helper_dir = tmp_path / "Docker.app" / "Contents" / "Resources" / "bin"
+    helper_dir.mkdir(parents=True)
+    helper_path = helper_dir / "docker-credential-desktop"
+    helper_path.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    docker_config_dir = tmp_path / "docker-config"
+    docker_config_dir.mkdir()
+    config_path = docker_config_dir / "config.json"
+    config_path.write_text(json.dumps({"credsStore": "desktop"}), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._docker_config_path",
+        lambda env=None: config_path,
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._candidate_docker_helper_dirs",
+        lambda: [helper_dir],
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.environ",
+        {"PATH": "/usr/bin", "DOCKER_CONFIG": str(docker_config_dir)},
+    )
+
+    env = _prepare_harness_env()
+
+    assert str(helper_dir) in env["PATH"].split(":")
+
+
+def test_run_harness_command_passes_prepared_env(monkeypatch, tmp_path) -> None:
+    calls: dict[str, object] = {}
+
+    class FakeProcess:
+        pid = 1234
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            return ("ok", "")
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._prepare_harness_env",
+        lambda: {"PATH": "/custom/bin"},
+    )
+
+    def _fake_popen(*args, **kwargs):
+        calls["env"] = kwargs.get("env")
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.subprocess.Popen",
+        _fake_popen,
+    )
+
+    from agent_economy.research.swebench_eval import _run_harness_command
+
+    result = _run_harness_command(
+        cmd=["python", "-m", "swebench.harness.run_evaluation"],
+        cwd=tmp_path,
+        timeout_sec=30,
+    )
+
+    assert result.returncode == 0
+    assert calls["env"] == {"PATH": "/custom/bin"}
+
+
+def test_forward_signal_kills_active_harness_group(monkeypatch) -> None:
+    events: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval._ACTIVE_HARNESS_PGID",
+        9876,
+    )
+    monkeypatch.setattr(
+        "agent_economy.research.swebench_eval.os.killpg",
+        lambda pid, sig: events.append(("killpg", (pid, sig))),
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        _forward_signal_to_active_harness(signal.SIGTERM, None)
+
+    assert exc_info.value.code == 143
+    assert events == [("killpg", (9876, signal.SIGKILL))]

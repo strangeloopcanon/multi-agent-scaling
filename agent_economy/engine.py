@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 from agent_economy.clearing import (
+    Assignment,
     BidSubmission,
     choose_assignments,
     score_bid_breakdown,
@@ -55,6 +56,34 @@ class Bidder(Protocol):
         round_id: int,
         discussion_history: Sequence[DiscussionMessage],
     ) -> BidResult: ...
+
+
+@dataclass(frozen=True)
+class RouterSelection:
+    task_id: str
+    worker_id: str
+    notes: str | None = None
+
+
+@dataclass(frozen=True)
+class AssignmentDecision:
+    selections: list[RouterSelection] = field(default_factory=list)
+    llm_usage: dict[str, int] | None = None
+    model_ref: str | None = None
+    payload: dict[str, object] | None = None
+
+
+class AssignmentPolicy(Protocol):
+    def choose(
+        self,
+        *,
+        round_id: int,
+        ready_tasks: Sequence[ReadyTask],
+        available_workers: Sequence[WorkerRuntime],
+        discussion_history: Sequence[DiscussionMessage],
+        cost_estimator: CostEstimator | None,
+        excluded_pairs: set[tuple[str, str]],
+    ) -> AssignmentDecision: ...
 
 
 @dataclass(frozen=True)
@@ -482,11 +511,13 @@ class ClearinghouseEngine:
         settlement: SettlementPolicy | None = None,
         settings: EngineSettings | None = None,
         verifier: Verifier | None = None,
+        assignment_policy: AssignmentPolicy | None = None,
     ) -> None:
         self._ledger = ledger
         self._settlement = settlement or SettlementPolicy()
         self._settings = settings or EngineSettings()
         self._verifier = verifier
+        self._assignment_policy = assignment_policy
         if self._settings.deterministic:
             self._bid_pool: _DaemonThreadPoolExecutor | _SynchronousExecutor = (
                 _SynchronousExecutor()
@@ -571,6 +602,103 @@ class ClearinghouseEngine:
             )
 
         self._ledger.verify_chain()
+
+    def _record_bid_submission(
+        self,
+        *,
+        run_id: str,
+        round_id: int,
+        state: DerivedState,
+        task_specs: dict[str, TaskSpec],
+        ready_ids: Sequence[str],
+        excluded_pairs: set[tuple[str, str]],
+        worker: WorkerRuntime,
+        resp: BidResult,
+        bidder_error: str | None,
+        cost_estimator: CostEstimator | None,
+        cache_result: bool,
+    ) -> list[Bid]:
+        bids: list[Bid] = []
+        for raw in list(resp.bids or []):
+            if isinstance(raw, Bid):
+                bids.append(raw)
+                continue
+            try:
+                bids.append(Bid.model_validate(raw))
+            except Exception:
+                continue
+
+        bids = list(bids)[: self._settings.max_bids_per_worker]
+        if self._settings.force_bid_for_ready_tasks:
+            seen_task_ids = {b.task_id for b in bids}
+            for task_id in ready_ids:
+                if len(bids) >= self._settings.max_bids_per_worker:
+                    break
+                if task_id in seen_task_ids:
+                    continue
+                if (task_id, worker.worker_id) in excluded_pairs:
+                    continue
+                task_rt = state.tasks.get(task_id)
+                if task_rt is None:
+                    continue
+                bids.append(
+                    _default_forced_bid(
+                        task_id=task_id,
+                        bounty=int(task_rt.bounty_current),
+                    )
+                )
+                seen_task_ids.add(task_id)
+
+        self._ledger.append(
+            EventType.BID_SUBMITTED,
+            run_id=run_id,
+            round_id=round_id,
+            payload={
+                "worker_id": worker.worker_id,
+                "model_ref": resp.model_ref or worker.model_ref,
+                "llm_usage": resp.llm_usage,
+                "bids": [b.model_dump() for b in bids],
+                **({} if bidder_error is None else {"error": bidder_error}),
+            },
+        )
+
+        if resp.discussion:
+            self._ledger.append(
+                EventType.DISCUSSION_POST,
+                run_id=run_id,
+                round_id=round_id,
+                payload={
+                    "sender": worker.worker_id,
+                    "message": resp.discussion,
+                },
+            )
+
+        bid_usage_cost = 0.0
+        if cost_estimator is not None:
+            try:
+                bid_usage_cost = float(
+                    cost_estimator.actual_cost(worker=worker, llm_usage=resp.llm_usage)
+                )
+            except Exception:
+                bid_usage_cost = 0.0
+        if bid_usage_cost > 0:
+            self._ledger.append(
+                EventType.PENALTY_APPLIED,
+                run_id=run_id,
+                round_id=round_id,
+                payload={
+                    "worker_id": worker.worker_id,
+                    "amount": bid_usage_cost,
+                    "reason": "bid_usage_cost",
+                    "model_ref": resp.model_ref or worker.model_ref,
+                    "llm_usage": resp.llm_usage,
+                },
+            )
+
+        if cache_result:
+            self._bid_cache[worker.worker_id] = _CachedBids(bids=bids)
+
+        return bids
 
     def inject_task(self, *, run_id: str, round_id: int, task: TaskSpec) -> None:
         """
@@ -1013,85 +1141,18 @@ class ClearinghouseEngine:
                 if worker is None or worker.assigned_task is not None:
                     continue
 
-                bids: list[Bid] = []
-                for raw in list(resp.bids or []):
-                    if isinstance(raw, Bid):
-                        bids.append(raw)
-                    else:
-                        try:
-                            bids.append(Bid.model_validate(raw))
-                        except Exception:
-                            continue
-                bids = list(bids)[: self._settings.max_bids_per_worker]
-                if self._settings.force_bid_for_ready_tasks:
-                    ready_now = _ready_task_ids(task_specs=task_specs, tasks=state.tasks)
-                    seen_task_ids = {b.task_id for b in bids}
-                    for task_id in ready_now:
-                        if len(bids) >= self._settings.max_bids_per_worker:
-                            break
-                        if task_id in seen_task_ids:
-                            continue
-                        if (task_id, worker_id) in excluded_pairs:
-                            continue
-                        task_rt = state.tasks.get(task_id)
-                        if task_rt is None:
-                            continue
-                        bids.append(
-                            _default_forced_bid(
-                                task_id=task_id,
-                                bounty=int(task_rt.bounty_current),
-                            )
-                        )
-                        seen_task_ids.add(task_id)
-
-                self._ledger.append(
-                    EventType.BID_SUBMITTED,
+                self._record_bid_submission(
                     run_id=run_id,
                     round_id=round_id,
-                    payload={
-                        "worker_id": worker.worker_id,
-                        "model_ref": resp.model_ref or worker.model_ref,
-                        "llm_usage": resp.llm_usage,
-                        "bids": [b.model_dump() for b in bids],
-                        **({} if bidder_error is None else {"error": bidder_error}),
-                    },
-                )
-
-                if resp.discussion:
-                    self._ledger.append(
-                        EventType.DISCUSSION_POST,
-                        run_id=run_id,
-                        round_id=round_id,
-                        payload={
-                            "sender": worker.worker_id,
-                            "message": resp.discussion,
-                        },
-                    )
-
-                bid_usage_cost = 0.0
-                if cost_estimator is not None:
-                    try:
-                        bid_usage_cost = float(
-                            cost_estimator.actual_cost(worker=worker, llm_usage=resp.llm_usage)
-                        )
-                    except Exception:
-                        bid_usage_cost = 0.0
-                if bid_usage_cost > 0:
-                    self._ledger.append(
-                        EventType.PENALTY_APPLIED,
-                        run_id=run_id,
-                        round_id=round_id,
-                        payload={
-                            "worker_id": worker.worker_id,
-                            "amount": bid_usage_cost,
-                            "reason": "bid_usage_cost",
-                            "model_ref": resp.model_ref or worker.model_ref,
-                            "llm_usage": resp.llm_usage,
-                        },
-                    )
-
-                self._bid_cache[worker.worker_id] = _CachedBids(
-                    bids=bids,
+                    state=state,
+                    task_specs=task_specs,
+                    ready_ids=_ready_task_ids(task_specs=task_specs, tasks=state.tasks),
+                    excluded_pairs=excluded_pairs,
+                    worker=worker,
+                    resp=resp,
+                    bidder_error=bidder_error,
+                    cost_estimator=cost_estimator,
+                    cache_result=True,
                 )
                 did_any = True
 
@@ -1099,6 +1160,11 @@ class ClearinghouseEngine:
                 events = list(self._ledger.iter_events())
                 state = replay_ledger(events=events, settlement=self._settlement)
                 task_specs = _load_task_specs_from_events(events=events)
+                excluded_pairs = (
+                    _failed_task_worker_pairs(events=events)
+                    if self._settings.exclude_failed_workers
+                    else set()
+                )
 
             ready_ids = _ready_task_ids(task_specs=task_specs, tasks=state.tasks)
             available_workers = [w for w in state.workers.values() if w.assigned_task is None]
@@ -1132,17 +1198,20 @@ class ClearinghouseEngine:
                     except Exception:
                         continue
 
-            # Start bid fetches for idle workers that don't have cached bids yet.
-            #
-            # In bid-barrier mode, once any worker has produced bids for the current
-            # ready set, freeze new fetches until the round clears. This prevents a
-            # perpetual "one cached + one in-flight" cycle that can starve market
-            # clearing when workers have different response latencies.
-            has_any_cached_for_ready = any(
-                w.worker_id in self._bid_cache for w in available_workers
-            )
-            can_start_fetches = True
-            if self._settings.require_bid_barrier and has_any_cached_for_ready:
+            if self._assignment_policy is None:
+                # Start bid fetches for idle workers that don't have cached bids yet.
+                #
+                # In bid-barrier mode, once any worker has produced bids for the current
+                # ready set, freeze new fetches until the round clears. This prevents a
+                # perpetual "one cached + one in-flight" cycle that can starve market
+                # clearing when workers have different response latencies.
+                has_any_cached_for_ready = any(
+                    w.worker_id in self._bid_cache for w in available_workers
+                )
+                can_start_fetches = True
+                if self._settings.require_bid_barrier and has_any_cached_for_ready:
+                    can_start_fetches = False
+            else:
                 can_start_fetches = False
 
             if ready_views and can_start_fetches:
@@ -1184,55 +1253,184 @@ class ClearinghouseEngine:
             if self._settings.require_bid_barrier and has_pending_inflight_bids:
                 can_clear_market = False
 
+            assignments: list[Assignment] = []
+            if self._assignment_policy is not None:
+                can_clear_market = bool(slots > 0 and ready_ids and available_workers)
+
             if slots > 0 and ready_ids and available_workers and can_clear_market:
                 bids_by_task: dict[str, list[BidSubmission]] = {tid: [] for tid in ready_ids}
                 any_bid_for_task: dict[str, bool] = {tid: False for tid in ready_ids}
 
-                for w in available_workers:
-                    cached = self._bid_cache.get(w.worker_id)
-                    if cached is None:
-                        continue
-                    seen: set[str] = set()
-                    for bid in list(cached.bids)[: self._settings.max_bids_per_worker]:
-                        if bid.task_id in seen:
+                if self._assignment_policy is None:
+                    for w in available_workers:
+                        cached = self._bid_cache.get(w.worker_id)
+                        if cached is None:
                             continue
-                        seen.add(bid.task_id)
-                        if bid.task_id not in bids_by_task:
+                        seen: set[str] = set()
+                        for bid in list(cached.bids)[: self._settings.max_bids_per_worker]:
+                            if bid.task_id in seen:
+                                continue
+                            seen.add(bid.task_id)
+                            if bid.task_id not in bids_by_task:
+                                continue
+                            if (bid.task_id, w.worker_id) in excluded_pairs:
+                                continue
+                            expected_cost = 0.0
+                            if cost_estimator is not None and bid.task_id in task_specs:
+                                try:
+                                    expected_cost = float(
+                                        cost_estimator.expected_cost(
+                                            worker=w,
+                                            task=task_specs[bid.task_id],
+                                            bid=bid,
+                                            round_id=round_id,
+                                        )
+                                    )
+                                except Exception:
+                                    expected_cost = 0.0
+                            bids_by_task[bid.task_id].append(
+                                BidSubmission(
+                                    worker_id=w.worker_id,
+                                    bid=bid,
+                                    expected_cost=expected_cost,
+                                )
+                            )
+                            any_bid_for_task[bid.task_id] = True
+
+                    ready_tasks = [state.tasks[tid] for tid in ready_ids if tid in state.tasks]
+                    assignments = choose_assignments(
+                        ready_tasks=ready_tasks,
+                        available_workers=available_workers,
+                        bids_by_task=bids_by_task,
+                        penalty_mode=str(self._settlement.penalty_mode),
+                        penalty_fraction=float(self._settlement.penalty_fraction),
+                        retry_penalty_by_pair=retry_penalty_pairs,
+                        excluded_pairs=excluded_pairs,
+                    )
+                else:
+                    decision = self._assignment_policy.choose(
+                        round_id=round_id,
+                        ready_tasks=ready_views,
+                        available_workers=available_workers,
+                        discussion_history=state.discussion_history,
+                        cost_estimator=cost_estimator,
+                        excluded_pairs=excluded_pairs,
+                    )
+                    if decision.llm_usage or decision.payload:
+                        self._ledger.append(
+                            EventType.ROUTER_DECISION,
+                            run_id=run_id,
+                            round_id=round_id,
+                            payload={
+                                "model_ref": decision.model_ref,
+                                "llm_usage": decision.llm_usage,
+                                **({} if decision.payload is None else dict(decision.payload)),
+                            },
+                        )
+
+                    ready_view_by_id = {str(ready.spec.id): ready for ready in ready_views}
+                    workers_by_id = {worker.worker_id: worker for worker in available_workers}
+                    selected_tasks: set[str] = set()
+                    selected_workers: set[str] = set()
+                    for selection in list(decision.selections):
+                        task_id = str(selection.task_id)
+                        worker_id = str(selection.worker_id)
+                        if not task_id or not worker_id:
                             continue
-                        if (bid.task_id, w.worker_id) in excluded_pairs:
+                        if task_id in selected_tasks or worker_id in selected_workers:
                             continue
+                        if task_id not in ready_view_by_id:
+                            continue
+                        if worker_id not in workers_by_id:
+                            continue
+                        if (task_id, worker_id) in excluded_pairs:
+                            continue
+
+                        worker = workers_by_id[worker_id]
+                        ready_view = ready_view_by_id[task_id]
+                        bidder_error: str | None = None
+                        try:
+                            resp = bidder.get_bids(
+                                worker=worker,
+                                ready_tasks=[ready_view],
+                                round_id=round_id,
+                                discussion_history=state.discussion_history,
+                            )
+                        except Exception as e:
+                            resp = BidResult()
+                            bidder_error = f"{type(e).__name__}: {e}"
+
+                        normalized_bids = self._record_bid_submission(
+                            run_id=run_id,
+                            round_id=round_id,
+                            state=state,
+                            task_specs=task_specs,
+                            ready_ids=[task_id],
+                            excluded_pairs=excluded_pairs,
+                            worker=worker,
+                            resp=resp,
+                            bidder_error=bidder_error,
+                            cost_estimator=cost_estimator,
+                            cache_result=False,
+                        )
+                        bid = next(
+                            (
+                                candidate
+                                for candidate in normalized_bids
+                                if candidate.task_id == task_id
+                            ),
+                            _default_forced_bid(
+                                task_id=task_id,
+                                bounty=int(ready_view.runtime.bounty_current),
+                            ),
+                        )
                         expected_cost = 0.0
-                        if cost_estimator is not None and bid.task_id in task_specs:
+                        if cost_estimator is not None and task_id in task_specs:
                             try:
                                 expected_cost = float(
                                     cost_estimator.expected_cost(
-                                        worker=w,
-                                        task=task_specs[bid.task_id],
+                                        worker=worker,
+                                        task=task_specs[task_id],
                                         bid=bid,
                                         round_id=round_id,
                                     )
                                 )
                             except Exception:
                                 expected_cost = 0.0
-                        bids_by_task[bid.task_id].append(
-                            BidSubmission(
-                                worker_id=w.worker_id,
+                        breakdown = score_bid_breakdown(
+                            bounty=ready_view.runtime.bounty_current,
+                            reputation=worker.reputation,
+                            bid=bid,
+                            expected_cost=expected_cost,
+                            penalty_mode=str(self._settlement.penalty_mode),
+                            penalty_fraction=float(self._settlement.penalty_fraction),
+                        )
+                        retry_penalty = float(retry_penalty_pairs.get((task_id, worker_id), 0.0))
+                        score = float(breakdown["score"]) - retry_penalty
+                        breakdown["score_before_retry_penalty"] = float(breakdown["score"])
+                        breakdown["retry_score_penalty"] = float(retry_penalty)
+                        breakdown["score"] = float(score)
+                        assignments.append(
+                            Assignment(
+                                task_id=task_id,
+                                worker_id=worker_id,
                                 bid=bid,
-                                expected_cost=expected_cost,
+                                score=float(score),
+                                expected_cost=float(expected_cost),
+                                score_breakdown=breakdown,
                             )
                         )
-                        any_bid_for_task[bid.task_id] = True
+                        any_bid_for_task[task_id] = True
+                        bids_by_task[task_id].append(
+                            BidSubmission(
+                                worker_id=worker_id,
+                                bid=bid,
+                                expected_cost=float(expected_cost),
+                            )
+                        )
+                        selected_tasks.add(task_id)
+                        selected_workers.add(worker_id)
 
-                ready_tasks = [state.tasks[tid] for tid in ready_ids if tid in state.tasks]
-                assignments = choose_assignments(
-                    ready_tasks=ready_tasks,
-                    available_workers=available_workers,
-                    bids_by_task=bids_by_task,
-                    penalty_mode=str(self._settlement.penalty_mode),
-                    penalty_fraction=float(self._settlement.penalty_fraction),
-                    retry_penalty_by_pair=retry_penalty_pairs,
-                    excluded_pairs=excluded_pairs,
-                )
                 self._ledger.append(
                     EventType.MARKET_CLEARED,
                     run_id=run_id,
@@ -1280,7 +1478,15 @@ class ClearinghouseEngine:
                             )
                             scores.append(float(score_info["score"]) - retry_penalty)
                         best_score = max(scores) if scores else None
-                    if (not had_any) or (best_score is None) or (best_score <= 0):
+                    no_router_assignment = self._assignment_policy is not None and tid not in {
+                        a.task_id for a in assignments
+                    }
+                    if (
+                        no_router_assignment
+                        or (not had_any)
+                        or (best_score is None)
+                        or (best_score <= 0)
+                    ):
                         new_bounty = _bump_bounty(task=task)
                         if new_bounty != task.bounty_current:
                             self._ledger.append(
@@ -1290,7 +1496,11 @@ class ClearinghouseEngine:
                                 payload={
                                     "task_id": tid,
                                     "bounty_current": new_bounty,
-                                    "reason": "no_winning_bids",
+                                    "reason": (
+                                        "no_router_assignment"
+                                        if no_router_assignment
+                                        else "no_winning_bids"
+                                    ),
                                 },
                             )
                             did_round_advance = True
