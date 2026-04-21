@@ -144,26 +144,26 @@ BidBench is the calibration benchmark that lives in this repo: can models accura
 
 This matters for market design. If bids carry real signal, the auction allocates well. If confidence is noise, the market degrades to random assignment with extra overhead.
 
-### Phase I Pilot (93 SWE-bench tasks, 6 models)
+### Phase I Calibration (93 SWE-bench tasks, 6 models)
 
 558 rows (93 tasks × 6 models). The headline findings:
 
 **Self-assessed confidence was a weak signal.** Most models showed small or negative gaps between mean `p_success` on tasks they passed vs failed. GPT-5-mini had the widest gap (+0.10); two models reported *higher* confidence on tasks they failed.
 
-**Brier skill was near zero or negative.** Only Claude Sonnet 4.5 (+0.07) and Opus 4.5 (+0.00) matched or beat a naive base-rate predictor. The rest were worse than always guessing the base rate.
+**Brier skill was near zero or negative.** On the current 558-row calibration file, only Claude Opus 4.5 (+0.060) and Claude Sonnet 4.5 (+0.018) beat a naive base-rate predictor. The rest were worse than always guessing the base rate.
 
 | Model | Brier Skill |
 |---|---:|
-| Claude Sonnet 4.5 | +0.069 |
-| Claude Opus 4.5 | +0.002 |
-| GPT-5.2-pro | −0.132 |
-| GPT-5-mini | −0.162 |
-| Gemini 3 Pro Preview | −0.180 |
-| GPT-5.2 | −0.268 |
+| Claude Opus 4.5 | +0.060 |
+| Claude Sonnet 4.5 | +0.018 |
+| GPT-5.2-pro | −0.111 |
+| Gemini 3 Pro Preview | −0.111 |
+| GPT-5.2 | −0.195 |
+| GPT-5-mini | −0.305 |
 
-**Token self-estimates were poor** (median ratio to actual: 0.02), but external telemetry (cost + API calls) achieved 0.95+ correlation as a proxy.
+**Token self-estimates were poor.** In Phase I, the median estimated-to-actual token ratio was `0.1929`. The later Phase Ib self-knowledge rerun improved that to `0.2501`, but forecasts still materially under-shot actual usage.
 
-Pipeline was clean: 100% parse success, 0 provider errors, 0 missing fields.
+The saved final calibration dataset is a clean 558-row rerun, but it required repairing an initial Anthropic API-key failure and rerunning the missing rows in place.
 
 **Takeaway:** treat self-assessed confidence as weak signal in auction design; lean on empirical performance history instead.
 
