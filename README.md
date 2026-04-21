@@ -172,51 +172,28 @@ Full details: [Phase I Calibration](docs/research/report/01_PHASE_1_CALIBRATION.
 ### Phase II: Market vs Solo Evaluation
 For the SWE-bench evaluation writeup (market vs solo vs external baselines), see the [Research Report](docs/research/report/00_EXECUTIVE_SUMMARY.md).
 
-#### Phase I to Phase II funnel
+#### Calibration summary
 
-This is the easiest way to read the whole research program from top to bottom.
+![Calibration summary](docs/research/report/data/page1_calibration_summary.png)
 
-```mermaid
-flowchart TD
-    A["Phase I calibration\n93 tasks x 6 models\nDirect self-forecasting\nBrier 0.1835"] --> B["Phase Ib calibration follow-up\nSame 93-task set\nSelf-knowledge card\nBrier 0.1693"]
-    B --> C["Phase II live slice\nCommon 50-task subset\nExternal oracle ceiling\n42/50"]
-    C --> D["Best external single model\nGPT-5.2\n37/50"]
-    D --> E["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
-    E --> F["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    F --> G["Phase IId hard-prior market\n28/50"]
-    G --> H["Phase IIb matched centralized router\nSame 6 workers\n27/50"]
-    H --> I["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
-    I --> J["Phase IIb matched market rerun\nSame 6 workers\n23/50"]
-```
+Phase I direct calibration is the original 93-task, six-model self-forecasting run. Phase Ib self-knowledge card reruns those same task-model pairs after showing a held-out self-history card. Error bars are 95% paired bootstrap intervals over all 558 forecast rows.
 
-The shape of the funnel is the point:
+#### Live 50-task performance
 
-- calibration gets better before live allocation gets better,
-- stronger information and stronger scaffolds sit at the top,
-- the live six-worker market family lands in the high 20s,
-- the current market rule is still close to the centralized router rather than clearly above it.
+![Live 50-task performance summary](docs/research/report/data/page1_live_performance_summary.png)
 
-#### 50-task comparison ladder
+This figure separates three families that the old ladder mixed together: external reference runs, the older published Phase II scaffold, and the later matched rerun family. The key within-family change is `23 / 50` to `28 / 50`: the matched market rerun versus the hard-prior market. The older published market result at `29 / 50` is a separate earlier scaffold run, not the start of that `23 -> 28` sequence.
 
-This is the easiest way to read the main 50-task results. It is a score-ordered map, not a pure one-variable ladder. The cleanest chooser comparison inside it is **Phase IIb centralized router vs Phase IIb market**, because those two runs keep the six-worker pool fixed and change only the chooser.
+Label guide:
 
-```mermaid
-flowchart TD
-    A["Oracle ceiling\nExternal scaffold + perfect routing\n42/50"] --> B["Best single model on external scaffold\nGPT-5.2\n37/50"]
-    B --> C["Phase IIc diagnostic\nCodex path + GPT-5.2 + 1800s\n35/50"]
-    C --> D["Phase II published market scaffold\n6 workers, 900s\n29/50"]
-    D --> E["Phase IId hard-prior market\n28/50"]
-    E --> F["Phase IIb matched centralized router\nSame 6 workers, matched rerun\n27/50"]
-    F --> G["Phase II published solo GPT-5.2 scaffold\n1 worker, 900s\n24/50"]
-    G --> H["Phase IIb matched market rerun\nSame 6 workers, matched rerun\n23/50"]
-```
-
-The short reading is:
-
-- stronger scaffolds still dominate the top of the table,
-- diverse model pools help on the live in-house scaffold,
-- the Phase IId hard-prior market lands roughly on top of the matched centralized chooser,
-- the likely bottleneck is weak self-knowledge in bids rather than lack of model diversity.
+- `Oracle ceiling`: best external single-model answer available in hindsight on each task in the common 50-task slice.
+- `External GPT-5.2 baseline`: one fixed GPT-5.2 run on the standard external SWE-bench scaffold.
+- `Diagnostic Codex + GPT-5.2`: single-model diagnostic on the Codex path with an `1800` second budget.
+- `Published market scaffold`: the original six-worker `900` second Phase II market result from the published scaffold.
+- `Published solo GPT-5.2 scaffold`: one GPT-5.2 worker on that same original `900` second Phase II scaffold.
+- `Hard-prior market`: the matched six-worker rerun after adding a held-out calibration prior to the bid prompt.
+- `Matched centralized router`: the same six workers, verifier, and limits as the matched rerun, but with a centralized chooser.
+- `Matched market rerun`: the same six-worker matched rerun using the original market-clearing rule.
 
 The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. The main Phase IId result is **28 / 50**, versus **23 / 50** for the matched Phase IIb market rerun and **27 / 50** for the matched centralized router. That puts the hard-prior market one task behind the older published market result at **29 / 50**. The detailed Phase II note keeps the audit trail for the follow-up cleanup reruns behind this final Phase IId count: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
 
