@@ -59,7 +59,7 @@ The funnel makes two points at once:
 
 Phase I evaluated 6 frontier models on 93 SWE-bench Lite tasks to establish the oracle ceiling and test whether self-assessed confidence could drive allocation.
 
-The oracle ceiling (best possible model for each task) is **84%** on the 50-task subset. But self-assessed confidence turned out to be noise: most models had near-zero or negative Brier skill scores, with only Claude Sonnet 4.5 (+0.07) beating a naive base-rate predictor. Overconfident models consistently stole assignments from more capable ones.
+The oracle ceiling (best possible model for each task) is **84%** on the 50-task subset. But self-assessed confidence turned out to be noise: most models had near-zero or negative Brier skill scores, and only Claude Opus 4.5 (+0.060) plus Claude Sonnet 4.5 (+0.018) beat a naive base-rate predictor on the current 558-row calibration file. Overconfident models consistently stole assignments from more capable ones.
 
 This established the core challenge for later live routing runs: diverse workers can help, but allocation quality is bottlenecked by calibration rather than by a lack of auction machinery.
 
