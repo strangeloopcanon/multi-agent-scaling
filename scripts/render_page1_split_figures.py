@@ -208,67 +208,67 @@ def _load_live_entries(
 
     return [
         LiveEntry(
-            label="Oracle ceiling",
-            definition="Best external single-model answer available in hindsight on each task.",
+            label="Best external model per task",
+            definition="Upper bound formed by taking the best externally scaffolded single-model result on each task in hindsight.",
             passes=oracle_passes,
             total=oracle_total,
-            group="External reference",
+            group="Reference runs",
             color="#1f2933",
         ),
         LiveEntry(
-            label="External GPT-5.2 baseline",
+            label="External GPT-5.2 run",
             definition="Single GPT-5.2 run on the standard external SWE-bench scaffold.",
             passes=external_gpt52_passes,
             total=external_gpt52_total,
-            group="External reference",
+            group="Reference runs",
             color="#364152",
         ),
         LiveEntry(
-            label="Diagnostic Codex + GPT-5.2",
-            definition="Single-model diagnostic on the Codex path with an 1800-second task budget.",
+            label="30-minute Codex diagnostic",
+            definition="Single-model Codex-path diagnostic with a 30-minute per-task budget.",
             passes=diagnostic_passes,
             total=diagnostic_total,
-            group="External reference",
+            group="Reference runs",
             color="#425466",
         ),
         LiveEntry(
-            label="Published market scaffold",
-            definition="Original six-worker 900-second Phase II market result from the published scaffold.",
+            label="Original six-model market run",
+            definition="Original Phase II six-model market run with a 15-minute per-task budget.",
             passes=published_market_passes,
             total=published_market_total,
-            group="Published Phase II scaffold",
+            group="Original 15-minute scaffold",
             color="#67717d",
         ),
         LiveEntry(
-            label="Published solo GPT-5.2 scaffold",
-            definition="One GPT-5.2 worker on that same original 900-second Phase II scaffold.",
+            label="Original solo GPT-5.2 run",
+            definition="Original Phase II single-model GPT-5.2 run with that same 15-minute budget.",
             passes=published_solo_passes,
             total=published_solo_total,
-            group="Published Phase II scaffold",
+            group="Original 15-minute scaffold",
             color="#8a949f",
         ),
         LiveEntry(
-            label="Hard-prior market",
-            definition="Same matched six-worker rerun, but bids start from a held-out calibration prior.",
+            label="Market with calibration prior",
+            definition="Matched six-model rerun with the same 15-minute budget, but bids start from a held-out calibration prior.",
             passes=hard_prior_passes,
             total=hard_prior_total,
-            group="Matched rerun family",
+            group="Matched 15-minute rerun",
             color="#1f4f78",
         ),
         LiveEntry(
-            label="Matched centralized router",
-            definition="Same six workers, verifier, and limits as the matched rerun, with a centralized chooser.",
+            label="Central router on matched rerun",
+            definition="Matched six-model rerun with the same 15-minute budget and a centralized chooser.",
             passes=matched_central_passes,
             total=matched_central_total,
-            group="Matched rerun family",
+            group="Matched 15-minute rerun",
             color="#3a6076",
         ),
         LiveEntry(
-            label="Matched market rerun",
-            definition="Same six-worker matched rerun using the original market-clearing rule.",
+            label="Original market rule on matched rerun",
+            definition="Matched six-model rerun with the same 15-minute budget and the original market-clearing rule.",
             passes=matched_market_passes,
             total=matched_market_total,
-            group="Matched rerun family",
+            group="Matched 15-minute rerun",
             color="#5f7f93",
         ),
     ]
@@ -463,11 +463,7 @@ def _render_live_performance(
     top = 64
     axis_y = 1070
 
-    group_order = [
-        "External reference",
-        "Published Phase II scaffold",
-        "Matched rerun family",
-    ]
+    group_order = ["Reference runs", "Original 15-minute scaffold", "Matched 15-minute rerun"]
     group_to_entries: dict[str, list[LiveEntry]] = {group: [] for group in group_order}
     for entry in entries:
         group_to_entries.setdefault(entry.group, []).append(entry)
@@ -490,7 +486,7 @@ def _render_live_performance(
         span = x_max - x_min
         return int(plot_left + ((value - x_min) / span) * (plot_right - plot_left))
 
-    draw.text((left, top), "Live task performance", font=title_font, fill=INK)
+    draw.text((left, top), "50-task benchmark comparison", font=title_font, fill=INK)
     meta_label = "95% Wilson CI"
     meta_bbox = draw.textbbox((0, 0), meta_label, font=small_font)
     draw.text(
@@ -548,8 +544,11 @@ def _render_live_performance(
         draw.text((value_left, y - 10), f"{entry.passes}/{entry.total}", font=body_bold, fill=INK)
 
     footer = (
-        "Key distinction: the 23 to 28 change is inside the matched rerun family. "
-        "The older 29/50 published market result comes from a separate earlier scaffold run."
+        "Budget note: the Codex diagnostic uses a 30-minute per-task budget. "
+        "The original and matched Phase II runs use 15 minutes per task, so time budget affects performance independently of routing."
+        "\n"
+        "Comparison note: the 23 to 28 change is inside the matched rerun. "
+        "The older 29/50 original six-model market run comes from a separate earlier setup."
     )
     _draw_text(
         draw, (left, 1170), textwrap.fill(footer, width=128), font=small_font, fill=MUTED, spacing=6
