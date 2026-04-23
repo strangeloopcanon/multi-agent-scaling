@@ -178,22 +178,24 @@ For the SWE-bench evaluation writeup (market vs solo vs external baselines), see
 
 Phase I direct calibration is the original 93-task, six-model self-forecasting run. Phase Ib self-knowledge card reruns those same task-model pairs after showing a held-out self-history card. Error bars are 95% paired bootstrap intervals over all 558 forecast rows.
 
-#### Live 50-task performance
+#### 50-task benchmark comparison
 
-![Live 50-task performance summary](docs/research/report/data/page1_live_performance_summary.png)
+![50-task benchmark comparison](docs/research/report/data/page1_live_performance_summary.png)
 
-This figure separates three families that the old ladder mixed together: external reference runs, the older published Phase II scaffold, and the later matched rerun family. The key within-family change is `23 / 50` to `28 / 50`: the matched market rerun versus the hard-prior market. The older published market result at `29 / 50` is a separate earlier scaffold run, not the start of that `23 -> 28` sequence.
+This figure separates three families that the old ladder mixed together: reference runs, the original `15` minute Phase II scaffold, and the later matched `15` minute rerun. The key within-family change is `23 / 50` to `28 / 50`: the original market rule on the matched rerun versus the market with a calibration prior. The older `29 / 50` original six-model market run is a separate earlier scaffold run, not the start of that `23 -> 28` sequence.
 
 Label guide:
 
-- `Oracle ceiling`: best external single-model answer available in hindsight on each task in the common 50-task slice.
-- `External GPT-5.2 baseline`: one fixed GPT-5.2 run on the standard external SWE-bench scaffold.
-- `Diagnostic Codex + GPT-5.2`: single-model diagnostic on the Codex path with an `1800` second budget.
-- `Published market scaffold`: the original six-worker `900` second Phase II market result from the published scaffold.
-- `Published solo GPT-5.2 scaffold`: one GPT-5.2 worker on that same original `900` second Phase II scaffold.
-- `Hard-prior market`: the matched six-worker rerun after adding a held-out calibration prior to the bid prompt.
-- `Matched centralized router`: the same six workers, verifier, and limits as the matched rerun, but with a centralized chooser.
-- `Matched market rerun`: the same six-worker matched rerun using the original market-clearing rule.
+- `Best external model per task`: the best externally scaffolded single-model result on each task, chosen in hindsight.
+- `External GPT-5.2 run`: one fixed GPT-5.2 run on the standard external SWE-bench scaffold.
+- `30-minute Codex diagnostic`: single-model Codex-path diagnostic with a `30` minute per-task budget.
+- `Original six-model market run`: the original Phase II six-model market run with a `15` minute per-task budget.
+- `Original solo GPT-5.2 run`: the original Phase II single-model GPT-5.2 run with that same `15` minute budget.
+- `Market with calibration prior`: the matched six-model rerun with the same `15` minute budget, but with a held-out calibration prior added to the bid prompt.
+- `Central router on matched rerun`: the matched six-model rerun with the same `15` minute budget and a centralized chooser.
+- `Original market rule on matched rerun`: the matched six-model rerun with the same `15` minute budget and the original market-clearing rule.
+
+Time budget matters because it changes how long the worker can keep editing, running tests, and recovering from dead ends. That is why the `30` minute Codex diagnostic sits in the reference group rather than inside the matched `15` minute comparison.
 
 The latest live follow-up is **Phase IId: Market Calibration Intervention**. That run keeps the same six-worker market setup but changes the private bid note so workers start from a held-out calibration prior before bidding. The main Phase IId result is **28 / 50**, versus **23 / 50** for the matched Phase IIb market rerun and **27 / 50** for the matched centralized router. That puts the hard-prior market one task behind the older published market result at **29 / 50**. The detailed Phase II note keeps the audit trail for the follow-up cleanup reruns behind this final Phase IId count: [Phase IIb / IId report](docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md).
 
