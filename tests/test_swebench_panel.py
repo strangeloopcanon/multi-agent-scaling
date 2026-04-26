@@ -4,8 +4,11 @@ import json
 from pathlib import Path
 
 from agent_economy.research.swebench_panel import (
+    PublishedRunSpec,
     attempt_rows_from_ledger,
+    build_published_manifest,
     find_swebench_ledgers,
+    published_attempt_rows_from_spec,
     task_family_from_instance_id,
 )
 
@@ -153,3 +156,105 @@ def test_find_swebench_ledgers_skips_invalid_by_default(tmp_path: Path) -> None:
         invalid / "ledger.jsonl",
         valid / "ledger.jsonl",
     ]
+
+
+def test_published_attempt_rows_from_spec_filters_tasks_and_adds_context(
+    tmp_path: Path,
+) -> None:
+    runs_root = tmp_path / "runs"
+    run_dir = runs_root / "published_run" / "swebench_market_direct_penalty_001_a__b-1"
+    run_dir.mkdir(parents=True)
+    ledger = run_dir / "ledger.jsonl"
+
+    _append_event(
+        ledger,
+        "patch_submitted",
+        {
+            "task_id": "a__b-1",
+            "worker_id": "worker",
+            "model_ref": "provider:model",
+            "llm_usage": {"input_tokens": 20, "output_tokens": 4},
+        },
+        round_id=1,
+    )
+    _append_event(
+        ledger,
+        "task_completed",
+        {
+            "task_id": "a__b-1",
+            "worker_id": "worker",
+            "success": True,
+            "verify_status": "PASS",
+        },
+        round_id=1,
+    )
+
+    spec = PublishedRunSpec(
+        result="synthetic_result",
+        phase="Synthetic Phase",
+        paradigm="synthetic_paradigm",
+        roots=("published_run",),
+        include_tasks=frozenset({"a__b-1"}),
+        coverage_note="synthetic note",
+    )
+
+    rows = published_attempt_rows_from_spec(spec, runs_root=runs_root)
+
+    assert len(rows) == 1
+    assert rows[0].core_csv_row() == {
+        "model": "provider:model",
+        "task": "a__b-1",
+        "task family": "a/b",
+        "success": "true",
+        "token consumption": 24,
+    }
+    assert rows[0].source_csv_row()["published_result"] == "synthetic_result"
+    assert rows[0].source_csv_row()["coverage_note"] == "synthetic note"
+
+
+def test_build_published_manifest_summarizes_attempt_rows(tmp_path: Path) -> None:
+    runs_root = tmp_path / "runs"
+    run_dir = runs_root / "published_run" / "swebench_market_direct_penalty_001_a__b-1"
+    run_dir.mkdir(parents=True)
+    ledger = run_dir / "ledger.jsonl"
+
+    _append_event(
+        ledger,
+        "patch_submitted",
+        {
+            "task_id": "a__b-1",
+            "worker_id": "worker",
+            "model_ref": "provider:model",
+            "llm_usage": {"input_tokens": 7, "output_tokens": 3},
+        },
+        round_id=1,
+    )
+    _append_event(
+        ledger,
+        "task_completed",
+        {
+            "task_id": "a__b-1",
+            "worker_id": "worker",
+            "success": False,
+            "verify_status": "FAIL",
+        },
+        round_id=1,
+    )
+
+    rows = published_attempt_rows_from_spec(
+        PublishedRunSpec(
+            result="synthetic_result",
+            phase="Synthetic Phase",
+            paradigm="synthetic_paradigm",
+            roots=("published_run",),
+        ),
+        runs_root=runs_root,
+    )
+
+    manifest = build_published_manifest(rows)
+
+    summary = manifest["results"]["synthetic_result"]
+    assert summary["row_count"] == 1
+    assert summary["exact_attempt_task_count"] == 1
+    assert summary["exact_attempt_pass_count"] == 0
+    assert summary["exact_attempt_token_consumption"] == 10
