@@ -243,7 +243,9 @@ def test_openai_executor_skips_workspace_integration_for_swebench_tasks(tmp_path
         bounty=10,
         submission_kind=SubmissionKind.PATCH,
         verify_mode="commands",
-        acceptance=[CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id x")],
+        acceptance=[
+            CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id x")
+        ],
         allowed_paths=["./"],
     )
     bid = Bid(task_id="T1", ask=5, self_assessed_p_success=0.8, eta_minutes=10)

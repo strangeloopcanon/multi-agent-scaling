@@ -173,7 +173,9 @@ def test_evaluate_with_harness_uses_summary_fallback_resolved(monkeypatch, tmp_p
 
 
 def test_load_summary_runner_dir_path(tmp_path) -> None:
-    run_id = _build_run_id(prefix="ut", instance_id="django__django-333", patch_text="diff", gold=False)
+    run_id = _build_run_id(
+        prefix="ut", instance_id="django__django-333", patch_text="diff", gold=False
+    )
     runner_dir = tmp_path / ".ae_harness_runner"
     runner_dir.mkdir(parents=True)
     payload = {

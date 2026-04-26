@@ -1,0 +1,65 @@
+{
+  "description": "Task-level panel pulled from the SWE-bench website leaderboard backing JSON, filtered to the repo's 50-task Phase II slice and the closest bash-only rows for the experiment worker models.",
+  "leaderboard": "bash-only",
+  "missing_models": {
+    "openai:gpt-5.2-pro-2025-12-11": "No exact GPT-5.2 Pro row appears in the SWE-bench bash-only site data; GPT-5.2 high and GPT-5.2 Codex are separate entries."
+  },
+  "models": {
+    "anthropic:claude-opus-4-5-20251101": {
+      "pass_count": 33,
+      "row_count": 50,
+      "site_api_calls_sum": 1678,
+      "site_cost_sum": 28.695249000000008,
+      "site_resolved_rate": 74.4,
+      "site_submission_folder": "20251124_mini-v1.16.0_claude-opus-4-5-20251101",
+      "site_submission_name": "Claude 4.5 Opus medium (20251101)",
+      "task_count": 50
+    },
+    "anthropic:claude-sonnet-4-5-20250929": {
+      "pass_count": 31,
+      "row_count": 50,
+      "site_api_calls_sum": 2346,
+      "site_cost_sum": 23.88723780000001,
+      "site_resolved_rate": 70.6,
+      "site_submission_folder": "20250929_mini-v1.13.3_sonnet-4-5-20250929",
+      "site_submission_name": "Claude 4.5 Sonnet (20250929)",
+      "task_count": 50
+    },
+    "google:models/gemini-3-pro-preview": {
+      "pass_count": 33,
+      "row_count": 50,
+      "site_api_calls_sum": 1925,
+      "site_cost_sum": 21.501373599999997,
+      "site_resolved_rate": 74.2,
+      "site_submission_folder": "20251118_mini-v1.15.0_gemini-3-pro-preview-20251118",
+      "site_submission_name": "Gemini 3 Pro Preview (2025-11-18)",
+      "task_count": 50
+    },
+    "openai:gpt-5-mini-2025-08-07": {
+      "pass_count": 30,
+      "row_count": 50,
+      "site_api_calls_sum": 764,
+      "site_cost_sum": 1.8881181000000007,
+      "site_resolved_rate": 59.8,
+      "site_submission_folder": "20250807_mini-v1.7.0_gpt-5-mini",
+      "site_submission_name": "GPT-5 mini (2025-08-07) (medium reasoning)",
+      "task_count": 50
+    },
+    "openai:gpt-5.2-2025-12-11": {
+      "pass_count": 37,
+      "row_count": 50,
+      "site_api_calls_sum": 735,
+      "site_cost_sum": 10.3327371,
+      "site_resolved_rate": 69.0,
+      "site_submission_folder": "20251211_mini-v1.17.2_gpt-5.2-2025-12-11",
+      "site_submission_name": "GPT-5.2 (2025-12-11)",
+      "task_count": 50
+    }
+  },
+  "requested_task_count": 50,
+  "row_count": 250,
+  "source_url": "https://raw.githubusercontent.com/swe-bench/swe-bench.github.io/master/data/leaderboards.json",
+  "task_filter_source": "docs/research/data/phase2/per_task_outcomes.jsonl",
+  "token_consumption_available": false,
+  "token_note": "SWE-bench website per-instance details expose resolved, cost, and api_calls; they do not expose input/output token counts."
+}

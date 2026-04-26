@@ -13,3 +13,8 @@ runs/
 .codex/
 .dolt/
 *.db
+
+# Local SWE-bench exports that include smoke/diagnostic runs or convenience bundles.
+docs/research/data/phase2/agent_economy_swebench_panel_export.zip
+docs/research/data/phase2/swebench_model_task_attempt_panel.csv
+docs/research/data/phase2/swebench_model_task_attempt_panel_sources.csv

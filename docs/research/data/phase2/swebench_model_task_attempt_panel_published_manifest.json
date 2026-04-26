@@ -1,0 +1,151 @@
+{
+  "description": "Published-only SWE-bench model-task attempt panel. Core CSV rows keep the same five-column shape as the all-ledger panel; source CSV rows add published-result provenance.",
+  "known_limitations": [
+    "Exact model-attempt rows are available only for the surviving 30-task raw-ledger subset; the 20-task next20_market_20260219T074528Z batch is preserved only in summary artifacts.",
+    "Rows are attempt-level; task-level pass counts in this manifest treat a task as solved if any included attempt passed."
+  ],
+  "results": {
+    "phase2_market_900s": {
+      "coverage_notes": [
+        "Exact model-attempt rows are available only for the surviving 30-task raw-ledger subset; the 20-task next20_market_20260219T074528Z batch is preserved only in summary artifacts."
+      ],
+      "exact_attempt_pass_count": 17,
+      "exact_attempt_task_count": 30,
+      "exact_attempt_token_consumption": 2775849,
+      "matches_published_pass_count": null,
+      "published_paradigm": "market_900s",
+      "published_pass_count": 29,
+      "published_phase": "Phase II",
+      "published_task_count": 50,
+      "published_token_note": "Published total is about 5.82M including bid overhead; exact attempt rows here cover the surviving 30-task raw-ledger subset.",
+      "row_count": 50,
+      "source_runs": [
+        "gateB10_exclfix_t900_20260218T190909Z",
+        "next20_contiguous_market_20260219T183750Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/data/phase2/phase2_rollup_50.json",
+        "docs/research/data/phase2/market_vs_solo_summary.json",
+        "docs/research/data/phase2/per_task_outcomes.jsonl",
+        "docs/research/data/phase2/overlap_manifest.json"
+      ]
+    },
+    "phase2_solo_gpt52_900s": {
+      "coverage_notes": [],
+      "exact_attempt_pass_count": 24,
+      "exact_attempt_task_count": 50,
+      "exact_attempt_token_consumption": 4253797,
+      "matches_published_pass_count": true,
+      "published_paradigm": "solo_gpt52_900s",
+      "published_pass_count": 24,
+      "published_phase": "Phase II",
+      "published_task_count": 50,
+      "published_token_note": "Published total is about 4.37M including available execution accounting; attempt-token rows use patch-generation input plus output tokens.",
+      "row_count": 82,
+      "source_runs": [
+        "solo_gpt52_10_cleanDocker_20260218T225012Z",
+        "solo_gpt52_market50_remaining40_20260219T221230Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/data/phase2/market_vs_solo_summary.json",
+        "docs/research/data/phase2/per_task_outcomes.jsonl"
+      ]
+    },
+    "phase2b_central_router_matched_900s": {
+      "coverage_notes": [],
+      "exact_attempt_pass_count": 27,
+      "exact_attempt_task_count": 50,
+      "exact_attempt_token_consumption": 3080577,
+      "matches_published_pass_count": true,
+      "published_paradigm": "central_router_matched_900s",
+      "published_pass_count": 27,
+      "published_phase": "Phase IIb",
+      "published_task_count": 50,
+      "published_token_note": "Published total is 3,479,510 including router/bid overhead; attempt-token rows use patch-generation input plus output tokens.",
+      "row_count": 81,
+      "source_runs": [
+        "exp2_central_router_matched_timeoutaligned_20260409T030344Z",
+        "exp2_central_shard01_offset002_limit016_20260409T033114Z",
+        "exp2_central_shard02_offset018_limit016_20260409T033114Z",
+        "exp2_central_shard03_offset034_limit016_20260409T033114Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md"
+      ]
+    },
+    "phase2b_market_matched_900s": {
+      "coverage_notes": [],
+      "exact_attempt_pass_count": 23,
+      "exact_attempt_task_count": 50,
+      "exact_attempt_token_consumption": 3919431,
+      "matches_published_pass_count": true,
+      "published_paradigm": "market_matched_900s",
+      "published_pass_count": 23,
+      "published_phase": "Phase IIb",
+      "published_task_count": 50,
+      "published_token_note": "Published total is 5,072,291 including bid overhead; attempt-token rows use patch-generation input plus output tokens.",
+      "row_count": 87,
+      "source_runs": [
+        "exp2_market_matched_timeoutaligned_20260409T030344Z",
+        "exp2_market_shard01_offset002_limit016_20260409T033114Z",
+        "exp2_market_shard02_offset018_limit016_20260409T033114Z",
+        "exp2_market_shard03_offset034_limit016_20260409T033114Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md"
+      ]
+    },
+    "phase2c_codex_gpt52_relaxed_1800s": {
+      "coverage_notes": [],
+      "exact_attempt_pass_count": 35,
+      "exact_attempt_task_count": 50,
+      "exact_attempt_token_consumption": 321335319,
+      "matches_published_pass_count": true,
+      "published_attempts": 66,
+      "published_paradigm": "codex_gpt52_1800s",
+      "published_pass_count": 35,
+      "published_phase": "Phase IIc",
+      "published_task_count": 50,
+      "published_tokens": 321335319,
+      "row_count": 66,
+      "source_runs": [
+        "codex_direct_gpt52_relaxedfull50_20260402T050426Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/data/phase2/codex_relaxed_gpt52_summary.json",
+        "docs/research/report/09_PHASE_2_CODEX_RELAXED_TIME_GPT52_2026-04-02.md"
+      ]
+    },
+    "phase2d_hardprior_market_final": {
+      "coverage_notes": [
+        "Final cleanup-row replacement for astropy__astropy-12907.",
+        "Final cleanup-row replacement for django__django-12308.",
+        "Final cleanup-row replacements for the remaining five tasks.",
+        "Initial full-sweep rows excluding the seven-task cleanup slice replaced in the final Phase IId accounting."
+      ],
+      "exact_attempt_pass_count": 28,
+      "exact_attempt_task_count": 50,
+      "exact_attempt_token_consumption": 4001323,
+      "matches_published_pass_count": true,
+      "published_paradigm": "hardprior_market_final",
+      "published_pass_count": 28,
+      "published_phase": "Phase IId",
+      "published_task_count": 50,
+      "published_token_note": "Published adjusted total is 5,343,801 including market overhead; attempt-token rows use patch-generation input plus output tokens.",
+      "row_count": 80,
+      "source_runs": [
+        "phase2d_remaining45_hardprior_20260410T045117Z",
+        "phase2d_repair1_astropy_hardprior_1800_20260411T004900Z",
+        "phase2d_repair5_hardprior_1800_20260411T031545Z",
+        "phase2d_repair7_hardprior_valid2_20260410T214500Z",
+        "phase2d_tail4_hardprior_20260410T142400Z",
+        "phase2d_targeted5_hardprior_20260410T003800Z"
+      ],
+      "supporting_artifacts": [
+        "docs/research/report/10_PHASE_2B_CENTRAL_ROUTER_BASELINE_2026-04-07.md",
+        "runs/research/phase2/phase2d_full50_combined_20260410T171500Z_task_outcomes.csv"
+      ]
+    }
+  },
+  "token_consumption_definition": "Input plus output tokens attached to the patch-generation attempt in the run ledger. Market bid/router overhead is documented in published summary artifacts but is not assigned to individual model-task patch attempts here."
+}
