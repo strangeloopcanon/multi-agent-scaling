@@ -147,7 +147,9 @@ def test_command_executor_skips_workspace_integration_for_swebench_tasks(tmp_pat
         bounty=5,
         submission_kind=SubmissionKind.PATCH,
         verify_mode="commands",
-        acceptance=[CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id x")],
+        acceptance=[
+            CommandSpec(cmd="python -m agent_economy.research.swebench_eval --instance-id x")
+        ],
         allowed_paths=["./"],
     )
     bid = Bid(task_id="T1", ask=1, self_assessed_p_success=0.8, eta_minutes=5)
