@@ -117,9 +117,9 @@
   },
   "notes": {
     "run_components": [
-      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/gateB10_exclfix_t900_20260218T190909Z",
-      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/next20_market_20260219T074528Z",
-      "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/next20_contiguous_market_20260219T183750Z"
+      "runs/research/phase2/gateB10_exclfix_t900_20260218T190909Z",
+      "runs/research/phase2/next20_market_20260219T074528Z",
+      "runs/research/phase2/next20_contiguous_market_20260219T183750Z"
     ],
     "this_run_replacement": {
       "replaced_instance_id": "sphinx-doc__sphinx-8595",

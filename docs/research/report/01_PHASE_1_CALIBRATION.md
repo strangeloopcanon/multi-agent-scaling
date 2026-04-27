@@ -55,7 +55,7 @@ This sets the stage for Phase II: overcoming allocation inefficiencies and a rig
 
 We re-ran the Phase I direct calibration prompt with a simple self-knowledge intervention. Each model saw a short held-out history card summarizing its own prior pass rate, average stated confidence, and typical token underestimation before forecasting the current task.
 
-The final rerun completed for all 6 models, yielding a clean 558-row result (93 tasks x 6 models). The first pass failed on both Anthropic models because the local Anthropic API key returned `401 invalid x-api-key`; after updating the key and rerunning only the missing rows, the output folder was repaired in place so the experiment now reads as one cohesive full run.
+The final rerun completed for all 6 models, yielding a clean 558-row result (93 tasks x 6 models). The first pass failed on both Anthropic models because of a provider authentication error; after refreshing credentials and rerunning only the missing rows, the output folder was repaired in place so the experiment now reads as one cohesive full run.
 
 On the full six-model set, calibration still improved, though less dramatically than in the temporary four-model subset. Mean Brier score improved from `0.1835` to `0.1693`, and ECE improved from `0.1065` to `0.0616`. The intervention also pushed stated confidence upward, from `0.7268` to `0.8057`, against a realized pass rate of `0.7903`. Token forecasts became less severely underestimated: the median estimated-to-actual token ratio moved from `0.1929` to `0.2501`.
 

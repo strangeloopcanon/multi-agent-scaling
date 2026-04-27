@@ -4,11 +4,11 @@ This note captures what happened in early Phase II market runs and why root SWE 
 
 ## Data inspected
 
-- Ledgers under `/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/*/*/ledger.jsonl`
+- Ledgers under `runs/research/phase2/*/*/ledger.jsonl`
 - Run configs and states under matching task run folders
 - Phase I external outcomes from:
-  - `/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase1/full_external_20260216T070002Z/calibration_results.jsonl`
-  - `/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase1/next63_external_20260216T191746Z/calibration_results.jsonl`
+  - `runs/research/phase1/full_external_20260216T070002Z/calibration_results.jsonl`
+  - `runs/research/phase1/next63_external_20260216T191746Z/calibration_results.jsonl`
 
 ## What was observed
 
