@@ -1,6 +1,6 @@
 {
   "run_name": "codex_direct_gpt52_relaxedfull50_20260402T050426Z",
-  "run_root": "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/codex_direct_gpt52_relaxedfull50_20260402T050426Z",
+  "run_root": "runs/research/phase2/codex_direct_gpt52_relaxedfull50_20260402T050426Z",
   "setup": {
     "worker_path": "codex-direct",
     "model_ref": "openai:gpt-5.2-2025-12-11",

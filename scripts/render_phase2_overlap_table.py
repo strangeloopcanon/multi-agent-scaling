@@ -158,7 +158,8 @@ def main() -> None:
     parser.add_argument(
         "--copy-dir",
         type=Path,
-        default=Path("/Users/fradkin/market_based_ai/slides/images"),
+        default=None,
+        help="Optional directory to copy the rendered PNG into.",
     )
     args = parser.parse_args()
 
@@ -236,7 +237,7 @@ def main() -> None:
     args.output_csv.write_text("\n".join(csv_lines) + "\n", encoding="utf-8")
 
     copied_to = None
-    if args.copy_dir.exists() and args.copy_dir.is_dir():
+    if args.copy_dir is not None and args.copy_dir.exists() and args.copy_dir.is_dir():
         copied_to = args.copy_dir / args.output_png.name
         shutil.copy2(args.output_png, copied_to)
 
@@ -246,7 +247,7 @@ def main() -> None:
     print(f"csv={args.output_csv}")
     if copied_to is not None:
         print(f"copied_to={copied_to}")
-    else:
+    elif args.copy_dir is not None:
         print(f"copy_dir_missing={args.copy_dir}")
 
 

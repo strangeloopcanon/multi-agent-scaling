@@ -5,7 +5,7 @@
   "completed_runs": 40,
   "failed_runs": 0,
   "skipped_existing": 0,
-  "output_root": "/Users/rohit/Documents/Workspace/Coding/agent-economy/runs/research/phase2/solo_gpt52_market50_remaining40_20260219T221230Z",
+  "output_root": "runs/research/phase2/solo_gpt52_market50_remaining40_20260219T221230Z",
   "isolate_state": true,
   "rounds": 24,
   "concurrency": 6,
